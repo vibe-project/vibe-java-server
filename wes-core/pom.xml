@@ -8,11 +8,11 @@
 	<artifactId>wes-core</artifactId>
 	<name>wes Core</name>
 	<url>http://github.com/flowersinthesand/wes</url>
+	<description>Web Event Source - Core</description>
 	<dependencies>
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 		</dependency>
 	</dependencies>
-	<description>Web Event Source - Core</description>
 </project>
