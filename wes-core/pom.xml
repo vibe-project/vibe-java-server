@@ -6,7 +6,7 @@
 		<version>0.1-SNAPSHOT</version>
 	</parent>
 	<artifactId>wes-core</artifactId>
-	<name>wes core</name>
+	<name>Wes Core</name>
 	<dependencies>
 		<dependency>
 			<groupId>junit</groupId>

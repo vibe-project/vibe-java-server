@@ -14,7 +14,7 @@
 	<url>http://github.com/flowersinthesand/wes</url>
 	<description>Web Event Source</description>
 	<modules>
-		<module>core</module>
+		<module>wes-core</module>
 	</modules>
 	<licenses>
 		<license>
