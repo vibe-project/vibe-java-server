@@ -6,11 +6,13 @@
 		<version>0.1-SNAPSHOT</version>
 	</parent>
 	<artifactId>wes-core</artifactId>
-	<name>Wes Core</name>
+	<name>wes Core</name>
+	<url>http://github.com/flowersinthesand/wes</url>
 	<dependencies>
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 		</dependency>
 	</dependencies>
+	<description>Web Event Source - Core</description>
 </project>
