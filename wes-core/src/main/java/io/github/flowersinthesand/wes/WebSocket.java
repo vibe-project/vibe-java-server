@@ -65,14 +65,11 @@ public interface WebSocket extends Wrapper {
 	WebSocket openAction(Action<Void> action);
 
 	/**
-	 * Attaches an action for the text message event.
+	 * Attaches an action for the message event. The allowed message type is
+	 * {@link String} for text messages and {@link ByteBuffer} for binary
+	 * messages.
 	 */
-	WebSocket textAction(Action<String> action);
-
-	/**
-	 * Attaches an action for the binary message event.
-	 */
-	WebSocket binaryAction(Action<ByteBuffer> action);
+	WebSocket messageAction(Action<?> action);
 
 	/**
 	 * Attaches an action to handle error from various things.
