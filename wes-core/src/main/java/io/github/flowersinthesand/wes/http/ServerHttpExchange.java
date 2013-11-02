@@ -106,10 +106,10 @@ public interface ServerHttpExchange extends Wrapper {
 	ServerHttpExchange close(ByteBuffer data);
 
 	/**
-	 * Sets the HTTP status for the response. By default, {@link HttpStatus#OK}
+	 * Sets the HTTP status for the response. By default, {@link StatusCode#OK}
 	 * is set.
 	 */
-	ServerHttpExchange status(HttpStatus status);
+	ServerHttpExchange status(StatusCode status);
 
 	/**
 	 * Attaches an action to be called on response close.
