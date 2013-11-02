@@ -28,7 +28,7 @@ import java.nio.ByteBuffer;
  * @see <a href="http://tools.ietf.org/html/rfc6455">RFC6455 - The WebSocket
  *      Protocol</a>
  */
-public interface WebSocket extends Wrapper {
+public interface ServerWebSocket extends Wrapper {
 
 	/**
 	 * The URI used to connect.
@@ -43,48 +43,48 @@ public interface WebSocket extends Wrapper {
 	/**
 	 * Closes the connection with a normal status code and no reason.
 	 */
-	WebSocket close();
+	ServerWebSocket close();
 
 	/**
 	 * Closes the connection with the given status code and data.
 	 */
-	WebSocket close(CloseReason reason);
+	ServerWebSocket close(CloseReason reason);
 
 	/**
 	 * Sends a text message through the connection.
 	 */
-	WebSocket send(String data);
+	ServerWebSocket send(String data);
 
 	/**
 	 * Sends a binary message through the connection.
 	 */
-	WebSocket send(ByteBuffer data);
+	ServerWebSocket send(ByteBuffer data);
 
 	/**
 	 * Attaches an action for the open event where the state transitions to
 	 * {@link State#OPEN}. If the state is already {@link State#OPEN}, the
 	 * handler will be executed on addition.
 	 */
-	WebSocket openAction(Action<Void> action);
+	ServerWebSocket openAction(Action<Void> action);
 
 	/**
 	 * Attaches an action for the message event. The allowed message type is
 	 * {@link String} for text messages and {@link ByteBuffer} for binary
 	 * messages.
 	 */
-	WebSocket messageAction(Action<?> action);
+	ServerWebSocket messageAction(Action<?> action);
 
 	/**
 	 * Attaches an action to handle error from various things.
 	 */
-	WebSocket errorAction(Action<Throwable> action);
+	ServerWebSocket errorAction(Action<Throwable> action);
 
 	/**
 	 * Attaches an action for the close event where the state transitions to
 	 * {@link State#CLOSED}.If the state is already {@link State#CLOSED}, the
 	 * handler will be executed on addition.
 	 */
-	WebSocket closeAction(Action<CloseReason> action);
+	ServerWebSocket closeAction(Action<CloseReason> action);
 
 	/**
 	 * Represents the state of the connection.

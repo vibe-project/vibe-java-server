@@ -29,7 +29,7 @@ import java.util.Set;
  * @see <a href="http://www.w3.org/Protocols/rfc2616/rfc2616.html">RFC2616 -
  *      Hypertext Transfer Protocol -- HTTP/1.1</a>
  */
-public interface HttpServerExchange extends Wrapper {
+public interface ServerHttpExchange extends Wrapper {
 
 	/**
 	 * The request URI used to connect.
@@ -61,59 +61,59 @@ public interface HttpServerExchange extends Wrapper {
 	 * type is {@link String} for text chunks and {@link ByteBuffer} for binary
 	 * chunks.
 	 */
-	HttpServerExchange chunkAction(Action<?> action);
+	ServerHttpExchange chunkAction(Action<?> action);
 
 	/**
 	 * Attaches an action to be called with the whole request body where the
 	 * request ends. The allowed body type is {@link String} for text body and
 	 * {@link ByteBuffer} for binary body.
 	 */
-	HttpServerExchange bodyAction(Action<?> action);
+	ServerHttpExchange bodyAction(Action<?> action);
 
 	/**
 	 * Sets a response header.
 	 */
-	HttpServerExchange responseHeader(String name, String value);
+	ServerHttpExchange responseHeader(String name, String value);
 
 	/**
 	 * Sets response headers.
 	 */
-	HttpServerExchange responseHeader(String name, Iterable<String> value);
+	ServerHttpExchange responseHeader(String name, Iterable<String> value);
 
 	/**
 	 * Writes a string to the response body.
 	 */
-	HttpServerExchange write(String data);
+	ServerHttpExchange write(String data);
 
 	/**
 	 * Writes a binary to the response body.
 	 */
-	HttpServerExchange write(ByteBuffer data);
+	ServerHttpExchange write(ByteBuffer data);
 
 	/**
 	 * Closes the response.
 	 */
-	HttpServerExchange close();
+	ServerHttpExchange close();
 
 	/**
 	 * Writes a string to the response body and close the response.
 	 */
-	HttpServerExchange close(String data);
+	ServerHttpExchange close(String data);
 
 	/**
 	 * Writes a binary to the response body and close the response.
 	 */
-	HttpServerExchange close(ByteBuffer data);
+	ServerHttpExchange close(ByteBuffer data);
 
 	/**
 	 * Sets the HTTP status for the response. By default, {@link HttpStatus#OK}
 	 * is set.
 	 */
-	HttpServerExchange status(HttpStatus status);
+	ServerHttpExchange status(HttpStatus status);
 
 	/**
 	 * Attaches an action to be called on response close.
 	 */
-	HttpServerExchange closeAction(Action<Void> action);
+	ServerHttpExchange closeAction(Action<Void> action);
 
 }
