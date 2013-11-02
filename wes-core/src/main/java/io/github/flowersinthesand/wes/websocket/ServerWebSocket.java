@@ -23,6 +23,8 @@ import java.nio.ByteBuffer;
 /**
  * Represents a WebSocket session.
  * 
+ * Implementations of this class are not thread-safe.
+ * 
  * @author Donghwan Kim
  * @see <a href="http://www.w3.org/TR/websockets/">The WebSocket API by W3C</a>
  * @see <a href="http://tools.ietf.org/html/rfc6455">RFC6455 - The WebSocket
@@ -75,14 +77,17 @@ public interface ServerWebSocket extends Wrapper {
 	ServerWebSocket messageAction(Action<?> action);
 
 	/**
-	 * Attaches an action to handle error from various things.
+	 * Attaches an action to handle error from various things. If an error
+	 * occurs, the connection will be closed with the reason,
+	 * {@link CloseReason#SERVER_ERROR}.
 	 */
 	ServerWebSocket errorAction(Action<Throwable> action);
 
 	/**
 	 * Attaches an action for the close event where the state transitions to
-	 * {@link State#CLOSED}.If the state is already {@link State#CLOSED}, the
-	 * handler will be executed on addition.
+	 * {@link State#CLOSED}. If the state is already {@link State#CLOSED}, the
+	 * handler will be executed on addition. After the state transition, all the
+	 * other event will be disabled.
 	 */
 	ServerWebSocket closeAction(Action<CloseReason> action);
 

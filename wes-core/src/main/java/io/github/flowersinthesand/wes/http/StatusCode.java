@@ -334,4 +334,9 @@ public class StatusCode {
 		return true;
 	}
 
+	@Override
+	public String toString() {
+		return "HttpStatusCode [code=" + code + ", reason=" + reason + "]";
+	}
+
 }

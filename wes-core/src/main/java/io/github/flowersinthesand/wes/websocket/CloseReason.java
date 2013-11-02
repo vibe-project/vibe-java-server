@@ -181,4 +181,9 @@ public class CloseReason {
 		return true;
 	}
 
+	@Override
+	public String toString() {
+		return "WebSocketCloseReason [code=" + code + ", reason=" + reason + "]";
+	}
+
 }
