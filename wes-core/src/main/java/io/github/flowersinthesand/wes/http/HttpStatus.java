@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.flowersinthesand.wes;
+package io.github.flowersinthesand.wes.http;
 
 /**
  * Represents the HTTP status code and reason phrase.
