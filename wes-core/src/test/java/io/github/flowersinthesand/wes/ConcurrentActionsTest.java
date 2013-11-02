@@ -13,23 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.flowersinthesand.wes.support;
+package io.github.flowersinthesand.wes;
 
 import io.github.flowersinthesand.wes.Actions;
-import io.github.flowersinthesand.wes.SimpleActions;
+import io.github.flowersinthesand.wes.ConcurrentActions;
 import io.github.flowersinthesand.wes.Actions.Options;
-import io.github.flowersinthesand.wes.ActionsTestTemplate;
 
-public class SimpleActionsTest extends ActionsTestTemplate {
+public class ConcurrentActionsTest extends ActionsTestTemplate {
 
 	@Override
 	protected <T> Actions<T> createActions() {
-		return new SimpleActions<>();
+		return new ConcurrentActions<>();
 	}
 
 	@Override
 	protected <T> Actions<T> createActions(Options options) {
-		return new SimpleActions<>(options);
+		return new ConcurrentActions<>(options);
 	}
 
 }
