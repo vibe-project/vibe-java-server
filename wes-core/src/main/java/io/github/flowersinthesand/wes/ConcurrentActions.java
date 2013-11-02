@@ -13,70 +13,65 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.flowersinthesand.wes.support;
+package io.github.flowersinthesand.wes;
 
-import io.github.flowersinthesand.wes.Action;
-import io.github.flowersinthesand.wes.Actions;
-
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * Simple implementation of {@link Actions}.
+ * Thread-safe implementation of {@link Actions}.
  * 
  * @author Donghwan Kim
  */
-public class SimpleActions<T> extends ActionsSupport<T> {
+public class ConcurrentActions<T> extends AbstractActions<T> {
 
-	private boolean disabled;
-	private boolean fired;
-	private T cached;
+	private AtomicBoolean disabled = new AtomicBoolean();
+	private AtomicBoolean fired = new AtomicBoolean();
+	private AtomicReference<T> cached = new AtomicReference<>();
 
-	public SimpleActions() {
+	public ConcurrentActions() {
 		super();
 	}
 
-	public SimpleActions(Actions.Options o) {
+	public ConcurrentActions(Actions.Options o) {
 		super(o);
 	}
 
 	@Override
 	protected List<Action<T>> createList() {
-		return new ArrayList<>();
+		return new CopyOnWriteArrayList<>();
 	}
 
 	@Override
 	protected void setCache(T data) {
-		this.cached = data;
+		this.cached.set(data);
 	}
 
 	@Override
 	protected T cached() {
-		return cached;
+		return cached.get();
 	}
 
 	@Override
 	protected boolean setDisabled() {
-		boolean answer = !disabled;
-		if (answer) {
-			disabled = true;
-		}
-		return answer;
+		return disabled.compareAndSet(false, true);
 	}
 
 	@Override
 	public boolean disabled() {
-		return disabled;
+		return disabled.get();
 	}
 
 	@Override
 	protected void setFired() {
-		fired = true;
+		fired.set(true);
 	}
 
 	@Override
 	public boolean fired() {
-		return fired;
+		return fired.get();
 	}
 
 }

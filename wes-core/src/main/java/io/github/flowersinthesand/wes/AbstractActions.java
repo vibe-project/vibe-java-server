@@ -13,10 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.flowersinthesand.wes.support;
-
-import io.github.flowersinthesand.wes.Action;
-import io.github.flowersinthesand.wes.Actions;
+package io.github.flowersinthesand.wes;
 
 import java.util.Collections;
 import java.util.List;
@@ -26,16 +23,16 @@ import java.util.List;
  * 
  * @author Donghwan Kim
  */
-public abstract class ActionsSupport<T> implements Actions<T> {
+public abstract class AbstractActions<T> implements Actions<T> {
 
 	private final Actions.Options options;
 	protected final List<Action<T>> actionList;
 
-	protected ActionsSupport() {
+	protected AbstractActions() {
 		this(new Actions.Options());
 	}
 
-	protected ActionsSupport(Actions.Options o) {
+	protected AbstractActions(Actions.Options o) {
 		this.options = new Actions.Options(o);
 		this.actionList = createList();
 	}

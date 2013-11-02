@@ -16,6 +16,7 @@
 package io.github.flowersinthesand.wes.support;
 
 import io.github.flowersinthesand.wes.Actions;
+import io.github.flowersinthesand.wes.SimpleActions;
 import io.github.flowersinthesand.wes.Actions.Options;
 import io.github.flowersinthesand.wes.ActionsTestTemplate;
 
