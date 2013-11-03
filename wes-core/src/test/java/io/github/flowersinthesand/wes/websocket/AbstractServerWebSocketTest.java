@@ -133,16 +133,18 @@ public class AbstractServerWebSocketTest {
 	public void messageAction() {
 		EmptyServerWebSocket ws = new EmptyServerWebSocket();
 		final StringBuilder output = new StringBuilder("A");
-		ws.messageActions.fire("X");
-		assertNull(ws.messageType());
-		ws.messageAction(new Action<String>() {
+		Action<String> out = new Action<String>() {
 			@Override
 			public void on(String object) {
 				output.append(object);
 			}
-		});
+		};
+		ws.messageActions.fire("X");
+		assertNull(ws.messageType());
+		ws.messageAction(out);
 		assertEquals(ws.messageType(), String.class);
 		ws.messageActions.fire("B").fire("C");
+		ws.messageAction(out);
 		assertEquals(output.toString(), "ABC");
 	}
 
@@ -152,6 +154,24 @@ public class AbstractServerWebSocketTest {
 		ws.messageAction(new VoidAction() {
 			@Override
 			public void on() {
+				assertFalse(true);
+			}
+		});
+		assertFalse(true);
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void illegalMessageActionWithNewMessageType() {
+		EmptyServerWebSocket ws = new EmptyServerWebSocket();
+		ws.messageAction(new Action<String>() {
+			@Override
+			public void on(String object) {
+				assertFalse(true);
+			}
+		});
+		ws.messageAction(new Action<ByteBuffer>() {
+			@Override
+			public void on(ByteBuffer object) {
 				assertFalse(true);
 			}
 		});
