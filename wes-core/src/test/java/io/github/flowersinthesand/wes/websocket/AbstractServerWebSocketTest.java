@@ -102,33 +102,7 @@ public class AbstractServerWebSocketTest {
 		});
 		assertEquals(output.toString(), "ABCDEF");
 	}
-
-	@Test(expected = IllegalStateException.class)
-	public void closeAndOpenAction() {
-		EmptyServerWebSocket ws = new EmptyServerWebSocket();
-		ws.closeActions.fire();
-		ws.openAction(new VoidAction() {
-			@Override
-			public void on() {
-				assertFalse(true);
-			}
-		});
-		assertFalse(true);
-	}
-
-	@Test(expected = IllegalStateException.class)
-	public void closeAndMessageAction() {
-		EmptyServerWebSocket ws = new EmptyServerWebSocket();
-		ws.closeActions.fire();
-		ws.messageAction(new Action<String>() {
-			@Override
-			public void on(String object) {
-				assertFalse(true);
-			}
-		});
-		assertFalse(true);
-	}
-
+	
 	@Test
 	public void messageAction() {
 		EmptyServerWebSocket ws = new EmptyServerWebSocket();

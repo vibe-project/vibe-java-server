@@ -18,6 +18,8 @@ package io.github.flowersinthesand.wes;
 /**
  * A manager for a set of {@link Action}s. Inspired by jQuery's Callbacks.
  * 
+ * All operations on an actions are exception-safe.
+ * 
  * @author Donghwan Kim
  */
 public interface Actions<T> {

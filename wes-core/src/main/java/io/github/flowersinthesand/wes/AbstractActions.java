@@ -41,21 +41,16 @@ public abstract class AbstractActions<T> implements Actions<T> {
 
 	@Override
 	public Actions<T> add(Action<T> action) {
-		throwIfDisabled();
-		if (options.memory() && fired()) {
-			fireOne(action, cached());
-		}
-		if (!options.unique()
-				|| (options.unique() && !actionList.contains(action))) {
-			actionList.add(action);
+		if (!disabled()) {
+			if (options.memory() && fired()) {
+				fireOne(action, cached());
+			}
+			if (!options.unique()
+					|| (options.unique() && !actionList.contains(action))) {
+				actionList.add(action);
+			}
 		}
 		return this;
-	}
-
-	private void throwIfDisabled() {
-		if (disabled()) {
-			throw new IllegalStateException("Actions is disabled");
-		}
 	}
 
 	protected abstract T cached();
@@ -64,8 +59,6 @@ public abstract class AbstractActions<T> implements Actions<T> {
 	public Actions<T> disable() {
 		if (setDisabled()) {
 			actionList.clear();
-		} else {
-			throw new IllegalStateException("Already disabled");
 		}
 		return this;
 	}
@@ -85,16 +78,14 @@ public abstract class AbstractActions<T> implements Actions<T> {
 
 	@Override
 	public Actions<T> fire(T data) {
-		throwIfDisabled();
-		if (options.once() && fired()) {
-			throw new IllegalStateException("Already fired");
-		}
-		setFired();
-		if (options.memory()) {
-			setCache(data);
-		}
-		for (Action<T> action : actionList) {
-			fireOne(action, data);
+		if (!disabled() && !(options.once() && fired())) {
+			setFired();
+			if (options.memory()) {
+				setCache(data);
+			}
+			for (Action<T> action : actionList) {
+				fireOne(action, data);
+			}
 		}
 		return this;
 	}

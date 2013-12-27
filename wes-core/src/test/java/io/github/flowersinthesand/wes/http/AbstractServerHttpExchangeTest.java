@@ -127,20 +127,7 @@ public class AbstractServerHttpExchangeTest {
 		http.bodyAction(out);
 		assertEquals(output.toString(), "ABBODYBODY");
 	}
-
-	@Test(expected = IllegalStateException.class)
-	public void bodyAndChunkAction() {
-		EmptyServerHttpExchange http = new EmptyServerHttpExchange();
-		http.bodyActions.fire("BODY");
-		http.chunkAction(new Action<String>() {
-			@Override
-			public void on(String object) {
-				assertFalse(true);
-			}
-		});
-		assertFalse(true);
-	}
-
+	
 	@Test(expected = IllegalArgumentException.class)
 	public void illegalBodyAction() {
 		EmptyServerHttpExchange http = new EmptyServerHttpExchange();
@@ -191,21 +178,6 @@ public class AbstractServerHttpExchangeTest {
 			}
 		});
 		assertEquals(output.toString(), "ABCDE");
-	}
-
-	@Test
-	public void status() {
-		final StringBuilder output = new StringBuilder();
-		new EmptyServerHttpExchange() {
-			@Override
-			public ServerHttpExchange setStatus(StatusCode status) {
-				assertEquals(status, StatusCode.OK);
-				output.append("A");
-				return this;
-			}
-		};
-		output.append("B");
-		assertEquals(output.toString(), "AB");
 	}
 
 	static class EmptyServerHttpExchange extends AbstractServerHttpExchange {

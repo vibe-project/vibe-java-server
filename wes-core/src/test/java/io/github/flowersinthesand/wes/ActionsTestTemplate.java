@@ -110,42 +110,33 @@ public abstract class ActionsTestTemplate {
 		assertEquals("EE", output.toString());
 		actions.add(out);
 		assertEquals("EEE", output.toString());
-	}
 
-	@Test(expected = IllegalStateException.class)
-	public void fireAndFireWithOnce() {
-		Actions<String> actions = createActions(new Actions.Options()
-				.once(true));
+		actions = createActions(new Actions.Options().once(true));
 		actions.fire().fire();
 	}
 
-	@Test(expected = IllegalStateException.class)
+	@Test
 	public void disable() {
 		Actions<Void> actions = createActions();
-		actions.add(new VoidAction() {
+		Action<Void> action = new VoidAction() {
 			@Override
 			public void on() {
 			}
-		});
+		};
+		
+		actions.add(action);
 		assertFalse(actions.disabled());
 		actions.disable();
 		assertTrue(actions.disabled());
-		actions.disable();
-	}
-
-	@Test(expected = IllegalStateException.class)
-	public void disableAndAdd() {
-		Actions<Void> actions = createActions();
-		actions.disable().add(new VoidAction() {
-			@Override
-			public void on() {
-			}
-		});
-	}
-
-	@Test(expected = IllegalStateException.class)
-	public void disableAndFire() {
-		Actions<Void> actions = createActions();
+		
+		actions = createActions();
+		actions.disable().add(action);
+		assertFalse(actions.has(action));
+		
+		actions = createActions();
+		actions.disable().disable();
+		
+		actions = createActions();
 		actions.disable().fire();
 	}
 
