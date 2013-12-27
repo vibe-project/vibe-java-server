@@ -1,10 +1,9 @@
 package io.github.flowersinthesand.wes.websocket;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
 import io.github.flowersinthesand.wes.Action;
 import io.github.flowersinthesand.wes.Actions;
+import io.github.flowersinthesand.wes.Data;
 import io.github.flowersinthesand.wes.VoidAction;
 
 import org.junit.Test;
@@ -105,38 +104,17 @@ public class AbstractServerWebSocketTest {
 	public void messageAction() {
 		EmptyServerWebSocket ws = new EmptyServerWebSocket();
 		final StringBuilder output = new StringBuilder("A");
-		Action<String> out = new Action<String>() {
+		Action<Data> out = new Action<Data>() {
 			@Override
-			public void on(String object) {
-				output.append(object);
+			public void on(Data data) {
+				output.append(data.as(String.class));
 			}
 		};
-		ws.messageActions.fire("X");
-		assertNull(ws.messageType());
+		ws.messageActions.fire(new Data("X"));
 		ws.messageAction(out);
-		assertEquals(ws.messageType(), String.class);
-		ws.messageActions.fire("B").fire("C");
+		ws.messageActions.fire(new Data("B")).fire(new Data("C"));
 		ws.messageAction(out);
 		assertEquals(output.toString(), "ABC");
-	}
-
-	@Test(expected = IllegalArgumentException.class)
-	public void illegalMessageAction() {
-		EmptyServerWebSocket ws = new EmptyServerWebSocket();
-		ws.messageAction(new VoidAction() {
-			@Override
-			public void on() {
-				assertFalse(true);
-			}
-		});
-		assertFalse(true);
-	}
-
-	@Test(expected = IllegalArgumentException.class)
-	public void illegalMessageFire() {
-		EmptyServerWebSocket ws = new EmptyServerWebSocket();
-		ws.messageActions.fire(1);
-		assertFalse(true);
 	}
 
 	static class EmptyServerWebSocket extends AbstractServerWebSocket {
@@ -145,7 +123,7 @@ public class AbstractServerWebSocketTest {
 			return openActions;
 		}
 
-		public Actions<Object> getMessageActions() {
+		public Actions<Data> getMessageActions() {
 			return messageActions;
 		}
 

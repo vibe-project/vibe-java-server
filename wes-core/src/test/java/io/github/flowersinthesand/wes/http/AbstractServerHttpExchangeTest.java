@@ -1,10 +1,9 @@
 package io.github.flowersinthesand.wes.http;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
 import io.github.flowersinthesand.wes.Action;
 import io.github.flowersinthesand.wes.Actions;
+import io.github.flowersinthesand.wes.Data;
 import io.github.flowersinthesand.wes.VoidAction;
 
 import java.util.ArrayList;
@@ -55,72 +54,37 @@ public class AbstractServerHttpExchangeTest {
 	public void chunkAction() {
 		EmptyServerHttpExchange http = new EmptyServerHttpExchange();
 		final StringBuilder output = new StringBuilder("A");
-		Action<String> out = new Action<String>() {
+		Action<Data> out = new Action<Data>() {
 			@Override
-			public void on(String object) {
-				output.append(object);
+			public void on(Data data) {
+				output.append(data.as(String.class));
 			}
 		};
-		http.chunkActions.fire("X");
-		assertNull(http.bodyType());
+		http.chunkActions.fire(new Data("X"));
 		http.chunkAction(out);
-		assertEquals(http.bodyType(), String.class);
 		output.append("B");
-		http.chunkActions.fire("C").fire("D");
+		http.chunkActions.fire(new Data("C")).fire(new Data("D"));
 		http.chunkAction(out);
 		assertEquals(output.toString(), "ABCD");
-	}
-
-	@Test(expected = IllegalArgumentException.class)
-	public void illegalChunkAction() {
-		EmptyServerHttpExchange http = new EmptyServerHttpExchange();
-		http.chunkAction(new VoidAction() {
-			@Override
-			public void on() {
-				assertFalse(true);
-			}
-		});
-		assertFalse(true);
-	}
-
-	@Test(expected = IllegalArgumentException.class)
-	public void illegalChunkFire() {
-		EmptyServerHttpExchange http = new EmptyServerHttpExchange();
-		http.chunkActions.fire(1);
-		assertFalse(true);
 	}
 
 	@Test
 	public void bodyAction() {
 		EmptyServerHttpExchange http = new EmptyServerHttpExchange();
 		final StringBuilder output = new StringBuilder("A");
-		Action<String> out = new Action<String>() {
+		Action<Data> out = new Action<Data>() {
 			@Override
-			public void on(String object) {
-				output.append(object);
+			public void on(Data data) {
+				output.append(data.as(String.class));
 			}
 		};
-		assertNull(http.bodyType());
 		http.bodyAction(out);
-		assertEquals(http.bodyType(), String.class);
 		output.append("B");
-		http.bodyActions.fire("BODY");
+		http.bodyActions.fire(new Data("BODY"));
 		http.bodyAction(out);
 		assertEquals(output.toString(), "ABBODYBODY");
 	}
 	
-	@Test(expected = IllegalArgumentException.class)
-	public void illegalBodyAction() {
-		EmptyServerHttpExchange http = new EmptyServerHttpExchange();
-		http.bodyAction(new VoidAction() {
-			@Override
-			public void on() {
-				assertFalse(true);
-			}
-		});
-		assertFalse(true);
-	}
-
 	@Test
 	public void closeAction() {
 		EmptyServerHttpExchange http = new EmptyServerHttpExchange();
@@ -149,11 +113,11 @@ public class AbstractServerHttpExchangeTest {
 			return closeActions;
 		}
 
-		public Actions<Object> getChunkActions() {
+		public Actions<Data> getChunkActions() {
 			return chunkActions;
 		}
 
-		public Actions<Object> getBodyActions() {
+		public Actions<Data> getBodyActions() {
 			return bodyActions;
 		}
 

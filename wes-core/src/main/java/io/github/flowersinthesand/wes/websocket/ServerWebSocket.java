@@ -16,6 +16,7 @@
 package io.github.flowersinthesand.wes.websocket;
 
 import io.github.flowersinthesand.wes.Action;
+import io.github.flowersinthesand.wes.Data;
 import io.github.flowersinthesand.wes.Wrapper;
 
 /**
@@ -66,7 +67,7 @@ public interface ServerWebSocket extends Wrapper {
 	 * Attaches an action for the message event. The allowed message type is
 	 * {@link String} for text messages.
 	 */
-	ServerWebSocket messageAction(Action<?> action);
+	ServerWebSocket messageAction(Action<Data> action);
 
 	/**
 	 * Attaches an action to handle error from various things. If an error

@@ -16,6 +16,7 @@
 package io.github.flowersinthesand.wes.http;
 
 import io.github.flowersinthesand.wes.Action;
+import io.github.flowersinthesand.wes.Data;
 import io.github.flowersinthesand.wes.Wrapper;
 
 import java.util.List;
@@ -59,13 +60,13 @@ public interface ServerHttpExchange extends Wrapper {
 	 * Attaches an action to be called with the request chunk. The allowed chunk
 	 * type is {@link String} for text chunks.
 	 */
-	ServerHttpExchange chunkAction(Action<?> action);
+	ServerHttpExchange chunkAction(Action<Data> action);
 
 	/**
 	 * Attaches an action to be called with the whole request body where the
 	 * request ends. The allowed body type is {@link String} for text body.
 	 */
-	ServerHttpExchange bodyAction(Action<?> action);
+	ServerHttpExchange bodyAction(Action<Data> action);
 
 	/**
 	 * Sets a response header.

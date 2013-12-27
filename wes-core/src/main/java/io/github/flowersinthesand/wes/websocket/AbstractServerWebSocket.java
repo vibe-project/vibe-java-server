@@ -17,9 +17,9 @@ package io.github.flowersinthesand.wes.websocket;
 
 import io.github.flowersinthesand.wes.Action;
 import io.github.flowersinthesand.wes.Actions;
+import io.github.flowersinthesand.wes.Data;
 import io.github.flowersinthesand.wes.SimpleActions;
 import io.github.flowersinthesand.wes.VoidAction;
-import io.github.flowersinthesand.wes.util.GenericTypeResolver;
 
 import java.util.UUID;
 
@@ -32,18 +32,16 @@ import org.slf4j.LoggerFactory;
  * @author Donghwan Kim
  */
 public abstract class AbstractServerWebSocket implements ServerWebSocket {
-	
+
 	protected Actions<Void> openActions = new SimpleActions<>(new Actions.Options().once(true).memory(true));
-	protected Actions<Object> messageActions = new SimpleActions<>();
+	protected Actions<Data> messageActions = new SimpleActions<>();
 	protected Actions<Throwable> errorActions = new SimpleActions<>(new Actions.Options().once(true).memory(true));
 	protected Actions<CloseReason> closeActions = new SimpleActions<>(new Actions.Options().once(true).memory(true));
 
 	private final Logger logger = LoggerFactory.getLogger(AbstractServerWebSocket.class);
 	private String id = UUID.randomUUID().toString();
 	private State state = State.CONNECTING;
-	private Class<?> messageType;
-	private Actions<String> textMessageActions = new SimpleActions<>();
-	
+
 	public AbstractServerWebSocket() {
 		openActions.add(new VoidAction() {
 			@Override
@@ -52,22 +50,11 @@ public abstract class AbstractServerWebSocket implements ServerWebSocket {
 				state = State.OPEN;
 			}
 		});
-		messageActions.add(new Action<Object>() {
-			@Override
-			public void on(Object message) {
-				logger.trace("{} has received a message [{}]", AbstractServerWebSocket.this, message);
-				Class<?> type = message.getClass();
-				validateMessageType(type);
-				
-				if (String.class.isAssignableFrom(type)) {
-					textMessageActions.fire((String) message);
-				}
-			}
-		});
 		errorActions.add(new Action<Throwable>() {
 			@Override
 			public void on(Throwable throwable) {
-				logger.trace("{} has received a throwable [{}]", AbstractServerWebSocket.this, throwable);
+				logger.trace("{} has received a throwable [{}]",
+						AbstractServerWebSocket.this, throwable);
 				if (state != State.CLOSING && state != State.CLOSED) {
 					close(CloseReason.SERVER_ERROR);
 				}
@@ -76,15 +63,15 @@ public abstract class AbstractServerWebSocket implements ServerWebSocket {
 		closeActions.add(new Action<CloseReason>() {
 			@Override
 			public void on(CloseReason reason) {
-				logger.trace("{} has been closed due to the reason [{}]", AbstractServerWebSocket.this, reason);
+				logger.trace("{} has been closed due to the reason [{}]",
+						AbstractServerWebSocket.this, reason);
 				state = State.CLOSED;
 				openActions.disable();
 				messageActions.disable();
-				textMessageActions.disable();
 			}
 		});
 	}
-	
+
 	public String id() {
 		return id;
 	}
@@ -101,7 +88,9 @@ public abstract class AbstractServerWebSocket implements ServerWebSocket {
 
 	@Override
 	public ServerWebSocket close(CloseReason reason) {
-		logger.trace("{} has started to close the connection with the reason [{}]", this, reason);
+		logger.trace(
+				"{} has started to close the connection with the reason [{}]",
+				this, reason);
 		state = State.CLOSING;
 		doClose(reason);
 		return this;
@@ -124,32 +113,10 @@ public abstract class AbstractServerWebSocket implements ServerWebSocket {
 		return this;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
-	public ServerWebSocket messageAction(Action<?> action) {
-		Class<?> type = GenericTypeResolver.resolveTypeArgument(action.getClass(), Action.class);
-		validateMessageType(type);
-		if (messageType == null) {
-			messageType = type;
-		}
-		
-		if (String.class.isAssignableFrom(type)) {
-			textMessageActions.add((Action<String>) action);
-		}
+	public ServerWebSocket messageAction(Action<Data> action) {
+		messageActions.add(action);
 		return this;
-	}
-	
-	protected Class<?> messageType() {
-		return messageType;
-	}
-	
-	private void validateMessageType(Class<?> type) {
-		if (!String.class.isAssignableFrom(type)) {
-			throw new IllegalArgumentException("Unsupported message type [" + type + "]");
-		}
-		if (messageType != null && messageType != type) {
-			throw new IllegalArgumentException("This WebSocket's message type is already set to [" + messageType + "] not [" + type + "]");
-		}
 	}
 
 	@Override
@@ -166,7 +133,7 @@ public abstract class AbstractServerWebSocket implements ServerWebSocket {
 
 	@Override
 	public String toString() {
-		return "ServerWebSocket [id=" + id + ", state=" + state + ", messageType=" + messageType + "]";
+		return "ServerWebSocket [id=" + id + ", state=" + state + "]";
 	}
 
 }
