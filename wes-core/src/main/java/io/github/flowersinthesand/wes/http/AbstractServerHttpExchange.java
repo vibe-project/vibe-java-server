@@ -42,7 +42,6 @@ public abstract class AbstractServerHttpExchange implements ServerHttpExchange {
 
 	private final Logger logger = LoggerFactory.getLogger(AbstractServerHttpExchange.class);
 	private String id = UUID.randomUUID().toString();
-	private StatusCode status = StatusCode.OK;
 	private Class<?> bodyType;
 	private Actions<String> textChunkActions = new SimpleActions<>();
 	private Actions<ByteBuffer> binaryChunkActions = new SimpleActions<>();
@@ -88,7 +87,6 @@ public abstract class AbstractServerHttpExchange implements ServerHttpExchange {
 				logger.trace("{} has been closed", AbstractServerHttpExchange.this);
 			}
 		});
-		setStatus(status);
 	}
 
 	public String id() {
@@ -100,22 +98,6 @@ public abstract class AbstractServerHttpExchange implements ServerHttpExchange {
 		List<String> headers = requestHeaders(name);
 		return headers != null && headers.size() > 0 ? headers.get(0) : null;
 	}
-
-	@Override
-	public ServerHttpExchange responseHeader(String name, String value) {
-		setResponseHeader(name, value);
-		return this;
-	}
-
-	protected abstract void setResponseHeader(String name, String value);
-
-	@Override
-	public ServerHttpExchange responseHeader(String name, Iterable<String> value) {
-		setResponseHeader(name, value);
-		return this;
-	}
-
-	protected abstract void setResponseHeader(String name, Iterable<String> value);
 
 	public Class<?> bodyType() {
 		return bodyType;
@@ -202,15 +184,6 @@ public abstract class AbstractServerHttpExchange implements ServerHttpExchange {
 	}
 
 	@Override
-	public ServerHttpExchange status(StatusCode status) {
-		this.status = status;
-		setStatus(status);
-		return this;
-	}
-
-	protected abstract void setStatus(StatusCode status);
-
-	@Override
 	public ServerHttpExchange closeAction(Action<Void> action) {
 		closeActions.add(action);
 		return this;
@@ -218,7 +191,7 @@ public abstract class AbstractServerHttpExchange implements ServerHttpExchange {
 
 	@Override
 	public String toString() {
-		return "ServerHttpExchange [id=" + id + ", status=" + status + ", bodyType=" + bodyType + "]";
+		return "ServerHttpExchange [id=" + id + ", bodyType=" + bodyType + "]";
 	}
 
 }

@@ -73,12 +73,12 @@ public interface ServerHttpExchange extends Wrapper {
 	/**
 	 * Sets a response header.
 	 */
-	ServerHttpExchange responseHeader(String name, String value);
+	ServerHttpExchange setResponseHeader(String name, String value);
 
 	/**
 	 * Sets response headers.
 	 */
-	ServerHttpExchange responseHeader(String name, Iterable<String> value);
+	ServerHttpExchange setResponseHeader(String name, Iterable<String> value);
 
 	/**
 	 * Writes a string to the response body.
@@ -109,7 +109,7 @@ public interface ServerHttpExchange extends Wrapper {
 	 * Sets the HTTP status for the response. By default, {@link StatusCode#OK}
 	 * is set.
 	 */
-	ServerHttpExchange status(StatusCode status);
+	ServerHttpExchange setStatus(StatusCode status);
 
 	/**
 	 * Attaches an action to be called on response close.

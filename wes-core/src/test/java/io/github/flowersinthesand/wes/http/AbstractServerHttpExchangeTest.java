@@ -198,9 +198,10 @@ public class AbstractServerHttpExchangeTest {
 		final StringBuilder output = new StringBuilder();
 		new EmptyServerHttpExchange() {
 			@Override
-			protected void setStatus(StatusCode status) {
+			public ServerHttpExchange setStatus(StatusCode status) {
 				assertEquals(status, StatusCode.OK);
 				output.append("A");
+				return this;
 			}
 		};
 		output.append("B");
@@ -240,13 +241,14 @@ public class AbstractServerHttpExchangeTest {
 		public List<String> requestHeaders(String name) {
 			return null;
 		}
-
+		
 		@Override
-		protected void setResponseHeader(String name, String value) {
+		public ServerHttpExchange setResponseHeader(String name, Iterable<String> value) {
+			return null;
 		}
-
 		@Override
-		protected void setResponseHeader(String name, Iterable<String> value) {
+		public ServerHttpExchange setResponseHeader(String name, String value) {
+			return null;
 		}
 
 		@Override
@@ -262,7 +264,8 @@ public class AbstractServerHttpExchangeTest {
 		}
 
 		@Override
-		protected void setStatus(StatusCode status) {
+		public ServerHttpExchange setStatus(StatusCode status) {
+			return null;
 		}
 
 		@Override
