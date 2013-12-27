@@ -18,7 +18,6 @@ package io.github.flowersinthesand.wes.http;
 import io.github.flowersinthesand.wes.Action;
 import io.github.flowersinthesand.wes.Wrapper;
 
-import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Set;
 
@@ -58,15 +57,13 @@ public interface ServerHttpExchange extends Wrapper {
 
 	/**
 	 * Attaches an action to be called with the request chunk. The allowed chunk
-	 * type is {@link String} for text chunks and {@link ByteBuffer} for binary
-	 * chunks.
+	 * type is {@link String} for text chunks.
 	 */
 	ServerHttpExchange chunkAction(Action<?> action);
 
 	/**
 	 * Attaches an action to be called with the whole request body where the
-	 * request ends. The allowed body type is {@link String} for text body and
-	 * {@link ByteBuffer} for binary body.
+	 * request ends. The allowed body type is {@link String} for text body.
 	 */
 	ServerHttpExchange bodyAction(Action<?> action);
 
@@ -86,11 +83,6 @@ public interface ServerHttpExchange extends Wrapper {
 	ServerHttpExchange write(String data);
 
 	/**
-	 * Writes a binary to the response body.
-	 */
-	ServerHttpExchange write(ByteBuffer data);
-
-	/**
 	 * Closes the response.
 	 */
 	ServerHttpExchange close();
@@ -99,11 +91,6 @@ public interface ServerHttpExchange extends Wrapper {
 	 * Writes a string to the response body and close the response.
 	 */
 	ServerHttpExchange close(String data);
-
-	/**
-	 * Writes a binary to the response body and close the response.
-	 */
-	ServerHttpExchange close(ByteBuffer data);
 
 	/**
 	 * Sets the HTTP status for the response. By default, {@link StatusCode#OK}

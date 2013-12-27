@@ -7,8 +7,6 @@ import io.github.flowersinthesand.wes.Action;
 import io.github.flowersinthesand.wes.Actions;
 import io.github.flowersinthesand.wes.VoidAction;
 
-import java.nio.ByteBuffer;
-
 import org.junit.Test;
 
 public class AbstractServerWebSocketTest {
@@ -135,24 +133,6 @@ public class AbstractServerWebSocketTest {
 	}
 
 	@Test(expected = IllegalArgumentException.class)
-	public void illegalMessageActionWithNewMessageType() {
-		EmptyServerWebSocket ws = new EmptyServerWebSocket();
-		ws.messageAction(new Action<String>() {
-			@Override
-			public void on(String object) {
-				assertFalse(true);
-			}
-		});
-		ws.messageAction(new Action<ByteBuffer>() {
-			@Override
-			public void on(ByteBuffer object) {
-				assertFalse(true);
-			}
-		});
-		assertFalse(true);
-	}
-
-	@Test(expected = IllegalArgumentException.class)
 	public void illegalMessageFire() {
 		EmptyServerWebSocket ws = new EmptyServerWebSocket();
 		ws.messageActions.fire(1);
@@ -188,11 +168,6 @@ public class AbstractServerWebSocketTest {
 
 		@Override
 		protected void doSend(String data) {
-
-		}
-
-		@Override
-		protected void doSend(ByteBuffer data) {
 
 		}
 

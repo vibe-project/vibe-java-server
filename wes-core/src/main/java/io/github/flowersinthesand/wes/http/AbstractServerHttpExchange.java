@@ -22,7 +22,6 @@ import io.github.flowersinthesand.wes.VoidAction;
 import io.github.flowersinthesand.wes.util.GenericTypeResolver;
 import io.github.flowersinthesand.wes.websocket.ServerWebSocket;
 
-import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.UUID;
 
@@ -44,9 +43,7 @@ public abstract class AbstractServerHttpExchange implements ServerHttpExchange {
 	private String id = UUID.randomUUID().toString();
 	private Class<?> bodyType;
 	private Actions<String> textChunkActions = new SimpleActions<>();
-	private Actions<ByteBuffer> binaryChunkActions = new SimpleActions<>();
 	private Actions<String> textBodyActions = new SimpleActions<>(new Actions.Options().once(true).memory(true));
-	private Actions<ByteBuffer> binaryBodyActions = new SimpleActions<>(new Actions.Options().once(true).memory(true));
 	
 	public AbstractServerHttpExchange() {
 		chunkActions.add(new Action<Object>() {
@@ -58,8 +55,6 @@ public abstract class AbstractServerHttpExchange implements ServerHttpExchange {
 				
 				if (String.class.isAssignableFrom(type)) {
 					textChunkActions.fire((String) chunk);
-				} else if (ByteBuffer.class.isAssignableFrom(type)) {
-					binaryChunkActions.fire((ByteBuffer) chunk);
 				}
 			}
 		});
@@ -69,15 +64,12 @@ public abstract class AbstractServerHttpExchange implements ServerHttpExchange {
 				logger.trace("{} has received a body [{}]", AbstractServerHttpExchange.this, body);
 				chunkActions.disable();
 				textChunkActions.disable();
-				binaryChunkActions.disable();
 				
 				Class<?> type = body.getClass();
 				validateBodyType(type);
 				
 				if (String.class.isAssignableFrom(type)) {
 					textBodyActions.fire((String) body);
-				} else if (ByteBuffer.class.isAssignableFrom(type)) {
-					binaryBodyActions.fire((ByteBuffer) body);
 				}
 			}
 		});
@@ -114,8 +106,6 @@ public abstract class AbstractServerHttpExchange implements ServerHttpExchange {
 		
 		if (String.class.isAssignableFrom(type)) {
 			textChunkActions.add((Action<String>) action);
-		} else if (ByteBuffer.class.isAssignableFrom(type)) {
-			binaryChunkActions.add((Action<ByteBuffer>) action);
 		}
 		return this;
 	}
@@ -131,14 +121,12 @@ public abstract class AbstractServerHttpExchange implements ServerHttpExchange {
 		
 		if (String.class.isAssignableFrom(type)) {
 			textBodyActions.add((Action<String>) action);
-		} else if (ByteBuffer.class.isAssignableFrom(type)) {
-			binaryBodyActions.add((Action<ByteBuffer>) action);
 		}
 		return this;
 	}
 	
 	private void validateBodyType(Class<?> type) {
-		if (!String.class.isAssignableFrom(type) && !ByteBuffer.class.isAssignableFrom(type)) {
+		if (!String.class.isAssignableFrom(type)) {
 			throw new IllegalArgumentException("Unsupported body type [" + type + "]");
 		}
 		if (bodyType != null && bodyType != type) {
@@ -156,15 +144,6 @@ public abstract class AbstractServerHttpExchange implements ServerHttpExchange {
 	protected abstract void doWrite(String data);
 
 	@Override
-	public ServerHttpExchange write(ByteBuffer data) {
-		logger.trace("{} sends a binary chunk [{}]", this, data);
-		doWrite(data);
-		return this;
-	}
-
-	protected abstract void doWrite(ByteBuffer data);
-
-	@Override
 	public ServerHttpExchange close() {
 		logger.trace("{} has started to close the connection", this);
 		doClose();
@@ -175,11 +154,6 @@ public abstract class AbstractServerHttpExchange implements ServerHttpExchange {
 
 	@Override
 	public ServerHttpExchange close(String data) {
-		return write(data).close();
-	}
-
-	@Override
-	public ServerHttpExchange close(ByteBuffer data) {
 		return write(data).close();
 	}
 

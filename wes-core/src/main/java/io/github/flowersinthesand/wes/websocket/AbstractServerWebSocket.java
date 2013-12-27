@@ -21,7 +21,6 @@ import io.github.flowersinthesand.wes.SimpleActions;
 import io.github.flowersinthesand.wes.VoidAction;
 import io.github.flowersinthesand.wes.util.GenericTypeResolver;
 
-import java.nio.ByteBuffer;
 import java.util.UUID;
 
 import org.slf4j.Logger;
@@ -44,7 +43,6 @@ public abstract class AbstractServerWebSocket implements ServerWebSocket {
 	private State state = State.CONNECTING;
 	private Class<?> messageType;
 	private Actions<String> textMessageActions = new SimpleActions<>();
-	private Actions<ByteBuffer> binaryMessageActions = new SimpleActions<>();
 	
 	public AbstractServerWebSocket() {
 		openActions.add(new VoidAction() {
@@ -63,8 +61,6 @@ public abstract class AbstractServerWebSocket implements ServerWebSocket {
 				
 				if (String.class.isAssignableFrom(type)) {
 					textMessageActions.fire((String) message);
-				} else if (ByteBuffer.class.isAssignableFrom(type)) {
-					binaryMessageActions.fire((ByteBuffer) message);
 				}
 			}
 		});
@@ -85,7 +81,6 @@ public abstract class AbstractServerWebSocket implements ServerWebSocket {
 				openActions.disable();
 				messageActions.disable();
 				textMessageActions.disable();
-				binaryMessageActions.disable();
 			}
 		});
 	}
@@ -124,15 +119,6 @@ public abstract class AbstractServerWebSocket implements ServerWebSocket {
 	protected abstract void doSend(String data);
 
 	@Override
-	public ServerWebSocket send(ByteBuffer data) {
-		logger.trace("{} sends a binary message [{}]", this, data);
-		doSend(data);
-		return this;
-	}
-
-	protected abstract void doSend(ByteBuffer data);
-
-	@Override
 	public ServerWebSocket openAction(Action<Void> action) {
 		openActions.add(action);
 		return this;
@@ -149,8 +135,6 @@ public abstract class AbstractServerWebSocket implements ServerWebSocket {
 		
 		if (String.class.isAssignableFrom(type)) {
 			textMessageActions.add((Action<String>) action);
-		} else if (ByteBuffer.class.isAssignableFrom(type)) {
-			binaryMessageActions.add((Action<ByteBuffer>) action);
 		}
 		return this;
 	}
@@ -160,7 +144,7 @@ public abstract class AbstractServerWebSocket implements ServerWebSocket {
 	}
 	
 	private void validateMessageType(Class<?> type) {
-		if (!String.class.isAssignableFrom(type) && !ByteBuffer.class.isAssignableFrom(type)) {
+		if (!String.class.isAssignableFrom(type)) {
 			throw new IllegalArgumentException("Unsupported message type [" + type + "]");
 		}
 		if (messageType != null && messageType != type) {

@@ -7,7 +7,6 @@ import io.github.flowersinthesand.wes.Action;
 import io.github.flowersinthesand.wes.Actions;
 import io.github.flowersinthesand.wes.VoidAction;
 
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -85,24 +84,6 @@ public class AbstractServerHttpExchangeTest {
 	}
 
 	@Test(expected = IllegalArgumentException.class)
-	public void illegalChunkActionWithNewChunkType() {
-		EmptyServerHttpExchange http = new EmptyServerHttpExchange();
-		http.chunkAction(new Action<String>() {
-			@Override
-			public void on(String object) {
-				assertFalse(true);
-			}
-		});
-		http.chunkAction(new Action<ByteBuffer>() {
-			@Override
-			public void on(ByteBuffer object) {
-				assertFalse(true);
-			}
-		});
-		assertFalse(true);
-	}
-
-	@Test(expected = IllegalArgumentException.class)
 	public void illegalChunkFire() {
 		EmptyServerHttpExchange http = new EmptyServerHttpExchange();
 		http.chunkActions.fire(1);
@@ -134,24 +115,6 @@ public class AbstractServerHttpExchangeTest {
 		http.bodyAction(new VoidAction() {
 			@Override
 			public void on() {
-				assertFalse(true);
-			}
-		});
-		assertFalse(true);
-	}
-
-	@Test(expected = IllegalArgumentException.class)
-	public void illegalBodyActionWithNewChunkType() {
-		EmptyServerHttpExchange http = new EmptyServerHttpExchange();
-		http.chunkAction(new Action<String>() {
-			@Override
-			public void on(String object) {
-				assertFalse(true);
-			}
-		});
-		http.chunkAction(new Action<ByteBuffer>() {
-			@Override
-			public void on(ByteBuffer object) {
 				assertFalse(true);
 			}
 		});
@@ -225,10 +188,6 @@ public class AbstractServerHttpExchangeTest {
 
 		@Override
 		protected void doWrite(String data) {
-		}
-
-		@Override
-		protected void doWrite(ByteBuffer data) {
 		}
 
 		@Override

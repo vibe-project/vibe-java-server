@@ -18,8 +18,6 @@ package io.github.flowersinthesand.wes.websocket;
 import io.github.flowersinthesand.wes.Action;
 import io.github.flowersinthesand.wes.Wrapper;
 
-import java.nio.ByteBuffer;
-
 /**
  * Represents a WebSocket session.
  * 
@@ -58,11 +56,6 @@ public interface ServerWebSocket extends Wrapper {
 	ServerWebSocket send(String data);
 
 	/**
-	 * Sends a binary message through the connection.
-	 */
-	ServerWebSocket send(ByteBuffer data);
-
-	/**
 	 * Attaches an action for the open event where the state transitions to
 	 * {@link State#OPEN}. If the state is already {@link State#OPEN}, the
 	 * handler will be executed on addition.
@@ -71,8 +64,7 @@ public interface ServerWebSocket extends Wrapper {
 
 	/**
 	 * Attaches an action for the message event. The allowed message type is
-	 * {@link String} for text messages and {@link ByteBuffer} for binary
-	 * messages.
+	 * {@link String} for text messages.
 	 */
 	ServerWebSocket messageAction(Action<?> action);
 

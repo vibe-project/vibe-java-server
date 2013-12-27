@@ -15,8 +15,6 @@
  */
 package io.github.flowersinthesand.wes;
 
-import io.github.flowersinthesand.wes.Actions;
-import io.github.flowersinthesand.wes.SimpleActions;
 import io.github.flowersinthesand.wes.Actions.Options;
 
 public class SimpleActionsTest extends ActionsTestTemplate {
