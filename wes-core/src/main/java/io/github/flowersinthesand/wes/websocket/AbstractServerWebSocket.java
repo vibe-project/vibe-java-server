@@ -19,7 +19,6 @@ import io.github.flowersinthesand.wes.Action;
 import io.github.flowersinthesand.wes.Actions;
 import io.github.flowersinthesand.wes.Data;
 import io.github.flowersinthesand.wes.SimpleActions;
-import io.github.flowersinthesand.wes.VoidAction;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,22 +30,14 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class AbstractServerWebSocket implements ServerWebSocket {
 
-	protected Actions<Void> openActions = new SimpleActions<>(new Actions.Options().once(true).memory(true));
 	protected Actions<Data> messageActions = new SimpleActions<>();
 	protected Actions<Throwable> errorActions = new SimpleActions<>(new Actions.Options().once(true).memory(true));
 	protected Actions<CloseReason> closeActions = new SimpleActions<>(new Actions.Options().once(true).memory(true));
 
 	private final Logger logger = LoggerFactory.getLogger(AbstractServerWebSocket.class);
-	private State state = State.CONNECTING;
+	private State state = State.OPEN;
 
 	public AbstractServerWebSocket() {
-		openActions.add(new VoidAction() {
-			@Override
-			public void on() {
-				logger.trace("{} has been opened", AbstractServerWebSocket.this);
-				state = State.OPEN;
-			}
-		});
 		errorActions.add(new Action<Throwable>() {
 			@Override
 			public void on(Throwable throwable) {
@@ -62,7 +53,6 @@ public abstract class AbstractServerWebSocket implements ServerWebSocket {
 				logger.trace("{} has been closed due to the reason [{}]",
 						AbstractServerWebSocket.this, reason);
 				state = State.CLOSED;
-				openActions.disable();
 				messageActions.disable();
 			}
 		});
@@ -96,12 +86,6 @@ public abstract class AbstractServerWebSocket implements ServerWebSocket {
 	}
 
 	protected abstract void doSend(String data);
-
-	@Override
-	public ServerWebSocket openAction(Action<Void> action) {
-		openActions.add(action);
-		return this;
-	}
 
 	@Override
 	public ServerWebSocket messageAction(Action<Data> action) {

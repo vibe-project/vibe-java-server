@@ -20,9 +20,9 @@ import io.github.flowersinthesand.wes.Data;
 import io.github.flowersinthesand.wes.Wrapper;
 
 /**
- * Represents a WebSocket session.
+ * Represents a server-side WebSocket session.
  * 
- * Implementations of this class are not thread-safe.
+ * Implementations of this class are in {@link State#OPEN} state and not thread-safe.
  * 
  * @author Donghwan Kim
  * @see <a href="http://www.w3.org/TR/websockets/">The WebSocket API by W3C</a>
@@ -55,13 +55,6 @@ public interface ServerWebSocket extends Wrapper {
 	 * Sends a text message through the connection.
 	 */
 	ServerWebSocket send(String data);
-
-	/**
-	 * Attaches an action for the open event where the state transitions to
-	 * {@link State#OPEN}. If the state is already {@link State#OPEN}, the
-	 * handler will be executed on addition.
-	 */
-	ServerWebSocket openAction(Action<Void> action);
 
 	/**
 	 * Attaches an action for the message event. The allowed message type is

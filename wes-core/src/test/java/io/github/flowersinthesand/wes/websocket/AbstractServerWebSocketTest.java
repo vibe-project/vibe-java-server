@@ -4,7 +4,6 @@ import static org.junit.Assert.assertEquals;
 import io.github.flowersinthesand.wes.Action;
 import io.github.flowersinthesand.wes.Actions;
 import io.github.flowersinthesand.wes.Data;
-import io.github.flowersinthesand.wes.VoidAction;
 
 import org.junit.Test;
 
@@ -13,35 +12,11 @@ public class AbstractServerWebSocketTest {
 	@Test
 	public void stateTransition() {
 		EmptyServerWebSocket ws = new EmptyServerWebSocket();
-		assertEquals(ws.state(), State.CONNECTING);
-		ws.openActions.fire();
 		assertEquals(ws.state(), State.OPEN);
 		ws.close();
 		assertEquals(ws.state(), State.CLOSING);
 		ws.closeActions.fire();
 		assertEquals(ws.state(), State.CLOSED);
-	}
-
-	@Test
-	public void openAction() {
-		EmptyServerWebSocket ws = new EmptyServerWebSocket();
-		final StringBuilder output = new StringBuilder("A");
-		ws.openAction(new VoidAction() {
-			@Override
-			public void on() {
-				output.append("C");
-			}
-		});
-		output.append("B");
-		ws.openActions.fire();
-		output.append("D");
-		ws.openAction(new VoidAction() {
-			@Override
-			public void on() {
-				output.append("E");
-			}
-		});
-		assertEquals(output.toString(), "ABCDE");
 	}
 
 	@Test
@@ -118,10 +93,6 @@ public class AbstractServerWebSocketTest {
 	}
 
 	static class EmptyServerWebSocket extends AbstractServerWebSocket {
-
-		public Actions<Void> getOpenActions() {
-			return openActions;
-		}
 
 		public Actions<Data> getMessageActions() {
 			return messageActions;
