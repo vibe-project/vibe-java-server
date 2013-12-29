@@ -1,0 +1,7 @@
+{
+	"description": "Web Event Source for Vert.x 2",
+	"licenses": ["The Apache Software License Version 2.0"],
+	"author": "Donghwan Kim",
+	"keywords": ["web"],
+	"homepage": "https://github.com/flowersinthesand/wes/tree/master/wes-vertx2"
+}
