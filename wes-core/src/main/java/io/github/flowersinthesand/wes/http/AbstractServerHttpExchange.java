@@ -23,7 +23,6 @@ import io.github.flowersinthesand.wes.VoidAction;
 import io.github.flowersinthesand.wes.websocket.ServerWebSocket;
 
 import java.util.List;
-import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,22 +39,16 @@ public abstract class AbstractServerHttpExchange implements ServerHttpExchange {
 	protected Actions<Void> closeActions = new SimpleActions<>(new Actions.Options().once(true).memory(true));
 
 	private final Logger logger = LoggerFactory.getLogger(AbstractServerHttpExchange.class);
-	private String id = UUID.randomUUID().toString();
 
 	public AbstractServerHttpExchange() {
 		closeActions.add(new VoidAction() {
 			@Override
 			public void on() {
-				logger.trace("{} has been closed",
-						AbstractServerHttpExchange.this);
+				logger.trace("{} has been closed", AbstractServerHttpExchange.this);
 			}
 		});
 	}
-
-	public String id() {
-		return id;
-	}
-
+	
 	@Override
 	public String requestHeader(String name) {
 		List<String> headers = requestHeaders(name);
@@ -101,11 +94,6 @@ public abstract class AbstractServerHttpExchange implements ServerHttpExchange {
 	public ServerHttpExchange closeAction(Action<Void> action) {
 		closeActions.add(action);
 		return this;
-	}
-
-	@Override
-	public String toString() {
-		return "ServerHttpExchange [id=" + id + "]";
 	}
 
 }

@@ -21,8 +21,6 @@ import io.github.flowersinthesand.wes.Data;
 import io.github.flowersinthesand.wes.SimpleActions;
 import io.github.flowersinthesand.wes.VoidAction;
 
-import java.util.UUID;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,7 +37,6 @@ public abstract class AbstractServerWebSocket implements ServerWebSocket {
 	protected Actions<CloseReason> closeActions = new SimpleActions<>(new Actions.Options().once(true).memory(true));
 
 	private final Logger logger = LoggerFactory.getLogger(AbstractServerWebSocket.class);
-	private String id = UUID.randomUUID().toString();
 	private State state = State.CONNECTING;
 
 	public AbstractServerWebSocket() {
@@ -53,8 +50,7 @@ public abstract class AbstractServerWebSocket implements ServerWebSocket {
 		errorActions.add(new Action<Throwable>() {
 			@Override
 			public void on(Throwable throwable) {
-				logger.trace("{} has received a throwable [{}]",
-						AbstractServerWebSocket.this, throwable);
+				logger.trace("{} has received a throwable [{}]", AbstractServerWebSocket.this, throwable);
 				if (state != State.CLOSING && state != State.CLOSED) {
 					close(CloseReason.SERVER_ERROR);
 				}
@@ -72,10 +68,6 @@ public abstract class AbstractServerWebSocket implements ServerWebSocket {
 		});
 	}
 
-	public String id() {
-		return id;
-	}
-
 	@Override
 	public State state() {
 		return state;
@@ -88,9 +80,7 @@ public abstract class AbstractServerWebSocket implements ServerWebSocket {
 
 	@Override
 	public ServerWebSocket close(CloseReason reason) {
-		logger.trace(
-				"{} has started to close the connection with the reason [{}]",
-				this, reason);
+		logger.trace("{} has started to close the connection with the reason [{}]", this, reason);
 		state = State.CLOSING;
 		doClose(reason);
 		return this;
@@ -129,11 +119,6 @@ public abstract class AbstractServerWebSocket implements ServerWebSocket {
 	public ServerWebSocket closeAction(Action<CloseReason> action) {
 		closeActions.add(action);
 		return this;
-	}
-
-	@Override
-	public String toString() {
-		return "ServerWebSocket [id=" + id + ", state=" + state + "]";
 	}
 
 }
