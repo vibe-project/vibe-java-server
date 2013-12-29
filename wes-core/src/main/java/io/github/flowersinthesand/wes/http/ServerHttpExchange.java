@@ -84,7 +84,7 @@ public interface ServerHttpExchange extends Wrapper {
 	ServerHttpExchange write(String data);
 
 	/**
-	 * Closes the response.
+	 * Closes the response. Each exchange should be finished with this method when done. 
 	 */
 	ServerHttpExchange close();
 
