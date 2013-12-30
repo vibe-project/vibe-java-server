@@ -138,6 +138,30 @@ public abstract class ActionsTestTemplate {
 		
 		actions = createActions();
 		actions.disable().fire();
+		
+		final Actions<Void> actions2 = createActions();
+		final StringBuilder output = new StringBuilder();
+		actions2.add(new VoidAction() {
+			@Override
+			public void on() {
+				output.append("A");
+			}
+		})
+		.add(new VoidAction() {
+			@Override
+			public void on() {
+				output.append("B");
+				actions2.disable();
+			}
+		})
+		.add(new VoidAction() {
+			@Override
+			public void on() {
+				output.append("C");
+			}
+		});
+		actions2.fire();
+		assertEquals("AB", output.toString());
 	}
 
 	@Test

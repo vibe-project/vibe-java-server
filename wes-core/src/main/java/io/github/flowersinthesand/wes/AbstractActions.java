@@ -83,8 +83,8 @@ public abstract class AbstractActions<T> implements Actions<T> {
 			if (options.memory()) {
 				setCache(data);
 			}
-			for (Action<T> action : actionList) {
-				fireOne(action, data);
+			for (int i = 0; i < actionList.size(); i++) {
+				fireOne(actionList.get(i), data);
 			}
 		}
 		return this;
