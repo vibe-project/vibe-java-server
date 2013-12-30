@@ -6,7 +6,7 @@
 		<version>0.1-SNAPSHOT</version>
 	</parent>
 	<artifactId>wes-vertx2</artifactId>
-	<name>wes Vert.x2</name>
+	<name>wes Vert.x 2</name>
 	<description>Web Event Source - Vert.x 2</description>
 	<properties>
 		<module.name>${project.groupId}~${project.artifactId}~${project.version}</module.name>

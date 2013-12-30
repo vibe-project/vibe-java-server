@@ -14,6 +14,7 @@
 	<description>Web Event Source</description>
 	<modules>
 		<module>wes-core</module>
+		<module>wes-atmosphere2</module>
 		<module>wes-vertx2</module>
 	</modules>
 	<licenses>
@@ -80,6 +81,16 @@
 				<artifactId>vertx-platform</artifactId>
 				<version>${vertx.version}</version>
 				<scope>provided</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.atmosphere</groupId>
+				<artifactId>atmosphere-runtime</artifactId>
+				<version>2.0.5</version>
+			</dependency>
+			<dependency>
+				<groupId>javax.servlet</groupId>
+				<artifactId>javax.servlet-api</artifactId>
+				<version>3.1.0</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

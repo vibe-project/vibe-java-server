@@ -3,32 +3,51 @@
 
 ## Install
 Install via `vertx` or include the following module in a basic manner:
+
 ```
 com.github.flowersinthesand~wes-vertx2~${wes.version}
 ```
 
-## Recipe
-To run an application with Vert.x:
+To install a wes in Vert.x, prepare `Vertx`.
 
 ```java
+public class Initializer extends Verticle {
+    @Override
+    public void start() {
+        // Available as a protected field.
+        vertx; 
+    }
+}
+```
+
+Using `Vertx`, create `HttpServer`, register a request handler and a websocket handler and start it.   
+```java
 HttpServer httpServer = vertx.createHttpServer();
-httpServer.requestHandler(new Handler<HttpServerRequest>() {
+httpServer.requestHandler(requestHandler);
+httpServer.websocketHandler(websocketHandler);
+httpServer.listen(8080);
+```
+
+In the handlers, check path, wrap a given event with `VertxServerHttpExchange` or `VertxServerWebSocket` and dispatch them to somewhere.
+```java
+Handler<HttpServerRequest> requestHandler = new Handler<HttpServerRequest>() {
+    @Override
     public void handle(HttpServerRequest req) {
-        // Check path
+        // Path
         if (req.path().startsWith("/portal")) {
-            // Dispatch ServerHttpExchange to somewhere
+            // ServerHttpExchange
             new VertxServerHttpExchange(req);
         }
     }
-});
-httpServer.websocketHandler(new Handler<org.vertx.java.core.http.ServerWebSocket>() {
+};
+Handler<org.vertx.java.core.http.ServerWebSocket> websocketHandler = new Handler<org.vertx.java.core.http.ServerWebSocket>() {
+    @Override
     public void handle(org.vertx.java.core.http.ServerWebSocket socket) {
-        // Check path
+        // Path
         if (socket.path().startsWith("/portal")) {
-            // Dispatch ServerWebSocket to somewhere
+            // ServerWebSocket
             new VertxServerWebSocket(socket);
         }
     }
-});
-httpServer.listen(8080);
+};
 ```

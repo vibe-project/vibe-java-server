@@ -1,0 +1,33 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>io.github.flowersinthesand</groupId>
+		<artifactId>wes-parent</artifactId>
+		<version>0.1-SNAPSHOT</version>
+	</parent>
+	<artifactId>wes-atmosphere2</artifactId>
+	<name>wes Atmosphere 2</name>
+	<description>Web Event Source - Atmosphere 2</description>
+	<dependencies>
+		<dependency>
+			<groupId>io.github.flowersinthesand</groupId>
+			<artifactId>wes-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.atmosphere</groupId>
+			<artifactId>atmosphere-runtime</artifactId>
+		</dependency>
+	</dependencies>
+</project>
