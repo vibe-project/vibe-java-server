@@ -16,6 +16,7 @@
 		<module>wes-core</module>
 		<module>wes-atmosphere2</module>
 		<module>wes-vertx2</module>
+		<module>wes-play2</module>
 	</modules>
 	<licenses>
 		<license>
@@ -92,6 +93,12 @@
 				<artifactId>javax.servlet-api</artifactId>
 				<version>3.1.0</version>
 			</dependency>
+			<dependency>
+				<groupId>com.typesafe.play</groupId>
+				<artifactId>play_2.10</artifactId>
+				<version>2.2.1</version>
+				<scope>provided</scope>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 	<build>
@@ -128,4 +135,11 @@
 			</plugin>
 		</plugins>
 	</build>
+	<repositories>
+		<repository>
+			<id>typesafe</id>
+			<name>typesafe-releases</name>
+			<url>http://repo.typesafe.com/typesafe/releases/</url>
+		</repository>
+	</repositories>
 </project>
