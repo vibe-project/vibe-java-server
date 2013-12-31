@@ -7,11 +7,11 @@
 	</parent>
 	<artifactId>wes-atmosphere2</artifactId>
 	<name>wes Atmosphere 2</name>
-	<description>Web Event Source - Atmosphere 2</description>
+	<description>wes Atmosphere 2</description>
 	<dependencies>
 		<dependency>
 			<groupId>io.github.flowersinthesand</groupId>
-			<artifactId>wes-core</artifactId>
+			<artifactId>wes</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>

@@ -7,11 +7,11 @@
 	</parent>
 	<artifactId>wes-play2</artifactId>
 	<name>wes Play 2</name>
-	<description>Web Event Source - Play 2</description>
+	<description>wes Play 2</description>
 	<dependencies>
 		<dependency>
 			<groupId>io.github.flowersinthesand</groupId>
-			<artifactId>wes-core</artifactId>
+			<artifactId>wes</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>

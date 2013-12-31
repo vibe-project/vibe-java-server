@@ -7,7 +7,7 @@
 	</parent>
 	<artifactId>wes-vertx2</artifactId>
 	<name>wes Vert.x 2</name>
-	<description>Web Event Source - Vert.x 2</description>
+	<description>wes Vert.x 2</description>
 	<properties>
 		<module.name>${project.groupId}~${project.artifactId}~${project.version}</module.name>
 		<mods.directory>target/mods</mods.directory>
@@ -15,7 +15,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>io.github.flowersinthesand</groupId>
-			<artifactId>wes-core</artifactId>
+			<artifactId>wes</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>

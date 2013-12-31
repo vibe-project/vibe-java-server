@@ -13,7 +13,7 @@
 	<url>http://github.com/flowersinthesand/wes</url>
 	<description>Web Event Source</description>
 	<modules>
-		<module>wes-core</module>
+		<module>wes</module>
 		<module>wes-atmosphere2</module>
 		<module>wes-vertx2</module>
 		<module>wes-play2</module>
@@ -51,7 +51,7 @@
 		<dependencies>
 			<dependency>
 				<groupId>io.github.flowersinthesand</groupId>
-				<artifactId>wes-core</artifactId>
+				<artifactId>wes</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
