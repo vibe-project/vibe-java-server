@@ -39,7 +39,6 @@ public class AtmosphereServerHttpExchange extends AbstractServerHttpExchange {
 					while (input.isReady() && (bytesRead = input.read(buffer)) != -1) {
 						String data = new String(buffer, 0, bytesRead);
 						chunks.add(data);
-						chunkActions.fire(new Data(data));
 					}
 				}
 

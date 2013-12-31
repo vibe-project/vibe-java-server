@@ -34,7 +34,6 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class AbstractServerHttpExchange implements ServerHttpExchange {
 
-	protected Actions<Data> chunkActions = new SimpleActions<>();
 	protected Actions<Data> bodyActions = new SimpleActions<>(new Actions.Options().once(true).memory(true));
 	protected Actions<Void> closeActions = new SimpleActions<>(new Actions.Options().once(true).memory(true));
 
@@ -53,12 +52,6 @@ public abstract class AbstractServerHttpExchange implements ServerHttpExchange {
 	public String requestHeader(String name) {
 		List<String> headers = requestHeaders(name);
 		return headers != null && headers.size() > 0 ? headers.get(0) : null;
-	}
-
-	@Override
-	public ServerHttpExchange chunkAction(Action<Data> action) {
-		chunkActions.add(action);
-		return this;
 	}
 
 	@Override

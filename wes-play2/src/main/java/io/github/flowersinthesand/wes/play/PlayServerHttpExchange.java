@@ -26,7 +26,7 @@ public class PlayServerHttpExchange extends AbstractServerHttpExchange {
 		this.request = request;
 		this.response = response;
 		this.out = out;
-		// Play 2 can't read body in chunk and read body asynchronously
+		// Play can't read body asynchronously
 		bodyActions.fire(new Data(request.body().asText()));
 		out.onDisconnected(new Callback0() {
 			@Override

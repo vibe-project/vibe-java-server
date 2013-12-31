@@ -51,24 +51,6 @@ public class AbstractServerHttpExchangeTest {
 	}
 
 	@Test
-	public void chunkAction() {
-		EmptyServerHttpExchange http = new EmptyServerHttpExchange();
-		final StringBuilder output = new StringBuilder("A");
-		Action<Data> out = new Action<Data>() {
-			@Override
-			public void on(Data data) {
-				output.append(data.as(String.class));
-			}
-		};
-		http.chunkActions.fire(new Data("X"));
-		http.chunkAction(out);
-		output.append("B");
-		http.chunkActions.fire(new Data("C")).fire(new Data("D"));
-		http.chunkAction(out);
-		assertEquals(output.toString(), "ABCD");
-	}
-
-	@Test
 	public void bodyAction() {
 		EmptyServerHttpExchange http = new EmptyServerHttpExchange();
 		final StringBuilder output = new StringBuilder("A");
@@ -111,10 +93,6 @@ public class AbstractServerHttpExchangeTest {
 
 		public Actions<Void> getCloseActions() {
 			return closeActions;
-		}
-
-		public Actions<Data> getChunkActions() {
-			return chunkActions;
 		}
 
 		public Actions<Data> getBodyActions() {

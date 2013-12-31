@@ -21,21 +21,12 @@ public class VertxServerHttpExchange extends AbstractServerHttpExchange {
 		this.request = request;
 
 		// TODO Make it lazy
-	    final Buffer body = new Buffer();
-	    request.dataHandler(new Handler<Buffer>() {
+	    request.bodyHandler(new Handler<Buffer>() {
 	    	@Override
-	    	public void handle(Buffer buffer) {
-	    		body.appendBuffer(buffer);
-	    		chunkActions.fire(new Data(buffer.toString()));
-	    	}
-		})
-		.endHandler(new VoidHandler() {
-			@Override
-			protected void handle() {
+	    	public void handle(Buffer body) {
 				bodyActions.fire(new Data(body.toString()));
-			}
+	    	}
 		});
-	    
 		request.response().setChunked(true).closeHandler(new VoidHandler() {
 			@Override
 			protected void handle() {

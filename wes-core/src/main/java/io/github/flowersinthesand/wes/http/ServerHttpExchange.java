@@ -57,12 +57,6 @@ public interface ServerHttpExchange extends Wrapper {
 	List<String> requestHeaders(String name);
 
 	/**
-	 * Attaches an action to be called with the request chunk. The allowed chunk
-	 * type is {@link String} for text chunks.
-	 */
-	ServerHttpExchange chunkAction(Action<Data> action);
-
-	/**
 	 * Attaches an action to be called with the whole request body where the
 	 * request ends. The allowed body type is {@link String} for text body.
 	 */
