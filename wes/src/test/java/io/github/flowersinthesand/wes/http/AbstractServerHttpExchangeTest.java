@@ -120,10 +120,6 @@ public class AbstractServerHttpExchangeTest {
 		}
 		
 		@Override
-		public ServerHttpExchange setResponseHeader(String name, Iterable<String> value) {
-			return null;
-		}
-		@Override
 		public ServerHttpExchange setResponseHeader(String name, String value) {
 			return null;
 		}

@@ -67,12 +67,6 @@ public class VertxServerHttpExchange extends AbstractServerHttpExchange {
 	}
 
 	@Override
-	public ServerHttpExchange setResponseHeader(String name, Iterable<String> value) {
-		request.response().putHeader(name, value);
-		return this;
-	}
-
-	@Override
 	protected void doWrite(String data) {
 		request.response().write(data);
 	}

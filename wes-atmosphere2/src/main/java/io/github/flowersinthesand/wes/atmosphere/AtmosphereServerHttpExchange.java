@@ -108,14 +108,6 @@ public class AtmosphereServerHttpExchange extends AbstractServerHttpExchange {
 	}
 
 	@Override
-	public ServerHttpExchange setResponseHeader(String name, Iterable<String> value) {
-		for (String v : value) {
-			resource.getResponse().addHeader(name, v);
-		}
-		return this;
-	}
-
-	@Override
 	public ServerHttpExchange setStatus(StatusCode status) {
 		resource.getResponse().setStatus(status.code(), status.reason());
 		return this;

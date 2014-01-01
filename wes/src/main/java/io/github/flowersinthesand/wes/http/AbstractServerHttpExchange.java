@@ -22,6 +22,7 @@ import io.github.flowersinthesand.wes.SimpleActions;
 import io.github.flowersinthesand.wes.VoidAction;
 import io.github.flowersinthesand.wes.websocket.ServerWebSocket;
 
+import java.util.Iterator;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -58,6 +59,17 @@ public abstract class AbstractServerHttpExchange implements ServerHttpExchange {
 	public ServerHttpExchange bodyAction(Action<Data> action) {
 		bodyActions.add(action);
 		return this;
+	}
+	
+	@Override
+	public final ServerHttpExchange setResponseHeader(String name, Iterable<String> value) {
+		System.out.println("    HI!!!!!");
+		Iterator<String> iterator = value.iterator();
+		StringBuilder builder = new StringBuilder(iterator.next());
+		while (iterator.hasNext()) {
+			builder.append(", ").append(iterator.next());
+		}
+		return setResponseHeader(name, builder.toString());
 	}
 
 	@Override

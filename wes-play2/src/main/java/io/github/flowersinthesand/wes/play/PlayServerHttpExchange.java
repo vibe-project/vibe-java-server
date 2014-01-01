@@ -9,8 +9,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.lang3.StringUtils;
-
 import play.libs.F.Callback0;
 import play.mvc.Http.Request;
 import play.mvc.Http.Response;
@@ -58,13 +56,7 @@ public class PlayServerHttpExchange extends AbstractServerHttpExchange {
 		response.setHeader(name, value);
 		return this;
 	}
-
-	@Override
-	public ServerHttpExchange setResponseHeader(String name, Iterable<String> value) {
-		setResponseHeader(name, StringUtils.join(value, ","));
-		return this;
-	}
-
+	
 	@Override
 	public ServerHttpExchange setStatus(StatusCode status) {
 		// TODO Is it better to throw an unsupported operation exception?
