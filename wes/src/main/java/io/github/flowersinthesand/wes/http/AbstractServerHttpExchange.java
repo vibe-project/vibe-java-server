@@ -63,7 +63,6 @@ public abstract class AbstractServerHttpExchange implements ServerHttpExchange {
 	
 	@Override
 	public final ServerHttpExchange setResponseHeader(String name, Iterable<String> value) {
-		System.out.println("    HI!!!!!");
 		Iterator<String> iterator = value.iterator();
 		StringBuilder builder = new StringBuilder(iterator.next());
 		while (iterator.hasNext()) {
