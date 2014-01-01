@@ -52,7 +52,8 @@ public interface ServerHttpExchange extends Wrapper {
 	String requestHeader(String name);
 
 	/**
-	 * Returns the request headers associated with the given name.
+	 * Returns the request headers associated with the given name or empty list
+	 * if no header is found.
 	 */
 	List<String> requestHeaders(String name);
 

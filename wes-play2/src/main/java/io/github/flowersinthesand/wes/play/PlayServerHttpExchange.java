@@ -6,6 +6,7 @@ import io.github.flowersinthesand.wes.http.ServerHttpExchange;
 import io.github.flowersinthesand.wes.http.StatusCode;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -45,8 +46,7 @@ public class PlayServerHttpExchange extends AbstractServerHttpExchange {
 	@Override
 	public List<String> requestHeaders(String name) {
 		return request.headers().containsKey(name) ? 
-			Arrays.asList(request.headers().get(name)) : 
-			null;
+			Arrays.asList(request.headers().get(name)) : Collections.<String> emptyList();
 	}
 	
 	@Override
