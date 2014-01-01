@@ -24,8 +24,6 @@ public class PlayServerHttpExchange extends AbstractServerHttpExchange {
 		this.request = request;
 		this.response = response;
 		this.out = out;
-		// Play can't read body asynchronously
-		bodyActions.fire(new Data(request.body().asText()));
 		out.onDisconnected(new Callback0() {
 			@Override
 			public void invoke() throws Throwable {
@@ -49,6 +47,12 @@ public class PlayServerHttpExchange extends AbstractServerHttpExchange {
 		return request.headers().containsKey(name) ? 
 			Arrays.asList(request.headers().get(name)) : 
 			null;
+	}
+	
+	@Override
+	protected void readBody() {
+		// Play can't read body asynchronously
+		bodyActions.fire(new Data(request.body().asText()));
 	}
 
 	@Override

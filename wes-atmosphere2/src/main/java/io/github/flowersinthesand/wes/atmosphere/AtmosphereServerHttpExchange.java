@@ -27,36 +27,6 @@ public class AtmosphereServerHttpExchange extends AbstractServerHttpExchange {
 
 	public AtmosphereServerHttpExchange(AtmosphereResource resource) {
 		this.resource = resource.suspend();
-		try {
-			final ServletInputStream input = resource.getRequest().getInputStream();
-			// Since Servlet 3.1
-			input.setReadListener(new ReadListener() {
-				List<String> chunks = new ArrayList<>();
-				@Override
-				public void onDataAvailable() throws IOException {
-					int bytesRead = -1;
-					byte buffer[] = new byte[4096];
-					while (input.isReady() && (bytesRead = input.read(buffer)) != -1) {
-						String data = new String(buffer, 0, bytesRead);
-						chunks.add(data);
-					}
-				}
-
-				@Override
-				public void onAllDataRead() throws IOException {
-					StringBuilder body = new StringBuilder();
-					for (String chunk : chunks) {
-						body.append(chunk);
-					}
-					bodyActions.fire(new Data(body.toString()));
-				}
-
-				@Override
-				public void onError(Throwable t) {}
-			});
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
 		resource.addEventListener(new AtmosphereResourceEventListenerAdapter() {
 			@Override
 			public void onResume(AtmosphereResourceEvent event) {
@@ -99,6 +69,40 @@ public class AtmosphereServerHttpExchange extends AbstractServerHttpExchange {
 	@Override
 	public List<String> requestHeaders(String name) {
 		return Collections.list(resource.getRequest().getHeaders(name));
+	}
+	
+	@Override
+	protected void readBody() {
+		try {
+			final ServletInputStream input = resource.getRequest().getInputStream();
+			// Since Servlet 3.1
+			input.setReadListener(new ReadListener() {
+				List<String> chunks = new ArrayList<>();
+				@Override
+				public void onDataAvailable() throws IOException {
+					int bytesRead = -1;
+					byte buffer[] = new byte[4096];
+					while (input.isReady() && (bytesRead = input.read(buffer)) != -1) {
+						String data = new String(buffer, 0, bytesRead);
+						chunks.add(data);
+					}
+				}
+
+				@Override
+				public void onAllDataRead() throws IOException {
+					StringBuilder body = new StringBuilder();
+					for (String chunk : chunks) {
+						body.append(chunk);
+					}
+					bodyActions.fire(new Data(body.toString()));
+				}
+
+				@Override
+				public void onError(Throwable t) {}
+			});
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	@Override

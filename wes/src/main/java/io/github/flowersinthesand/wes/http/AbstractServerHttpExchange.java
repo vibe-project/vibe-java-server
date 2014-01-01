@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class AbstractServerHttpExchange implements ServerHttpExchange {
 
+	private boolean readBody;
 	protected Actions<Data> bodyActions = new SimpleActions<>(new Actions.Options().once(true).memory(true));
 	protected Actions<Void> closeActions = new SimpleActions<>(new Actions.Options().once(true).memory(true));
 
@@ -57,10 +58,16 @@ public abstract class AbstractServerHttpExchange implements ServerHttpExchange {
 
 	@Override
 	public ServerHttpExchange bodyAction(Action<Data> action) {
+		if (!readBody) {
+			readBody();
+			readBody = true;
+		}
 		bodyActions.add(action);
 		return this;
 	}
 	
+	protected abstract void readBody();
+
 	@Override
 	public final ServerHttpExchange setResponseHeader(String name, Iterable<String> value) {
 		Iterator<String> iterator = value.iterator();

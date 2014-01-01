@@ -19,14 +19,6 @@ public class VertxServerHttpExchange extends AbstractServerHttpExchange {
 
 	public VertxServerHttpExchange(HttpServerRequest request) {
 		this.request = request;
-
-		// TODO Make it lazy
-	    request.bodyHandler(new Handler<Buffer>() {
-	    	@Override
-	    	public void handle(Buffer body) {
-				bodyActions.fire(new Data(body.toString()));
-	    	}
-		});
 		request.response().setChunked(true).closeHandler(new VoidHandler() {
 			@Override
 			protected void handle() {
@@ -56,8 +48,13 @@ public class VertxServerHttpExchange extends AbstractServerHttpExchange {
 	}
 
 	@Override
-	public String requestHeader(String name) {
-		return request.headers().get(name);
+	protected void readBody() {
+		request.bodyHandler(new Handler<Buffer>() {
+			@Override
+			public void handle(Buffer body) {
+				bodyActions.fire(new Data(body.toString()));
+			}
+		});
 	}
 
 	@Override

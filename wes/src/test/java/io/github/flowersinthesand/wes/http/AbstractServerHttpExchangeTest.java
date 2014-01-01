@@ -120,6 +120,10 @@ public class AbstractServerHttpExchangeTest {
 		}
 		
 		@Override
+		protected void readBody() {
+		}
+		
+		@Override
 		public ServerHttpExchange setResponseHeader(String name, String value) {
 			return null;
 		}
