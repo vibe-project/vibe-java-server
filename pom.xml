@@ -12,6 +12,7 @@
 	<name>wes</name>
 	<url>http://github.com/flowersinthesand/wes</url>
 	<description>Web Event Source</description>
+	<inceptionYear>2013</inceptionYear>
 	<modules>
 		<module>wes</module>
 		<module>wes-atmosphere2</module>
@@ -123,6 +124,25 @@
 						</goals>
 					</execution>
 				</executions>
+				<configuration>
+					<doclet>ch.raffael.doclets.pegdown.PegdownDoclet</doclet>
+					<docletArtifact>
+						<groupId>ch.raffael.pegdown-doclet</groupId>
+						<artifactId>pegdown-doclet</artifactId>
+						<version>1.1.1</version>
+					</docletArtifact>
+					<useStandardDocletOptions>true</useStandardDocletOptions>
+					<header>
+					<![CDATA[
+					<style>
+					p.legalCopy {display: none;}
+					</style>
+					]]>
+					</header>
+					<packagesheader>wes</packagesheader>
+					<linksource>true</linksource>
+					<sourcetab>4</sourcetab>
+				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

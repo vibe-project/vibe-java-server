@@ -25,7 +25,6 @@ public class Initializer implements ServletContextListener {
     @Override
     public void contextDestroyed(ServletContextEvent sce) {}
 }
-
 ```
 
 Create a servlet of `AtmosphereServlet` and register it to `ServletContext` with some options.
