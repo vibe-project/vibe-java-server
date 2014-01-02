@@ -32,7 +32,7 @@ public abstract class AbstractServerWebSocket implements ServerWebSocket {
 
 	protected Actions<Data> messageActions = new SimpleActions<>();
 	protected Actions<Throwable> errorActions = new SimpleActions<>(new Actions.Options().once(true).memory(true));
-	protected Actions<CloseReason> closeActions = new SimpleActions<>(new Actions.Options().once(true).memory(true));
+	protected Actions<Void> closeActions = new SimpleActions<>(new Actions.Options().once(true).memory(true));
 
 	private final Logger logger = LoggerFactory.getLogger(AbstractServerWebSocket.class);
 	private State state = State.OPEN;
@@ -43,13 +43,13 @@ public abstract class AbstractServerWebSocket implements ServerWebSocket {
 			public void on(Throwable throwable) {
 				logger.trace("{} has received a throwable [{}]", AbstractServerWebSocket.this, throwable);
 				if (state != State.CLOSING && state != State.CLOSED) {
-					close(CloseReason.SERVER_ERROR);
+					close();
 				}
 			}
 		});
-		closeActions.add(new Action<CloseReason>() {
+		closeActions.add(new Action<Void>() {
 			@Override
-			public void on(CloseReason reason) {
+			public void on(Void reason) {
 				logger.trace("{} has been closed due to the reason [{}]",
 						AbstractServerWebSocket.this, reason);
 				state = State.CLOSED;
@@ -65,18 +65,13 @@ public abstract class AbstractServerWebSocket implements ServerWebSocket {
 
 	@Override
 	public ServerWebSocket close() {
-		return close(CloseReason.NORMAL);
-	}
-
-	@Override
-	public ServerWebSocket close(CloseReason reason) {
-		logger.trace("{} has started to close the connection with the reason [{}]", this, reason);
+		logger.trace("{} has started to close the connection", this);
 		state = State.CLOSING;
-		doClose(reason);
+		doClose();
 		return this;
 	}
 
-	protected abstract void doClose(CloseReason reason);
+	protected abstract void doClose();
 
 	@Override
 	public ServerWebSocket send(String data) {
@@ -100,7 +95,7 @@ public abstract class AbstractServerWebSocket implements ServerWebSocket {
 	}
 
 	@Override
-	public ServerWebSocket closeAction(Action<CloseReason> action) {
+	public ServerWebSocket closeAction(Action<Void> action) {
 		closeActions.add(action);
 		return this;
 	}

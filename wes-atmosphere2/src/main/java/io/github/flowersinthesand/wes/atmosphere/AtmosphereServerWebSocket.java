@@ -1,15 +1,14 @@
 package io.github.flowersinthesand.wes.atmosphere;
 
+import io.github.flowersinthesand.wes.Data;
+import io.github.flowersinthesand.wes.websocket.AbstractServerWebSocket;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.AtmosphereResourceEvent;
 import org.atmosphere.websocket.WebSocketEventListenerAdapter;
-
-import io.github.flowersinthesand.wes.Data;
-import io.github.flowersinthesand.wes.websocket.AbstractServerWebSocket;
-import io.github.flowersinthesand.wes.websocket.CloseReason;
 
 public class AtmosphereServerWebSocket extends AbstractServerWebSocket {
 
@@ -60,7 +59,7 @@ public class AtmosphereServerWebSocket extends AbstractServerWebSocket {
 	}
 
 	@Override
-	protected void doClose(CloseReason reason) {
+	protected void doClose() {
 		resource.resume();
 		try {
 			resource.close();

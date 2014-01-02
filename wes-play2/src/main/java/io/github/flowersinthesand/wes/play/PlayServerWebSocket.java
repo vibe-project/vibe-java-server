@@ -2,7 +2,6 @@ package io.github.flowersinthesand.wes.play;
 
 import io.github.flowersinthesand.wes.Data;
 import io.github.flowersinthesand.wes.websocket.AbstractServerWebSocket;
-import io.github.flowersinthesand.wes.websocket.CloseReason;
 import play.libs.F.Callback;
 import play.libs.F.Callback0;
 import play.mvc.Http.Request;
@@ -38,7 +37,7 @@ public class PlayServerWebSocket extends AbstractServerWebSocket {
 	}
 
 	@Override
-	protected void doClose(CloseReason reason) {
+	protected void doClose() {
 		out.close();
 	}
 

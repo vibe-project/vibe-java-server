@@ -42,14 +42,9 @@ public interface ServerWebSocket extends Wrapper {
 	State state();
 
 	/**
-	 * Closes the connection with a normal status code and no reason.
+	 * Closes the connection.
 	 */
 	ServerWebSocket close();
-
-	/**
-	 * Closes the connection with the given status code and data.
-	 */
-	ServerWebSocket close(CloseReason reason);
 
 	/**
 	 * Sends a text message through the connection.
@@ -75,6 +70,6 @@ public interface ServerWebSocket extends Wrapper {
 	 * handler will be executed on addition. After the state transition, all the
 	 * other event will be disabled.
 	 */
-	ServerWebSocket closeAction(Action<CloseReason> action);
+	ServerWebSocket closeAction(Action<Void> action);
 
 }

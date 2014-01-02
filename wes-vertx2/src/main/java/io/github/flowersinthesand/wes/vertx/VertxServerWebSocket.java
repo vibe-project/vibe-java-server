@@ -2,7 +2,6 @@ package io.github.flowersinthesand.wes.vertx;
 
 import io.github.flowersinthesand.wes.Data;
 import io.github.flowersinthesand.wes.websocket.AbstractServerWebSocket;
-import io.github.flowersinthesand.wes.websocket.CloseReason;
 
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.VoidHandler;
@@ -48,7 +47,7 @@ public class VertxServerWebSocket extends AbstractServerWebSocket {
 	}
 
 	@Override
-	protected void doClose(CloseReason reason) {
+	protected void doClose() {
 		socket.close();
 	}
 

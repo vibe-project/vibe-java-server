@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import io.github.flowersinthesand.wes.Action;
 import io.github.flowersinthesand.wes.Actions;
 import io.github.flowersinthesand.wes.Data;
+import io.github.flowersinthesand.wes.VoidAction;
 
 import org.junit.Test;
 
@@ -23,18 +24,18 @@ public class AbstractServerWebSocketTest {
 	public void closeAction() {
 		EmptyServerWebSocket ws = new EmptyServerWebSocket();
 		final StringBuilder output = new StringBuilder("A");
-		ws.closeAction(new Action<CloseReason>() {
+		ws.closeAction(new Action<Void>() {
 			@Override
-			public void on(CloseReason reason) {
+			public void on(Void reason) {
 				output.append("C");
 			}
 		});
 		output.append("B");
 		ws.closeActions.fire();
 		output.append("D");
-		ws.closeAction(new Action<CloseReason>() {
+		ws.closeAction(new Action<Void>() {
 			@Override
-			public void on(CloseReason reason) {
+			public void on(Void reason) {
 				output.append("E");
 			}
 		});
@@ -45,8 +46,8 @@ public class AbstractServerWebSocketTest {
 	public void errorAction() {
 		EmptyServerWebSocket ws = new EmptyServerWebSocket() {
 			@Override
-			protected void doClose(CloseReason reason) {
-				closeActions.fire(reason);
+			protected void doClose() {
+				closeActions.fire();
 			}
 		};
 		final StringBuilder output = new StringBuilder("A");
@@ -65,10 +66,9 @@ public class AbstractServerWebSocketTest {
 				output.append("E");
 			}
 		});
-		ws.closeAction(new Action<CloseReason>() {
+		ws.closeAction(new VoidAction() {
 			@Override
-			public void on(CloseReason reason) {
-				assertEquals(reason, CloseReason.SERVER_ERROR);
+			public void on() {
 				output.append("F");
 			}
 		});
@@ -102,7 +102,7 @@ public class AbstractServerWebSocketTest {
 			return errorActions;
 		}
 
-		public Actions<CloseReason> getCloseActions() {
+		public Actions<Void> getCloseActions() {
 			return closeActions;
 		}
 
@@ -112,7 +112,7 @@ public class AbstractServerWebSocketTest {
 		}
 
 		@Override
-		protected void doClose(CloseReason reason) {
+		protected void doClose() {
 		}
 
 		@Override
