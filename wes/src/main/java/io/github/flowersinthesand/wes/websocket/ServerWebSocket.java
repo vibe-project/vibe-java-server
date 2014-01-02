@@ -59,8 +59,7 @@ public interface ServerWebSocket extends Wrapper {
 
 	/**
 	 * Attaches an action to handle error from various things. If an error
-	 * occurs, the connection will be closed with the reason,
-	 * {@link CloseReason#SERVER_ERROR}.
+	 * occurs, the connection will be closed.
 	 */
 	ServerWebSocket errorAction(Action<Throwable> action);
 
