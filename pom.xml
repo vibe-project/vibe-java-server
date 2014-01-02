@@ -10,7 +10,7 @@
 	<packaging>pom</packaging>
 	<version>0.1.0-SNAPSHOT</version>
 	<name>wes</name>
-	<url>http://github.com/flowersinthesand/wes</url>
+	<url>http://flowersinthesand.github.io/wes</url>
 	<description>Web Event Source</description>
 	<inceptionYear>2013</inceptionYear>
 	<modules>
