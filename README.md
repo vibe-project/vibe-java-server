@@ -6,18 +6,3 @@ An application written with **wes** can run on any supported server and client.
 
 * Website: http://flowersinthesand.github.io/wes/ 
 * Twitter: http://twitter.com/flowersits
-
-## Roadmap
-
-### Server
-There is no order of priority in the following list.
-
-* Java Servlet and WebSocket API
-* SpringMVC
-* GWT
-* Netty
-* Jetty
-* Tomcat
-* Weblogic
-* WildFly
-* Undertow
