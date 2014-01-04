@@ -20,7 +20,6 @@ import io.github.flowersinthesand.wes.Actions;
 import io.github.flowersinthesand.wes.Data;
 import io.github.flowersinthesand.wes.SimpleActions;
 import io.github.flowersinthesand.wes.VoidAction;
-import io.github.flowersinthesand.wes.websocket.ServerWebSocket;
 
 import java.util.Iterator;
 import java.util.List;
@@ -29,7 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Abstract base class for {@link ServerWebSocket}.
+ * Abstract base class for {@link ServerHttpExchange}.
  * 
  * @author Donghwan Kim
  */

@@ -25,6 +25,9 @@ import java.util.Set;
 /**
  * Represents a server-side HTTP request-response exchange.
  * 
+ * Implementations are not thread-safe and decide whether and which event is
+ * fired in asynchronous manner.
+ * 
  * @author Donghwan Kim
  * @see <a href="http://www.w3.org/Protocols/rfc2616/rfc2616.html">RFC2616 -
  *      Hypertext Transfer Protocol -- HTTP/1.1</a>
@@ -59,7 +62,7 @@ public interface ServerHttpExchange extends Wrapper {
 
 	/**
 	 * Attaches an action to be called with the whole request body where the
-	 * request ends. The allowed body type is {@link String} for text body.
+	 * request ends.
 	 */
 	ServerHttpExchange bodyAction(Action<Data> action);
 
@@ -74,12 +77,12 @@ public interface ServerHttpExchange extends Wrapper {
 	ServerHttpExchange setResponseHeader(String name, Iterable<String> value);
 
 	/**
-	 * Writes a string to the response body.
+	 * Writes a text to the response body.
 	 */
 	ServerHttpExchange write(String data);
 
 	/**
-	 * Closes the response. Each exchange should be finished with this method when done. 
+	 * Closes the response. Each exchange must be finished with this method when done. 
 	 */
 	ServerHttpExchange close();
 
@@ -89,8 +92,7 @@ public interface ServerHttpExchange extends Wrapper {
 	ServerHttpExchange close(String data);
 
 	/**
-	 * Sets the HTTP status for the response. By default, {@link StatusCode#OK}
-	 * is set.
+	 * Sets the HTTP status for the response.
 	 */
 	ServerHttpExchange setStatus(StatusCode status);
 

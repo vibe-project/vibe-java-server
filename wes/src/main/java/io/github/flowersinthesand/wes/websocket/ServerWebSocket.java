@@ -22,7 +22,8 @@ import io.github.flowersinthesand.wes.Wrapper;
 /**
  * Represents a server-side WebSocket session.
  * 
- * Implementations of this class are in {@link State#OPEN} state and not thread-safe.
+ * Implementations are not thread-safe and decide whether and which event is
+ * fired in asynchronous manner.
  * 
  * @author Donghwan Kim
  * @see <a href="http://www.w3.org/TR/websockets/">The WebSocket API by W3C</a>
@@ -37,7 +38,7 @@ public interface ServerWebSocket extends Wrapper {
 	String uri();
 
 	/**
-	 * The state of the connection.
+	 * The state of the connection. It starts in {@link State#OPEN}.
 	 */
 	State state();
 
