@@ -64,11 +64,12 @@ public abstract class AbstractServerHttpExchange implements ServerHttpExchange {
 		bodyActions.add(action);
 		return this;
 	}
-	
+
 	protected abstract void readBody();
 
 	@Override
 	public final ServerHttpExchange setResponseHeader(String name, Iterable<String> value) {
+		// See http://www.w3.org/Protocols/rfc2616/rfc2616-sec4.html#sec4.2
 		Iterator<String> iterator = value.iterator();
 		StringBuilder builder = new StringBuilder(iterator.next());
 		while (iterator.hasNext()) {
@@ -76,10 +77,19 @@ public abstract class AbstractServerHttpExchange implements ServerHttpExchange {
 		}
 		return setResponseHeader(name, builder.toString());
 	}
+	
+	@Override
+	public ServerHttpExchange setResponseHeader(String name, String value) {
+		logger.trace("{} sets a response header {} to {}", this, name, value);
+		doSetResponseHeader(name, value);
+		return this;
+	}
+
+	protected abstract void doSetResponseHeader(String name, String value);
 
 	@Override
 	public ServerHttpExchange write(String data) {
-		logger.trace("{} sends a text chunk [{}]", this, data);
+		logger.trace("{} sends a text chunk {}", this, data);
 		doWrite(data);
 		return this;
 	}
@@ -99,6 +109,15 @@ public abstract class AbstractServerHttpExchange implements ServerHttpExchange {
 	public ServerHttpExchange close(String data) {
 		return write(data).close();
 	}
+	
+	@Override
+	public ServerHttpExchange setStatus(StatusCode status) {
+		logger.trace("{} sets a response status, {}", this, status);
+		doSetStatus(status);
+		return this;
+	}
+
+	protected abstract void doSetStatus(StatusCode status);
 
 	@Override
 	public ServerHttpExchange closeAction(Action<Void> action) {

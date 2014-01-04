@@ -30,6 +30,17 @@ import play.mvc.Http.Request;
 import play.mvc.Http.Response;
 import play.mvc.Results.Chunks;
 
+/**
+ * {@link ServerHttpExchange} for Play 2.
+ * 
+ * <h3>Quirks</h3>
+ * <ul>
+ * <li>Request body is read synchronously.</li>
+ * <li>Setting HTTP status to response doesn't work.</li>
+ * </ul>
+ * 
+ * @author Donghwan Kim
+ */
 public class PlayServerHttpExchange extends AbstractServerHttpExchange {
 
 	private final Request request;
@@ -46,6 +57,11 @@ public class PlayServerHttpExchange extends AbstractServerHttpExchange {
 				closeActions.fire();
 			}
 		});
+	}
+
+	@Override
+	public String uri() {
+		return request.uri();
 	}
 
 	@Override
@@ -71,30 +87,23 @@ public class PlayServerHttpExchange extends AbstractServerHttpExchange {
 	}
 
 	@Override
-	public ServerHttpExchange setResponseHeader(String name, String value) {
+	public void doSetResponseHeader(String name, String value) {
 		response.setHeader(name, value);
-		return this;
 	}
 	
 	@Override
-	public ServerHttpExchange setStatus(StatusCode status) {
+	public void doSetStatus(StatusCode status) {
 		// TODO Is it better to throw an unsupported operation exception?
-		return this;
-	}
-
-	@Override
-	public String uri() {
-		return request.uri();
-	}
-
-	@Override
-	protected void doClose() {
-		out.close();
 	}
 
 	@Override
 	protected void doWrite(String data) {
 		out.write(data);
+	}
+
+	@Override
+	protected void doClose() {
+		out.close();
 	}
 	
 	@Override

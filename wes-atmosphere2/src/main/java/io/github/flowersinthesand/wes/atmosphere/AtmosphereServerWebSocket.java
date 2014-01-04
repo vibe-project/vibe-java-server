@@ -17,6 +17,7 @@ package io.github.flowersinthesand.wes.atmosphere;
 
 import io.github.flowersinthesand.wes.Data;
 import io.github.flowersinthesand.wes.websocket.AbstractServerWebSocket;
+import io.github.flowersinthesand.wes.websocket.ServerWebSocket;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -25,6 +26,11 @@ import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.AtmosphereResourceEvent;
 import org.atmosphere.websocket.WebSocketEventListenerAdapter;
 
+/**
+ * {@link ServerWebSocket} for Atmosphere 2.
+ * 
+ * @author Donghwan Kim
+ */
 public class AtmosphereServerWebSocket extends AbstractServerWebSocket {
 
 	private final AtmosphereResource resource;

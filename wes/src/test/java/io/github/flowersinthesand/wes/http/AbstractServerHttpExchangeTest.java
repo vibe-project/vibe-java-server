@@ -133,28 +133,21 @@ public class AbstractServerHttpExchangeTest {
 		public List<String> requestHeaders(String name) {
 			return null;
 		}
-		
-		@Override
-		protected void readBody() {
-		}
-		
-		@Override
-		public ServerHttpExchange setResponseHeader(String name, String value) {
-			return null;
-		}
 
 		@Override
-		protected void doWrite(String data) {
-		}
+		protected void readBody() {}
 
 		@Override
-		protected void doClose() {
-		}
+		public void doSetResponseHeader(String name, String value) {}
 
 		@Override
-		public ServerHttpExchange setStatus(StatusCode status) {
-			return null;
-		}
+		protected void doWrite(String data) {}
+
+		@Override
+		protected void doClose() {}
+
+		@Override
+		protected void doSetStatus(StatusCode status) {}
 
 		@Override
 		public <T> T unwrap(Class<T> clazz) {

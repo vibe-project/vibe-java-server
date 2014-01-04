@@ -17,6 +17,7 @@ package io.github.flowersinthesand.wes.play;
 
 import io.github.flowersinthesand.wes.Data;
 import io.github.flowersinthesand.wes.websocket.AbstractServerWebSocket;
+import io.github.flowersinthesand.wes.websocket.ServerWebSocket;
 import play.libs.F.Callback;
 import play.libs.F.Callback0;
 import play.mvc.Http.Request;
@@ -24,6 +25,11 @@ import play.mvc.WebSocket;
 import play.mvc.WebSocket.In;
 import play.mvc.WebSocket.Out;
 
+/**
+ * {@link ServerWebSocket} for Play 2.
+ * 
+ * @author Donghwan Kim
+ */
 public class PlayServerWebSocket extends AbstractServerWebSocket {
 
 	private final Request request;

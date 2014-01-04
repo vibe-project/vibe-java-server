@@ -17,12 +17,17 @@ package io.github.flowersinthesand.wes.vertx;
 
 import io.github.flowersinthesand.wes.Data;
 import io.github.flowersinthesand.wes.websocket.AbstractServerWebSocket;
+import io.github.flowersinthesand.wes.websocket.ServerWebSocket;
 
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.VoidHandler;
 import org.vertx.java.core.buffer.Buffer;
-import org.vertx.java.core.http.ServerWebSocket;
 
+/**
+ * {@link ServerWebSocket} for Vert.x 2.
+ * 
+ * @author Donghwan Kim
+ */
 public class VertxServerWebSocket extends AbstractServerWebSocket {
 
 	private final org.vertx.java.core.http.ServerWebSocket socket;

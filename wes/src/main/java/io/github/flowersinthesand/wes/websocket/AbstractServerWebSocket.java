@@ -41,7 +41,7 @@ public abstract class AbstractServerWebSocket implements ServerWebSocket {
 		errorActions.add(new Action<Throwable>() {
 			@Override
 			public void on(Throwable throwable) {
-				logger.trace("{} has received a throwable [{}]", AbstractServerWebSocket.this, throwable);
+				logger.trace("{} has received a throwable {}", AbstractServerWebSocket.this, throwable);
 				if (state != State.CLOSING && state != State.CLOSED) {
 					close();
 				}
@@ -50,8 +50,7 @@ public abstract class AbstractServerWebSocket implements ServerWebSocket {
 		closeActions.add(new Action<Void>() {
 			@Override
 			public void on(Void reason) {
-				logger.trace("{} has been closed due to the reason [{}]",
-						AbstractServerWebSocket.this, reason);
+				logger.trace("{} has been closed due to the reason {}", AbstractServerWebSocket.this, reason);
 				state = State.CLOSED;
 				messageActions.disable();
 			}
@@ -75,7 +74,7 @@ public abstract class AbstractServerWebSocket implements ServerWebSocket {
 
 	@Override
 	public ServerWebSocket send(String data) {
-		logger.trace("{} sends a text message [{}]", this, data);
+		logger.trace("{} sends a text message {}", this, data);
 		doSend(data);
 		return this;
 	}

@@ -28,6 +28,11 @@ import org.vertx.java.core.VoidHandler;
 import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpServerRequest;
 
+/**
+ * {@link ServerHttpExchange} for Vert.x 2.
+ * 
+ * @author Donghwan Kim
+ */
 public class VertxServerHttpExchange extends AbstractServerHttpExchange {
 
 	private final HttpServerRequest request;
@@ -73,9 +78,13 @@ public class VertxServerHttpExchange extends AbstractServerHttpExchange {
 	}
 
 	@Override
-	public ServerHttpExchange setResponseHeader(String name, String value) {
+	public void doSetResponseHeader(String name, String value) {
 		request.response().putHeader(name, value);
-		return this;
+	}
+
+	@Override
+	public void doSetStatus(StatusCode status) {
+		request.response().setStatusCode(status.code()).setStatusMessage(status.reason());
 	}
 
 	@Override
@@ -87,12 +96,6 @@ public class VertxServerHttpExchange extends AbstractServerHttpExchange {
 	protected void doClose() {
 		request.response().end();
 		request.response().close();
-	}
-
-	@Override
-	public ServerHttpExchange setStatus(StatusCode status) {
-		request.response().setStatusCode(status.code()).setStatusMessage(status.reason());
-		return this;
 	}
 
 	@Override

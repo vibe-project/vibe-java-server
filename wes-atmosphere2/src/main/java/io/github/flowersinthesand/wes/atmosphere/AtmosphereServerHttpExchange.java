@@ -36,6 +36,11 @@ import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.AtmosphereResourceEvent;
 import org.atmosphere.cpr.AtmosphereResourceEventListenerAdapter;
 
+/**
+ * {@link ServerHttpExchange} for Atmosphere 2.
+ * 
+ * @author Donghwan Kim
+ */
 public class AtmosphereServerHttpExchange extends AbstractServerHttpExchange {
 
 	private final AtmosphereResource resource;
@@ -90,7 +95,7 @@ public class AtmosphereServerHttpExchange extends AbstractServerHttpExchange {
 	protected void readBody() {
 		try {
 			final ServletInputStream input = resource.getRequest().getInputStream();
-			// Since Servlet 3.1
+			// Supported as of Servlet 3.1
 			input.setReadListener(new ReadListener() {
 				List<String> chunks = new ArrayList<>();
 				@Override
@@ -121,15 +126,13 @@ public class AtmosphereServerHttpExchange extends AbstractServerHttpExchange {
 	}
 
 	@Override
-	public ServerHttpExchange setResponseHeader(String name, String value) {
+	public void doSetResponseHeader(String name, String value) {
 		resource.getResponse().setHeader(name, value);
-		return this;
 	}
 
 	@Override
-	public ServerHttpExchange setStatus(StatusCode status) {
+	public void doSetStatus(StatusCode status) {
 		resource.getResponse().setStatus(status.code(), status.reason());
-		return this;
 	}
 
 	@Override
