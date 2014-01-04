@@ -34,9 +34,24 @@ import play.mvc.Results.Chunks;
  * {@link ServerHttpExchange} for Play 2.
  * 
  * <h3>Quirks</h3>
+ * <pre><code>{@literal @}BodyParser.Of(BodyParser.TolerantText.class)
+public static Result http() {
+  final Request request = request();
+  final Response response = response();
+  // <strong>Response header is settable here</strong>
+  // <strong>Status is set in return</strong>
+  return ok(new Chunks&lt;String&gt;(JavaResults.writeString(Codec.utf_8())) {
+    {@literal @}Override
+    public void onReady(Chunks.Out&lt;String&gt; out) {
+      // <strong>Response header is not settable from here on</strong>
+      new PlayServerHttpExchange(request, response, out);
+    }
+  });
+}</code></pre>
  * <ul>
- * <li>Request body is read synchronously.</li>
- * <li>Setting HTTP status to response doesn't work.</li>
+ * <li><code>setStatus</code> doesn't work because it have to be specified in return.</li>
+ * <li><code>setResponseHeader</code> doesn't work because PlayServerHttpExchange is created after onReady.</li>
+ * <li>Request body is read in a synchronous manner.</li>
  * </ul>
  * 
  * @author Donghwan Kim
