@@ -90,7 +90,7 @@ public interface ServerHttpExchange extends Wrapper {
 	/**
 	 * Sets the HTTP status for the response.
 	 */
-	ServerHttpExchange setStatus(StatusCode status);
+	ServerHttpExchange setStatus(HttpStatus status);
 
 	/**
 	 * Attaches an action to be called on response close.

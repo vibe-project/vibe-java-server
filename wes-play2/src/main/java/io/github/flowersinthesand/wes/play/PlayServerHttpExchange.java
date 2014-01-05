@@ -18,7 +18,7 @@ package io.github.flowersinthesand.wes.play;
 import io.github.flowersinthesand.wes.AbstractServerHttpExchange;
 import io.github.flowersinthesand.wes.Data;
 import io.github.flowersinthesand.wes.ServerHttpExchange;
-import io.github.flowersinthesand.wes.StatusCode;
+import io.github.flowersinthesand.wes.HttpStatus;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -107,7 +107,7 @@ public class PlayServerHttpExchange extends AbstractServerHttpExchange {
 	}
 	
 	@Override
-	public void doSetStatus(StatusCode status) {
+	public void doSetStatus(HttpStatus status) {
 		// TODO Is it better to throw an unsupported operation exception?
 	}
 

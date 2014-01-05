@@ -18,7 +18,7 @@ package io.github.flowersinthesand.wes.vertx;
 import io.github.flowersinthesand.wes.AbstractServerHttpExchange;
 import io.github.flowersinthesand.wes.Data;
 import io.github.flowersinthesand.wes.ServerHttpExchange;
-import io.github.flowersinthesand.wes.StatusCode;
+import io.github.flowersinthesand.wes.HttpStatus;
 
 import java.util.List;
 import java.util.Set;
@@ -83,7 +83,7 @@ public class VertxServerHttpExchange extends AbstractServerHttpExchange {
 	}
 
 	@Override
-	public void doSetStatus(StatusCode status) {
+	public void doSetStatus(HttpStatus status) {
 		request.response().setStatusCode(status.code()).setStatusMessage(status.reason());
 	}
 

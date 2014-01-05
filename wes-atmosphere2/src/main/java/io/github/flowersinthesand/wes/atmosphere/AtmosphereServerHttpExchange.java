@@ -18,7 +18,7 @@ package io.github.flowersinthesand.wes.atmosphere;
 import io.github.flowersinthesand.wes.AbstractServerHttpExchange;
 import io.github.flowersinthesand.wes.Data;
 import io.github.flowersinthesand.wes.ServerHttpExchange;
-import io.github.flowersinthesand.wes.StatusCode;
+import io.github.flowersinthesand.wes.HttpStatus;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -131,7 +131,7 @@ public class AtmosphereServerHttpExchange extends AbstractServerHttpExchange {
 	}
 
 	@Override
-	public void doSetStatus(StatusCode status) {
+	public void doSetStatus(HttpStatus status) {
 		resource.getResponse().setStatus(status.code(), status.reason());
 	}
 

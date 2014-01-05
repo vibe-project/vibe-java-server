@@ -105,13 +105,13 @@ public abstract class AbstractServerHttpExchange implements ServerHttpExchange {
 	}
 	
 	@Override
-	public ServerHttpExchange setStatus(StatusCode status) {
+	public ServerHttpExchange setStatus(HttpStatus status) {
 		logger.trace("{} sets a response status, {}", this, status);
 		doSetStatus(status);
 		return this;
 	}
 
-	protected abstract void doSetStatus(StatusCode status);
+	protected abstract void doSetStatus(HttpStatus status);
 
 	@Override
 	public ServerHttpExchange closeAction(Action<Void> action) {

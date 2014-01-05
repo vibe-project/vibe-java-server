@@ -143,7 +143,7 @@ public class AbstractServerHttpExchangeTest {
 		protected void doClose() {}
 
 		@Override
-		protected void doSetStatus(StatusCode status) {}
+		protected void doSetStatus(HttpStatus status) {}
 
 		@Override
 		public <T> T unwrap(Class<T> clazz) {
