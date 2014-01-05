@@ -16,26 +16,10 @@
 package io.github.flowersinthesand.wes;
 
 import static org.junit.Assert.assertEquals;
-import io.github.flowersinthesand.wes.AbstractServerWebSocket;
-import io.github.flowersinthesand.wes.Action;
-import io.github.flowersinthesand.wes.Actions;
-import io.github.flowersinthesand.wes.Data;
-import io.github.flowersinthesand.wes.State;
-import io.github.flowersinthesand.wes.VoidAction;
 
 import org.junit.Test;
 
 public class AbstractServerWebSocketTest {
-
-	@Test
-	public void stateTransition() {
-		EmptyServerWebSocket ws = new EmptyServerWebSocket();
-		assertEquals(ws.state(), State.OPEN);
-		ws.close();
-		assertEquals(ws.state(), State.CLOSING);
-		ws.closeActions.fire();
-		assertEquals(ws.state(), State.CLOSED);
-	}
 
 	@Test
 	public void closeAction() {

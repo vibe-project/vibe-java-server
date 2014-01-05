@@ -35,11 +35,6 @@ public interface ServerWebSocket extends Wrapper {
 	String uri();
 
 	/**
-	 * The state of the connection. It starts in {@link State#OPEN}.
-	 */
-	State state();
-
-	/**
 	 * Closes the connection.
 	 */
 	ServerWebSocket close();
@@ -62,10 +57,9 @@ public interface ServerWebSocket extends Wrapper {
 	ServerWebSocket errorAction(Action<Throwable> action);
 
 	/**
-	 * Attaches an action for the close event where the state transitions to
-	 * {@link State#CLOSED}. If the state is already {@link State#CLOSED}, the
-	 * handler will be executed on addition. After the state transition, all the
-	 * other event will be disabled.
+	 * Attaches an action for the close event. If the connection is already
+	 * closed, the handler will be executed on addition. After close event, all
+	 * the other event will be disabled.
 	 */
 	ServerWebSocket closeAction(Action<Void> action);
 

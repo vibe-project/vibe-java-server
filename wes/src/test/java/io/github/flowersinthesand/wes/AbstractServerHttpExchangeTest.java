@@ -16,12 +16,6 @@
 package io.github.flowersinthesand.wes;
 
 import static org.junit.Assert.assertEquals;
-import io.github.flowersinthesand.wes.AbstractServerHttpExchange;
-import io.github.flowersinthesand.wes.Action;
-import io.github.flowersinthesand.wes.Actions;
-import io.github.flowersinthesand.wes.Data;
-import io.github.flowersinthesand.wes.StatusCode;
-import io.github.flowersinthesand.wes.VoidAction;
 
 import java.util.ArrayList;
 import java.util.Arrays;
