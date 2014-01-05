@@ -13,12 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.flowersinthesand.wes.websocket;
-
-import io.github.flowersinthesand.wes.Action;
-import io.github.flowersinthesand.wes.Actions;
-import io.github.flowersinthesand.wes.Data;
-import io.github.flowersinthesand.wes.SimpleActions;
+package io.github.flowersinthesand.wes;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

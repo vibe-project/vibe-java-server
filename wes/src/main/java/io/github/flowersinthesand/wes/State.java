@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.flowersinthesand.wes.websocket;
+package io.github.flowersinthesand.wes;
 
 /**
  * Represents the state of the connection.

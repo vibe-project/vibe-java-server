@@ -15,9 +15,9 @@
  */
 package io.github.flowersinthesand.wes.vertx;
 
+import io.github.flowersinthesand.wes.AbstractServerWebSocket;
 import io.github.flowersinthesand.wes.Data;
-import io.github.flowersinthesand.wes.websocket.AbstractServerWebSocket;
-import io.github.flowersinthesand.wes.websocket.ServerWebSocket;
+import io.github.flowersinthesand.wes.ServerWebSocket;
 
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.VoidHandler;

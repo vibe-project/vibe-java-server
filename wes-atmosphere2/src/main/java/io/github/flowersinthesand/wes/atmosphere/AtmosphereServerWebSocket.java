@@ -15,9 +15,9 @@
  */
 package io.github.flowersinthesand.wes.atmosphere;
 
+import io.github.flowersinthesand.wes.AbstractServerWebSocket;
 import io.github.flowersinthesand.wes.Data;
-import io.github.flowersinthesand.wes.websocket.AbstractServerWebSocket;
-import io.github.flowersinthesand.wes.websocket.ServerWebSocket;
+import io.github.flowersinthesand.wes.ServerWebSocket;
 
 import java.io.IOException;
 import java.io.PrintWriter;

@@ -13,11 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.flowersinthesand.wes.websocket;
+package io.github.flowersinthesand.wes;
 
-import io.github.flowersinthesand.wes.Action;
-import io.github.flowersinthesand.wes.Data;
-import io.github.flowersinthesand.wes.Wrapper;
 
 /**
  * Represents a server-side WebSocket session.

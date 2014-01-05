@@ -13,13 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.flowersinthesand.wes.http;
-
-import io.github.flowersinthesand.wes.Action;
-import io.github.flowersinthesand.wes.Actions;
-import io.github.flowersinthesand.wes.Data;
-import io.github.flowersinthesand.wes.SimpleActions;
-import io.github.flowersinthesand.wes.VoidAction;
+package io.github.flowersinthesand.wes;
 
 import java.util.Iterator;
 import java.util.List;

@@ -15,9 +15,9 @@
  */
 package io.github.flowersinthesand.wes.play;
 
+import io.github.flowersinthesand.wes.AbstractServerWebSocket;
 import io.github.flowersinthesand.wes.Data;
-import io.github.flowersinthesand.wes.websocket.AbstractServerWebSocket;
-import io.github.flowersinthesand.wes.websocket.ServerWebSocket;
+import io.github.flowersinthesand.wes.ServerWebSocket;
 import play.libs.F.Callback;
 import play.libs.F.Callback0;
 import play.mvc.Http.Request;

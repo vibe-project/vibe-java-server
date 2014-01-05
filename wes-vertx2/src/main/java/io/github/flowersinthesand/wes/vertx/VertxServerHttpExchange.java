@@ -15,10 +15,10 @@
  */
 package io.github.flowersinthesand.wes.vertx;
 
+import io.github.flowersinthesand.wes.AbstractServerHttpExchange;
 import io.github.flowersinthesand.wes.Data;
-import io.github.flowersinthesand.wes.http.AbstractServerHttpExchange;
-import io.github.flowersinthesand.wes.http.ServerHttpExchange;
-import io.github.flowersinthesand.wes.http.StatusCode;
+import io.github.flowersinthesand.wes.ServerHttpExchange;
+import io.github.flowersinthesand.wes.StatusCode;
 
 import java.util.List;
 import java.util.Set;
