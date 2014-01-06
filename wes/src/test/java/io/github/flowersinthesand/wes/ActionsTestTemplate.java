@@ -15,11 +15,15 @@
  */
 package io.github.flowersinthesand.wes;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static java.util.Arrays.asList;
+import static org.hamcrest.collection.IsEmptyCollection.empty;
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertThat;
 import io.github.flowersinthesand.wes.Actions.Options;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Test;
@@ -34,7 +38,7 @@ public abstract class ActionsTestTemplate {
 		VoidAction action = new VoidAction() {
 			@Override
 			public void on() {
-				assertTrue("called once", count.getAndIncrement() == 0);
+				assertThat(count.getAndIncrement(), is(0));
 			}
 		};
 		options.unique(false);
@@ -43,95 +47,76 @@ public abstract class ActionsTestTemplate {
 
 	@Test
 	public void add() {
-		Actions<Void> actions = createActions();
-		final StringBuilder output = new StringBuilder();
-		VoidAction out = new VoidAction() {
-			@Override
-			public void on() {
-				output.append("A");
-			}
-		};
-		actions.add(out).add(out).fire();
-		assertEquals(output.toString(), "AA");
+		// default, unique, memory
+		Actions<String> actions = null;
+		MemoryAction<String> action = null;
+
+		actions = createActions();
+		action = new MemoryAction<>();
+		actions.add(action).add(action).fire("A");
+		assertThat(action.memory(), is(asList("A", "A")));
+		actions.add(action);
+		assertThat(action.memory(), is(asList("A", "A")));
 
 		actions = createActions(new Actions.Options().unique(true));
-		output.setLength(0);
-		actions.add(out).add(out).fire();
-		assertEquals(output.toString(), "A");
+		action = new MemoryAction<>();
+		actions.add(action).add(action).fire("A");
+		assertThat(action.memory(), is(asList("A")));
+		actions.add(action);
+		assertThat(action.memory(), is(asList("A")));
 
 		actions = createActions(new Actions.Options().memory(true));
-		output.setLength(0);
-		actions.add(out).fire();
-		assertEquals(output.toString(), "A");
-		actions.add(out);
-		assertEquals(output.toString(), "AA");
+		action = new MemoryAction<>();
+		actions.add(action).fire("A");
+		assertThat(action.memory(), is(asList("A")));
+		actions.add(action);
+		assertThat(action.memory(), is(asList("A", "A")));
 	}
 
 	@Test
 	public void fire() {
-		Actions<String> actions = createActions();
-		final StringBuilder output = new StringBuilder();
-		Action<String> out = new Action<String>() {
-			@Override
-			public void on(String string) {
-				output.append(string);
-			}
-		};
-
-		actions.add(out);
-		assertFalse(actions.fired());
-		assertEquals("", output.toString());
-		actions.fire("H");
-		assertTrue(actions.fired());
-		assertEquals("H", output.toString());
-		actions.fire("H");
-		assertTrue(actions.fired());
-		assertEquals("HH", output.toString());
+		// default, once
+		Actions<String> actions = null;
+		MemoryAction<String> action = null;
 
 		actions = createActions();
-		output.setLength(0);
-		actions.add(out).add(new Action<String>() {
-			@Override
-			public void on(String string) {
-				output.append("R");
-			}
-		}).fire("F").fire("E");
-		assertEquals("FRER", output.toString());
-
-		actions = createActions(new Actions.Options().memory(true));
-		output.setLength(0);
-		actions.add(out).fire("F");
-		assertEquals("F", output.toString());
-		actions.add(out);
-		assertEquals("FF", output.toString());
-
-		output.setLength(0);
-		actions.fire("E");
-		assertEquals("EE", output.toString());
-		actions.add(out);
-		assertEquals("EEE", output.toString());
+		action = new MemoryAction<>();
+		actions.add(action);
+		assertThat(actions.fired(), is(false));
+		assertThat(action.memory(), is(empty()));
+		actions.fire("H");
+		assertThat(actions.fired(), is(true));
+		assertThat(action.memory(), is(asList("H")));
+		actions.fire("A");
+		assertThat(actions.fired(), is(true));
+		assertThat(action.memory(), is(asList("H", "A")));
 
 		actions = createActions(new Actions.Options().once(true));
-		actions.fire().fire();
+		action = new MemoryAction<>();
+		actions.add(action);
+		assertThat(actions.fired(), is(false));
+		assertThat(action.memory(), is(empty()));
+		actions.fire("H");
+		assertThat(actions.fired(), is(true));
+		assertThat(action.memory(), is(asList("H")));
+		actions.fire("A");
+		assertThat(actions.fired(), is(true));
+		assertThat(action.memory(), is(asList("H")));
 	}
 
 	@Test
 	public void disable() {
 		Actions<Void> actions = createActions();
-		Action<Void> action = new VoidAction() {
-			@Override
-			public void on() {
-			}
-		};
+		Action<Void> action = new EmptyAction<>();
 		
 		actions.add(action);
-		assertFalse(actions.disabled());
+		assertThat(actions.disabled(), is(false));
 		actions.disable();
-		assertTrue(actions.disabled());
+		assertThat(actions.disabled(), is(true));
 		
 		actions = createActions();
 		actions.disable().add(action);
-		assertFalse(actions.has(action));
+		assertThat(actions.has(action), is(false));
 		
 		actions = createActions();
 		actions.disable().disable();
@@ -139,87 +124,78 @@ public abstract class ActionsTestTemplate {
 		actions = createActions();
 		actions.disable().fire();
 		
-		final Actions<Void> actions2 = createActions();
-		final StringBuilder output = new StringBuilder();
-		actions2.add(new VoidAction() {
+		final Actions<String> actions2 = createActions();
+		MemoryAction<String> action2 = new MemoryAction<>();
+		actions2.add(action2).add(new Action<String>() {
 			@Override
-			public void on() {
-				output.append("A");
-			}
-		})
-		.add(new VoidAction() {
-			@Override
-			public void on() {
-				output.append("B");
+			public void on(String _) {
 				actions2.disable();
 			}
 		})
-		.add(new VoidAction() {
-			@Override
-			public void on() {
-				output.append("C");
-			}
-		});
-		actions2.fire();
-		assertEquals("AB", output.toString());
+		.add(action2).fire("A");
+		assertThat(action2.memory(), is(asList("A")));
 	}
 
 	@Test
-	public void empty() {
+	public void emptyMethod() {
 		Actions<Void> actions = createActions();
-		actions.add(new VoidAction() {
-			@Override
-			public void on() {
-				assertTrue(false);
-			}
-		}).add(new VoidAction() {
-
-			@Override
-			public void on() {
-				assertFalse(true);
-			}
-		}).empty().fire();
+		
+		assertThat(actions.has(), is(false));
+		actions.add(new EmptyAction<Void>());
+		assertThat(actions.has(), is(true));
+		actions.empty();
+		assertThat(actions.has(), is(false));
 	}
 
 	@Test
 	public void remove() {
 		Actions<Void> actions = createActions();
-		VoidAction action = new VoidAction() {
-			@Override
-			public void on() {
-				assertTrue(false);
-			}
-		};
-		actions.add(action).add(action).add(new VoidAction() {
-			@Override
-			public void on() {
-				assertTrue(true);
-			}
-		}).remove(action).fire();
+		Action<Void> actionA = new EmptyAction<>();
+		Action<Void> actionB = new EmptyAction<>();
+		
+		actions.add(actionA).add(actionB);
+		assertThat(actions.has(actionA), is(true));
+		assertThat(actions.has(actionB), is(true));
+		actions.remove(actionA);
+		assertThat(actions.has(actionA), is(false));
+		assertThat(actions.has(actionB), is(true));
 	}
 
 	@Test
 	public void has() {
-		final Actions<Void> actions = createActions();
-		final VoidAction actionA = new VoidAction() {
-			@Override
-			public void on() {
-			}
-		};
-		VoidAction actionB = new VoidAction() {
-			@Override
-			public void on() {
-			}
-		};
+		Actions<Void> actions = createActions();
+		Action<Void> actionA = new EmptyAction<>();
+		Action<Void> actionB = new EmptyAction<>();
 
+		assertThat(actions.has(), 		 is(false));
+		assertThat(actions.has(actionA), is(false));
+		assertThat(actions.has(actionB), is(false));
 		actions.add(actionA);
-		assertTrue(actions.has());
-		assertTrue(actions.has(actionA));
-		assertFalse(actions.has(actionB));
+		assertThat(actions.has(), 		 is(true));
+		assertThat(actions.has(actionA), is(true));
+		assertThat(actions.has(actionB), is(false));
 	}
 
 	protected abstract <T> Actions<T> createActions();
 
 	protected abstract <T> Actions<T> createActions(Options options);
+	
+	static class EmptyAction<A> implements Action<A> {
+		@Override
+		public void on(A object) {}
+	}
+	
+	static class MemoryAction<T> implements Action<T> {
+		private List<T> list = new ArrayList<>();
+		
+		@Override
+		public void on(T object) {
+			list.add(object);
+		}
+
+		public List<T> memory() {
+			return Collections.unmodifiableList(new ArrayList<T>(list));
+		}
+	}
 
 }
