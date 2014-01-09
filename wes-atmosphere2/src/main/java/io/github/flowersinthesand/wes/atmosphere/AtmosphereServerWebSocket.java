@@ -65,7 +65,11 @@ public class AtmosphereServerWebSocket extends AbstractServerWebSocket {
 
 	@Override
 	public String uri() {
-		return resource.getRequest().getRequestURI();
+		String uri = resource.getRequest().getRequestURI();
+		if (resource.getRequest().getQueryString() != null) {
+			uri += "?" + resource.getRequest().getQueryString();
+		}
+		return uri;
 	}
 	
 	@Override
