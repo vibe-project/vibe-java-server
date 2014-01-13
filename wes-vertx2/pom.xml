@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>io.github.flowersinthesand</groupId>
 		<artifactId>wes-parent</artifactId>
-		<version>0.1.2</version>
+		<version>0.2.0-SNAPSHOT</version>
 	</parent>
 	<artifactId>wes-vertx2</artifactId>
 	<name>wes Vert.x 2</name>
