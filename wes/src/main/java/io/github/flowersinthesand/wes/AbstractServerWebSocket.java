@@ -37,9 +37,7 @@ public abstract class AbstractServerWebSocket implements ServerWebSocket {
 			@Override
 			public void on(Throwable throwable) {
 				logger.trace("{} has received a throwable {}", AbstractServerWebSocket.this, throwable);
-				if (state != State.CLOSING && state != State.CLOSED) {
-					close();
-				}
+				close();
 			}
 		});
 		closeActions.add(new Action<Void>() {
@@ -55,8 +53,10 @@ public abstract class AbstractServerWebSocket implements ServerWebSocket {
 	@Override
 	public ServerWebSocket close() {
 		logger.trace("{} has started to close the connection", this);
-		state = State.CLOSING;
-		doClose();
+		if (state != State.CLOSING && state != State.CLOSED) {
+			state = State.CLOSING;
+			doClose();
+		}
 		return this;
 	}
 

@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class AbstractServerHttpExchange implements ServerHttpExchange {
 
+	private boolean closed;
 	private boolean readBody;
 	protected Actions<Data> bodyActions = new SimpleActions<>(new Actions.Options().once(true).memory(true));
 	protected Actions<Void> closeActions = new SimpleActions<>(new Actions.Options().once(true).memory(true));
@@ -93,7 +94,10 @@ public abstract class AbstractServerHttpExchange implements ServerHttpExchange {
 	@Override
 	public ServerHttpExchange close() {
 		logger.trace("{} has started to close the connection", this);
-		doClose();
+		if (!closed) {
+			closed = true;
+			doClose();
+		}
 		return this;
 	}
 

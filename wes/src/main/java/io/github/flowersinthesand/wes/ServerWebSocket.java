@@ -15,7 +15,6 @@
  */
 package io.github.flowersinthesand.wes;
 
-
 /**
  * Represents a server-side WebSocket session.
  * 
@@ -35,7 +34,8 @@ public interface ServerWebSocket extends Wrapper {
 	String uri();
 
 	/**
-	 * Closes the connection.
+	 * Closes the connection. This method has no side effect if called more than
+	 * once.
 	 */
 	ServerWebSocket close();
 
