@@ -7,7 +7,7 @@
 	</parent>
 	<artifactId>wes-vertx2</artifactId>
 	<name>wes Vert.x 2</name>
-	<description>wes Vert.x 2</description>
+	<description>This bridge integrates server-side wes application with the Vert.x 2</description>
 	<properties>
 		<module.name>${project.groupId}~${project.artifactId}~${project.version}</module.name>
 		<mods.directory>target/mods</mods.directory>

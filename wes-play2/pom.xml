@@ -7,7 +7,7 @@
 	</parent>
 	<artifactId>wes-play2</artifactId>
 	<name>wes Play 2</name>
-	<description>wes Play 2</description>
+	<description>This bridge integrates server-side wes application with the Play 2</description>
 	<dependencies>
 		<dependency>
 			<groupId>io.github.flowersinthesand</groupId>

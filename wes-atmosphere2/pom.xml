@@ -7,7 +7,7 @@
 	</parent>
 	<artifactId>wes-atmosphere2</artifactId>
 	<name>wes Atmosphere 2</name>
-	<description>wes Atmosphere 2</description>
+	<description>This bridge integrates server-side wes application with the Atmosphere 2</description>
 	<dependencies>
 		<dependency>
 			<groupId>io.github.flowersinthesand</groupId>
