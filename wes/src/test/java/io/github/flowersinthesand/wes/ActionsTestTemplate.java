@@ -15,9 +15,9 @@
  */
 package io.github.flowersinthesand.wes;
 
-import static java.util.Arrays.asList;
-import static org.hamcrest.collection.IsEmptyCollection.empty;
-import static org.hamcrest.core.Is.is;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.contains;
 import static org.junit.Assert.assertThat;
 import io.github.flowersinthesand.wes.Actions.Options;
 
@@ -54,23 +54,23 @@ public abstract class ActionsTestTemplate {
 		actions = createActions();
 		action = new MemoryAction<>();
 		actions.add(action).add(action).fire("A");
-		assertThat(action.memory(), is(asList("A", "A")));
+		assertThat(action.memory(), contains("A", "A"));
 		actions.add(action);
-		assertThat(action.memory(), is(asList("A", "A")));
+		assertThat(action.memory(), contains("A", "A"));
 
 		actions = createActions(new Actions.Options().unique(true));
 		action = new MemoryAction<>();
 		actions.add(action).add(action).fire("A");
-		assertThat(action.memory(), is(asList("A")));
+		assertThat(action.memory(), contains("A"));
 		actions.add(action);
-		assertThat(action.memory(), is(asList("A")));
+		assertThat(action.memory(), contains("A"));
 
 		actions = createActions(new Actions.Options().memory(true));
 		action = new MemoryAction<>();
 		actions.add(action).fire("A");
-		assertThat(action.memory(), is(asList("A")));
+		assertThat(action.memory(), contains("A"));
 		actions.add(action);
-		assertThat(action.memory(), is(asList("A", "A")));
+		assertThat(action.memory(), contains("A", "A"));
 	}
 
 	@Test
@@ -86,10 +86,10 @@ public abstract class ActionsTestTemplate {
 		assertThat(action.memory(), is(empty()));
 		actions.fire("H");
 		assertThat(actions.fired(), is(true));
-		assertThat(action.memory(), is(asList("H")));
+		assertThat(action.memory(), contains("H"));
 		actions.fire("A");
 		assertThat(actions.fired(), is(true));
-		assertThat(action.memory(), is(asList("H", "A")));
+		assertThat(action.memory(), contains("H", "A"));
 
 		actions = createActions(new Actions.Options().once(true));
 		action = new MemoryAction<>();
@@ -98,10 +98,10 @@ public abstract class ActionsTestTemplate {
 		assertThat(action.memory(), is(empty()));
 		actions.fire("H");
 		assertThat(actions.fired(), is(true));
-		assertThat(action.memory(), is(asList("H")));
+		assertThat(action.memory(), contains("H"));
 		actions.fire("A");
 		assertThat(actions.fired(), is(true));
-		assertThat(action.memory(), is(asList("H")));
+		assertThat(action.memory(), contains("H"));
 	}
 
 	@Test
@@ -133,7 +133,7 @@ public abstract class ActionsTestTemplate {
 			}
 		})
 		.add(action2).fire("A");
-		assertThat(action2.memory(), is(asList("A")));
+		assertThat(action2.memory(), contains("A"));
 	}
 
 	@Test

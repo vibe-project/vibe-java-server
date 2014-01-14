@@ -15,7 +15,7 @@
  */
 package io.github.flowersinthesand.wes.test;
 
-import static org.hamcrest.core.Is.is;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import io.github.flowersinthesand.wes.Action;
 import io.github.flowersinthesand.wes.Data;
@@ -66,7 +66,7 @@ public abstract class ServerWebSocketTestTemplate {
 	/**
 	 * Starts the server listening port {@link ServerWebSocketTestTemplate#port}
 	 * and if WebSocket's path is {@code /test}, create {@link ServerWebSocket}
-	 * and pass it to {@code performer.server()}. This method is executed
+	 * and pass it to {@code performer.serverAction()}. This method is executed
 	 * following {@link Before}.
 	 */
 	protected abstract void startServer() throws Exception;
@@ -81,7 +81,7 @@ public abstract class ServerWebSocketTestTemplate {
 
 	@Test
 	public void uri() {
-		performer.server(new Action<ServerWebSocket>() {
+		performer.serverAction(new Action<ServerWebSocket>() {
 			@Override
 			public void on(ServerWebSocket ws) {
 				assertThat(ws.uri(), is("/test?hello=there"));
@@ -93,13 +93,13 @@ public abstract class ServerWebSocketTestTemplate {
 
 	@Test
 	public void close() {
-		performer.client(new WebSocketAdapter() {
+		performer.clientListener(new WebSocketAdapter() {
 			@Override
 			public void onWebSocketClose(int statusCode, String reason) {
 				performer.start();
 			}
 		})
-		.server(new Action<ServerWebSocket>() {
+		.serverAction(new Action<ServerWebSocket>() {
 			@Override
 			public void on(ServerWebSocket ws) {
 				ws.close();
@@ -110,13 +110,13 @@ public abstract class ServerWebSocketTestTemplate {
 
 	@Test
 	public void close_idempotent() {
-		performer.client(new WebSocketAdapter() {
+		performer.clientListener(new WebSocketAdapter() {
 			@Override
 			public void onWebSocketClose(int statusCode, String reason) {
 				performer.start();
 			}
 		})
-		.server(new Action<ServerWebSocket>() {
+		.serverAction(new Action<ServerWebSocket>() {
 			@Override
 			public void on(ServerWebSocket ws) {
 				ws.close().close();
@@ -127,14 +127,14 @@ public abstract class ServerWebSocketTestTemplate {
 
 	@Test
 	public void send() {
-		performer.client(new WebSocketAdapter() {
+		performer.clientListener(new WebSocketAdapter() {
 			@Override
 			public void onWebSocketText(String message) {
 				assertThat(message, is("A Will Remains in the Ashes"));
 				performer.start();
 			}
 		})
-		.server(new Action<ServerWebSocket>() {
+		.serverAction(new Action<ServerWebSocket>() {
 			@Override
 			public void on(ServerWebSocket ws) {
 				ws.send("A Will Remains in the Ashes");
@@ -145,7 +145,7 @@ public abstract class ServerWebSocketTestTemplate {
 
 	@Test
 	public void messageAction() {
-		performer.client(new WebSocketAdapter() {
+		performer.clientListener(new WebSocketAdapter() {
 			@Override
 			public void onWebSocketConnect(Session sess) {
 				sess.getRemote().sendString("A road of winds the water builds", new WriteCallback() {
@@ -160,7 +160,7 @@ public abstract class ServerWebSocketTestTemplate {
 				});
 			}
 		})
-		.server(new Action<ServerWebSocket>() {
+		.serverAction(new Action<ServerWebSocket>() {
 			@Override
 			public void on(ServerWebSocket ws) {
 				ws.messageAction(new Action<Data>() {
@@ -180,7 +180,7 @@ public abstract class ServerWebSocketTestTemplate {
 
 	@Test
 	public void closeAction_by_server() {
-		performer.server(new Action<ServerWebSocket>() {
+		performer.serverAction(new Action<ServerWebSocket>() {
 			@Override
 			public void on(final ServerWebSocket ws) {
 				ws.close().closeAction(new VoidAction() {
@@ -196,13 +196,13 @@ public abstract class ServerWebSocketTestTemplate {
 	
 	@Test
 	public void closeAction_by_client() {
-		performer.client(new WebSocketAdapter() {
+		performer.clientListener(new WebSocketAdapter() {
 			@Override
 			public void onWebSocketConnect(Session sess) {
 				sess.close();
 			}
 		})
-		.server(new Action<ServerWebSocket>() {
+		.serverAction(new Action<ServerWebSocket>() {
 			@Override
 			public void on(ServerWebSocket ws) {
 				ws.closeAction(new VoidAction() {
@@ -225,20 +225,16 @@ public abstract class ServerWebSocketTestTemplate {
 			public void on(ServerWebSocket object) {}
 		};
 
-		public WebSocketListener client() {
-			return clientListener;
-		}
-
-		public Performer client(WebSocketListener clientListener) {
+		public Performer clientListener(WebSocketListener clientListener) {
 			this.clientListener = clientListener;
 			return this;
 		}
 
-		public Action<ServerWebSocket> server() {
+		public Action<ServerWebSocket> serverAction() {
 			return serverAction;
 		}
 
-		public Performer server(Action<ServerWebSocket> serverAction) {
+		public Performer serverAction(Action<ServerWebSocket> serverAction) {
 			this.serverAction = serverAction;
 			return this;
 		}
