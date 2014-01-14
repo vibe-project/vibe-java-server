@@ -60,6 +60,7 @@
 				<groupId>io.github.flowersinthesand</groupId>
 				<artifactId>wes-test</artifactId>
 				<version>${project.version}</version>
+				<scope>test</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.slf4j</groupId>

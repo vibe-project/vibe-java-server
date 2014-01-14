@@ -14,6 +14,10 @@
 			<artifactId>wes</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>io.github.flowersinthesand</groupId>
+			<artifactId>wes-test</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
 		</dependency>
@@ -28,6 +32,10 @@
 		<dependency>
 			<groupId>org.atmosphere</groupId>
 			<artifactId>atmosphere-runtime</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.jetty.aggregate</groupId>
+			<artifactId>jetty-all</artifactId>
 		</dependency>
 	</dependencies>
 </project>
