@@ -18,6 +18,7 @@
 		<module>wes-test</module>
 		<module>wes-atmosphere2</module>
 		<module>wes-servlet3</module>
+		<module>wes-jwa1</module>
 		<module>wes-vertx2</module>
 		<module>wes-play2</module>
 	</modules>
@@ -113,6 +114,11 @@
 				<groupId>javax.servlet</groupId>
 				<artifactId>javax.servlet-api</artifactId>
 				<version>3.1.0</version>
+			</dependency>
+			<dependency>
+				<groupId>javax.websocket</groupId>
+				<artifactId>javax.websocket-api</artifactId>
+				<version>1.0</version>
 			</dependency>
 			<dependency>
 				<groupId>com.typesafe.play</groupId>
