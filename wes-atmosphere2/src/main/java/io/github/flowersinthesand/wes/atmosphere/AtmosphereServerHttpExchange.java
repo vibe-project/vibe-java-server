@@ -142,7 +142,7 @@ public class AtmosphereServerHttpExchange extends AbstractServerHttpExchange {
 
 	@Override
 	public void doSetStatus(HttpStatus status) {
-		resource.getResponse().setStatus(status.code(), status.reason());
+		resource.getResponse().setStatus(status.code());
 	}
 
 	@Override
