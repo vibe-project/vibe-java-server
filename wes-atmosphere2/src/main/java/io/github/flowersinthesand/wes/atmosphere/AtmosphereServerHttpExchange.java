@@ -99,6 +99,12 @@ public class AtmosphereServerHttpExchange extends AbstractServerHttpExchange {
 	protected void readBody() {
 		try {
 			final ServletInputStream input = resource.getRequest().getInputStream();
+			final String charset = resource.getRequest().getCharacterEncoding() == null ?
+				// HTTP 1.1 says that the default charset is ISO-8859-1 
+				// http://www.w3.org/International/O-HTTP-charset#charset
+				"ISO-8859-1" : 
+				resource.getRequest().getCharacterEncoding();
+			
 			// Supported as of Servlet 3.1
 			input.setReadListener(new ReadListener() {
 				List<String> chunks = new ArrayList<>();
@@ -107,7 +113,7 @@ public class AtmosphereServerHttpExchange extends AbstractServerHttpExchange {
 					int bytesRead = -1;
 					byte buffer[] = new byte[4096];
 					while (input.isReady() && (bytesRead = input.read(buffer)) != -1) {
-						String data = new String(buffer, 0, bytesRead, resource.getRequest().getCharacterEncoding());
+						String data = new String(buffer, 0, bytesRead, charset);
 						chunks.add(data);
 					}
 				}

@@ -17,7 +17,7 @@ public class VertxServerWebSocketTest extends ServerWebSocketTestTemplate {
 			@Override
 			public void handle(org.vertx.java.core.http.ServerWebSocket sws) {
 				if (sws.path().equals("/test")) {
-					performer.server().on(new VertxServerWebSocket(sws));
+					performer.serverAction().on(new VertxServerWebSocket(sws));
 				}
 			}
 		})
