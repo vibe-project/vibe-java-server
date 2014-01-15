@@ -78,7 +78,9 @@ public class VertxServerWebSocket extends AbstractServerWebSocket {
 
 	@Override
 	public <T> T unwrap(Class<T> clazz) {
-		return ServerWebSocket.class.isAssignableFrom(clazz) ? clazz.cast(socket) : null;
+		return org.vertx.java.core.http.ServerWebSocket.class.isAssignableFrom(clazz) ? 
+			clazz.cast(socket) : 
+			null;
 	}
 
 }

@@ -1,5 +1,9 @@
 package io.github.flowersinthesand.wes.atmosphere;
 
+import static org.hamcrest.Matchers.instanceOf;
+import static org.junit.Assert.assertThat;
+import io.github.flowersinthesand.wes.Action;
+import io.github.flowersinthesand.wes.ServerWebSocket;
 import io.github.flowersinthesand.wes.test.ServerWebSocketTestTemplate;
 
 import java.io.IOException;
@@ -12,6 +16,7 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.junit.Test;
 
 public class AtmosphereServerWebSocketTest extends ServerWebSocketTestTemplate {
 
@@ -42,6 +47,18 @@ public class AtmosphereServerWebSocketTest extends ServerWebSocketTestTemplate {
 		handler.addServletWithMapping(holder, "/test");
 		
 		server.start();
+	}
+	
+	@Test
+	public void unwrap() {
+		performer.serverAction(new Action<ServerWebSocket>() {
+			@Override
+			public void on(ServerWebSocket ws) {
+				assertThat(ws.unwrap(AtmosphereResource.class), instanceOf(AtmosphereResource.class));
+				performer.start();
+			}
+		})
+		.connect();
 	}
 
 	@Override

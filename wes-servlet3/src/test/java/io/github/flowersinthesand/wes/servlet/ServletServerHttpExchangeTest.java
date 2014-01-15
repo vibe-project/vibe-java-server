@@ -15,6 +15,10 @@
  */
 package io.github.flowersinthesand.wes.servlet;
 
+import static org.hamcrest.Matchers.instanceOf;
+import static org.junit.Assert.assertThat;
+import io.github.flowersinthesand.wes.Action;
+import io.github.flowersinthesand.wes.ServerHttpExchange;
 import io.github.flowersinthesand.wes.test.ServerHttpExchangeTestTemplate;
 
 import javax.servlet.Servlet;
@@ -60,6 +64,19 @@ public class ServletServerHttpExchangeTest extends ServerHttpExchangeTestTemplat
 	@Override
 	protected void stopServer() throws Exception {
 		server.stop();
+	}
+
+	@Test
+	public void unwrap() {
+		performer.serverAction(new Action<ServerHttpExchange>() {
+			@Override
+			public void on(ServerHttpExchange http) {
+				assertThat(http.unwrap(HttpServletRequest.class), instanceOf(HttpServletRequest.class));
+				assertThat(http.unwrap(HttpServletResponse.class), instanceOf(HttpServletResponse.class));
+				performer.start();
+			}
+		})
+		.send();
 	}
 	
 	@Override

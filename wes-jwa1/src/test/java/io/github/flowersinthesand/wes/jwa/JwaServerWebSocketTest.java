@@ -15,10 +15,13 @@
  */
 package io.github.flowersinthesand.wes.jwa;
 
+import static org.hamcrest.Matchers.instanceOf;
+import static org.junit.Assert.assertThat;
 import io.github.flowersinthesand.wes.Action;
 import io.github.flowersinthesand.wes.ServerWebSocket;
 import io.github.flowersinthesand.wes.test.ServerWebSocketTestTemplate;
 
+import javax.websocket.Session;
 import javax.websocket.server.ServerContainer;
 import javax.websocket.server.ServerEndpointConfig;
 
@@ -26,6 +29,7 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.websocket.jsr356.server.deploy.WebSocketServerContainerInitializer;
+import org.junit.Test;
 
 public class JwaServerWebSocketTest extends ServerWebSocketTestTemplate {
 
@@ -52,6 +56,18 @@ public class JwaServerWebSocketTest extends ServerWebSocketTestTemplate {
         container.addEndpoint(config);
         
 		server.start();
+	}
+	
+	@Test
+	public void unwrap() {
+		performer.serverAction(new Action<ServerWebSocket>() {
+			@Override
+			public void on(ServerWebSocket ws) {
+				assertThat(ws.unwrap(Session.class), instanceOf(Session.class));
+				performer.start();
+			}
+		})
+		.connect();
 	}
 
 	@Override

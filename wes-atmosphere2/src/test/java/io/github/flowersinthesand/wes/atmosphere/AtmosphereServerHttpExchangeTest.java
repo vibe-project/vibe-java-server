@@ -1,5 +1,9 @@
 package io.github.flowersinthesand.wes.atmosphere;
 
+import static org.hamcrest.Matchers.instanceOf;
+import static org.junit.Assert.assertThat;
+import io.github.flowersinthesand.wes.Action;
+import io.github.flowersinthesand.wes.ServerHttpExchange;
 import io.github.flowersinthesand.wes.test.ServerHttpExchangeTestTemplate;
 
 import java.io.IOException;
@@ -49,6 +53,18 @@ public class AtmosphereServerHttpExchangeTest extends ServerHttpExchangeTestTemp
 	@Override
 	protected void stopServer() throws Exception {
 		server.stop();
+	}
+
+	@Test
+	public void unwrap() {
+		performer.serverAction(new Action<ServerHttpExchange>() {
+			@Override
+			public void on(ServerHttpExchange http) {
+				assertThat(http.unwrap(AtmosphereResource.class), instanceOf(AtmosphereResource.class));
+				performer.start();
+			}
+		})
+		.send();
 	}
 	
 	@Override

@@ -1,5 +1,9 @@
 package io.github.flowersinthesand.wes.vertx;
 
+import static org.hamcrest.Matchers.instanceOf;
+import static org.junit.Assert.assertThat;
+import io.github.flowersinthesand.wes.Action;
+import io.github.flowersinthesand.wes.ServerHttpExchange;
 import io.github.flowersinthesand.wes.test.ServerHttpExchangeTestTemplate;
 
 import org.junit.Ignore;
@@ -30,6 +34,18 @@ public class VertxServerHttpExchangeTest extends ServerHttpExchangeTestTemplate 
 	@Override
 	protected void stopServer() {
 		server.close();
+	}
+
+	@Test
+	public void unwrap() {
+		performer.serverAction(new Action<ServerHttpExchange>() {
+			@Override
+			public void on(ServerHttpExchange http) {
+				assertThat(http.unwrap(HttpServerRequest.class), instanceOf(HttpServerRequest.class));
+				performer.start();
+			}
+		})
+		.send();
 	}
 	
 	@Override
