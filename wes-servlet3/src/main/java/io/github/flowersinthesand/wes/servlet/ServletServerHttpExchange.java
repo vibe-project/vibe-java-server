@@ -18,6 +18,7 @@ package io.github.flowersinthesand.wes.servlet;
 import io.github.flowersinthesand.wes.AbstractServerHttpExchange;
 import io.github.flowersinthesand.wes.Data;
 import io.github.flowersinthesand.wes.HttpStatus;
+import io.github.flowersinthesand.wes.ServerHttpExchange;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -36,6 +37,11 @@ import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+/**
+ * {@link ServerHttpExchange} for Servlet 3.
+ * 
+ * @author Donghwan Kim
+ */
 public class ServletServerHttpExchange extends AbstractServerHttpExchange {
 
 	private final HttpServletRequest request;
@@ -161,6 +167,9 @@ public class ServletServerHttpExchange extends AbstractServerHttpExchange {
 		request.getAsyncContext().complete();
 	}
 
+	/**
+	 * {@link HttpServletRequest} and {@link HttpServletResponse} are available.
+	 */
 	@Override
 	public <T> T unwrap(Class<T> clazz) {
 		return HttpServletRequest.class.isAssignableFrom(clazz) ? 

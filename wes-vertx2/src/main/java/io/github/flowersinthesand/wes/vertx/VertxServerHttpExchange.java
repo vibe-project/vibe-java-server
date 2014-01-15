@@ -17,8 +17,8 @@ package io.github.flowersinthesand.wes.vertx;
 
 import io.github.flowersinthesand.wes.AbstractServerHttpExchange;
 import io.github.flowersinthesand.wes.Data;
-import io.github.flowersinthesand.wes.ServerHttpExchange;
 import io.github.flowersinthesand.wes.HttpStatus;
+import io.github.flowersinthesand.wes.ServerHttpExchange;
 
 import java.util.List;
 import java.util.Set;
@@ -98,6 +98,9 @@ public class VertxServerHttpExchange extends AbstractServerHttpExchange {
 		request.response().close();
 	}
 
+	/**
+	 * {@link HttpServerRequest} is available.
+	 */
 	@Override
 	public <T> T unwrap(Class<T> clazz) {
 		return HttpServerRequest.class.isAssignableFrom(clazz) ? clazz.cast(request) : null;

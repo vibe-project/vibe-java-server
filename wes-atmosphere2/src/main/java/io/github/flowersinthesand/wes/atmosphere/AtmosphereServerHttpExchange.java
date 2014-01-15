@@ -17,8 +17,8 @@ package io.github.flowersinthesand.wes.atmosphere;
 
 import io.github.flowersinthesand.wes.AbstractServerHttpExchange;
 import io.github.flowersinthesand.wes.Data;
-import io.github.flowersinthesand.wes.ServerHttpExchange;
 import io.github.flowersinthesand.wes.HttpStatus;
+import io.github.flowersinthesand.wes.ServerHttpExchange;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -164,6 +164,9 @@ public class AtmosphereServerHttpExchange extends AbstractServerHttpExchange {
 		} catch (IOException e) {}
 	}
 
+	/**
+	 * {@link AtmosphereResource} is available.
+	 */
 	@Override
 	public <T> T unwrap(Class<T> clazz) {
 		return AtmosphereResource.class.isAssignableFrom(clazz) ? clazz.cast(resource) : null;

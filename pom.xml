@@ -153,6 +153,12 @@
 				<configuration>
 					<bottom><![CDATA[Copyright {inceptionYear}-{currentYear}, <a href="https://twitter.com/flowersits">Donghwan Kim</a>]]></bottom>
 					<packagesheader>wes</packagesheader>
+					<links>
+						<link>http://atmosphere.github.io/atmosphere/apidocs/</link>
+						<link>http://docs.oracle.com/javaee/7/api/</link>
+						<link>http://vertx.io/api/java/</link>
+						<link>http://www.playframework.com/documentation/2.2.x/api/java/</link>
+					</links>
 					<linksource>true</linksource>
 					<sourcetab>4</sourcetab>
 				</configuration>

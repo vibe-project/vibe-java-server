@@ -91,6 +91,9 @@ public class AtmosphereServerWebSocket extends AbstractServerWebSocket {
 		} catch (IOException e) {}
 	}
 
+	/**
+	 * {@link AtmosphereResource} is available.
+	 */
 	@Override
 	public <T> T unwrap(Class<T> clazz) {
 		return AtmosphereResource.class.isAssignableFrom(clazz) ? clazz.cast(resource) : null;

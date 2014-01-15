@@ -76,6 +76,9 @@ public class VertxServerWebSocket extends AbstractServerWebSocket {
 		socket.writeTextFrame(data);
 	}
 
+	/**
+	 * {@link org.vertx.java.core.http.ServerWebSocket} is available.
+	 */
 	@Override
 	public <T> T unwrap(Class<T> clazz) {
 		return org.vertx.java.core.http.ServerWebSocket.class.isAssignableFrom(clazz) ? 

@@ -66,7 +66,10 @@ public class PlayServerWebSocket extends AbstractServerWebSocket {
 	protected void doSend(String data) {
 		out.write(data);
 	}
-	
+
+	/**
+	 * {@link Request} and {@link WebSocket.Out} are available.
+	 */
 	@Override
 	public <T> T unwrap(Class<T> clazz) {
 		return Request.class.isAssignableFrom(clazz) ? 

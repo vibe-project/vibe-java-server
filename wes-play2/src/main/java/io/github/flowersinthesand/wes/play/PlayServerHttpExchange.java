@@ -17,8 +17,8 @@ package io.github.flowersinthesand.wes.play;
 
 import io.github.flowersinthesand.wes.AbstractServerHttpExchange;
 import io.github.flowersinthesand.wes.Data;
-import io.github.flowersinthesand.wes.ServerHttpExchange;
 import io.github.flowersinthesand.wes.HttpStatus;
+import io.github.flowersinthesand.wes.ServerHttpExchange;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -121,6 +121,9 @@ public class PlayServerHttpExchange extends AbstractServerHttpExchange {
 		out.close();
 	}
 	
+	/**
+	 * {@link Request} and {@link Response} are available.
+	 */
 	@Override
 	public <T> T unwrap(Class<T> clazz) {
 		return Request.class.isAssignableFrom(clazz) ? 

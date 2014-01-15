@@ -18,6 +18,7 @@ package io.github.flowersinthesand.wes.jwa;
 import io.github.flowersinthesand.wes.AbstractServerWebSocket;
 import io.github.flowersinthesand.wes.Actions;
 import io.github.flowersinthesand.wes.Data;
+import io.github.flowersinthesand.wes.ServerWebSocket;
 
 import java.io.IOException;
 import java.net.URI;
@@ -25,6 +26,11 @@ import java.net.URI;
 import javax.websocket.MessageHandler;
 import javax.websocket.Session;
 
+/**
+ * {@link ServerWebSocket} for Java WebSocket API 1.
+ * 
+ * @author Donghwan Kim
+ */
 public class JwaServerWebSocket extends AbstractServerWebSocket {
 
 	private final Session session;
@@ -69,6 +75,9 @@ public class JwaServerWebSocket extends AbstractServerWebSocket {
 		session.getAsyncRemote().sendText(data);
 	}
 
+	/**
+	 * {@link Session} is available.
+	 */
 	@Override
 	public <T> T unwrap(Class<T> clazz) {
 		return Session.class.isAssignableFrom(clazz) ? clazz.cast(session) : null;
