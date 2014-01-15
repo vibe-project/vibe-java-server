@@ -17,6 +17,7 @@
 		<module>wes</module>
 		<module>wes-test</module>
 		<module>wes-atmosphere2</module>
+		<module>wes-servlet3</module>
 		<module>wes-vertx2</module>
 		<module>wes-play2</module>
 	</modules>
