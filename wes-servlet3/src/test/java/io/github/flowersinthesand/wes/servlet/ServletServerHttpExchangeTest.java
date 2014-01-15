@@ -17,11 +17,11 @@ package io.github.flowersinthesand.wes.servlet;
 
 import io.github.flowersinthesand.wes.test.ServerHttpExchangeTestTemplate;
 
+import javax.servlet.Servlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletHandler;
@@ -38,18 +38,22 @@ public class ServletServerHttpExchangeTest extends ServerHttpExchangeTestTemplat
 		server = new Server();
 		ServerConnector connector = new ServerConnector(server);
 		connector.setPort(port);
-		server.setConnectors(new Connector[] { connector });
+		server.addConnector(connector);
+		
+		// Servlet
+		ServletHandler handler = new ServletHandler();
+		server.setHandler(handler);
 		@SuppressWarnings("serial")
-		ServletHolder holder = new ServletHolder(new HttpServlet() {
+	 	Servlet servlet = new HttpServlet() {
 			@Override
 			protected void service(HttpServletRequest req, HttpServletResponse res) {
 				performer.serverAction().on(new ServletServerHttpExchange(req, res));
 			}
-		});
+		};
+		ServletHolder holder = new ServletHolder(servlet);
 		holder.setAsyncSupported(true);
-		ServletHandler handler = new ServletHandler();
 		handler.addServletWithMapping(holder, "/test");
-		server.setHandler(handler);
+		
 		server.start();
 	}
 

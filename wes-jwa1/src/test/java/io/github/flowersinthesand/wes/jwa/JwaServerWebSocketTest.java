@@ -22,7 +22,6 @@ import io.github.flowersinthesand.wes.test.ServerWebSocketTestTemplate;
 import javax.websocket.server.ServerContainer;
 import javax.websocket.server.ServerEndpointConfig;
 
-import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletContextHandler;
@@ -37,7 +36,9 @@ public class JwaServerWebSocketTest extends ServerWebSocketTestTemplate {
 		server = new Server();
 		ServerConnector connector = new ServerConnector(server);
 		connector.setPort(port);
-		server.setConnectors(new Connector[] { connector });
+		server.addConnector(connector);
+		
+		// ServletContext
 		ServletContextHandler handler = new ServletContextHandler();
 		server.setHandler(handler);
 		ServerEndpointConfig config = new JwaBridge("/test").websocketAction(new Action<ServerWebSocket>() {
@@ -49,6 +50,7 @@ public class JwaServerWebSocketTest extends ServerWebSocketTestTemplate {
 		.config();
         ServerContainer container = WebSocketServerContainerInitializer.configureContext(handler);
         container.addEndpoint(config);
+        
 		server.start();
 	}
 

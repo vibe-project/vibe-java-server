@@ -8,7 +8,6 @@ import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.AtmosphereResource.TRANSPORT;
 import org.atmosphere.cpr.AtmosphereServlet;
 import org.atmosphere.handler.AtmosphereHandlerAdapter;
-import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletHandler;
@@ -26,7 +25,11 @@ public class AtmosphereServerHttpExchangeTest extends ServerHttpExchangeTestTemp
 		server = new Server();
 		ServerConnector connector = new ServerConnector(server);
 		connector.setPort(port);
-		server.setConnectors(new Connector[] { connector });
+		server.addConnector(connector);
+		
+		// Servlet
+		ServletHandler handler = new ServletHandler();
+		server.setHandler(handler);
 		AtmosphereServlet servlet = new AtmosphereServlet();
 		servlet.framework().addAtmosphereHandler("/", new AtmosphereHandlerAdapter() {
 			@Override
@@ -38,9 +41,8 @@ public class AtmosphereServerHttpExchangeTest extends ServerHttpExchangeTestTemp
 		});
 		ServletHolder holder = new ServletHolder(servlet);
 		holder.setAsyncSupported(true);
-		ServletHandler handler = new ServletHandler();
 		handler.addServletWithMapping(holder, "/test");
-		server.setHandler(handler);
+		
 		server.start();
 	}
 
