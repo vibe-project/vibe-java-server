@@ -19,6 +19,7 @@ import io.github.flowersinthesand.wes.Action;
 import io.github.flowersinthesand.wes.Actions;
 import io.github.flowersinthesand.wes.ServerWebSocket;
 import io.github.flowersinthesand.wes.SimpleActions;
+import io.github.flowersinthesand.wes.VoidAction;
 
 import java.util.Map;
 import java.util.UUID;
@@ -64,8 +65,15 @@ public class JwaBridge {
 
 		@Override
 		public void onOpen(Session session, EndpointConfig config) {
+			final String id = session.getId();
 			JwaServerWebSocket ws = new JwaServerWebSocket(session);
-			sessions.put(session.getId(), ws);
+			ws.closeAction(new VoidAction() {
+				@Override
+				public void on() {
+					sessions.remove(id);
+				}
+			});
+			sessions.put(id, ws);
 			bridges.get(config.getUserProperties().get("bridge.id")).wsActions.fire(ws);
 		}
 
