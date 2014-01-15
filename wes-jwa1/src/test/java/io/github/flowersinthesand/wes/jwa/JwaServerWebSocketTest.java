@@ -42,7 +42,7 @@ public class JwaServerWebSocketTest extends ServerWebSocketTestTemplate {
 		connector.setPort(port);
 		server.addConnector(connector);
 		
-		// ServletContext
+		// ServletContext and WebSocketServerContainerInitializer
 		ServletContextHandler handler = new ServletContextHandler();
 		server.setHandler(handler);
 		ServerEndpointConfig config = new JwaBridge("/test").websocketAction(new Action<ServerWebSocket>() {

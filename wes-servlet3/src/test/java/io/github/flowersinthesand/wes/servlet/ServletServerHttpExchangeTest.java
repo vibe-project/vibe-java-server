@@ -21,15 +21,14 @@ import io.github.flowersinthesand.wes.Action;
 import io.github.flowersinthesand.wes.ServerHttpExchange;
 import io.github.flowersinthesand.wes.test.ServerHttpExchangeTestTemplate;
 
-import javax.servlet.Servlet;
-import javax.servlet.http.HttpServlet;
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.servlet.ServletHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -44,19 +43,24 @@ public class ServletServerHttpExchangeTest extends ServerHttpExchangeTestTemplat
 		connector.setPort(port);
 		server.addConnector(connector);
 		
-		// Servlet
-		ServletHandler handler = new ServletHandler();
+		// ServletContext
+		ServletContextHandler handler = new ServletContextHandler();
 		server.setHandler(handler);
-		@SuppressWarnings("serial")
-	 	Servlet servlet = new HttpServlet() {
+		ServletContextListener listener = new ServletContextListener() {
 			@Override
-			protected void service(HttpServletRequest req, HttpServletResponse res) {
-				performer.serverAction().on(new ServletServerHttpExchange(req, res));
+			public void contextInitialized(ServletContextEvent event) {
+				new ServletBridge(event.getServletContext(), "/test").httpAction(new Action<ServerHttpExchange>() {
+					@Override
+					public void on(ServerHttpExchange http) {
+						performer.serverAction().on(http);
+					}
+				});
 			}
+			
+			@Override
+			public void contextDestroyed(ServletContextEvent sce) {}
 		};
-		ServletHolder holder = new ServletHolder(servlet);
-		holder.setAsyncSupported(true);
-		handler.addServletWithMapping(holder, "/test");
+		handler.addEventListener(listener);
 		
 		server.start();
 	}

@@ -8,7 +8,6 @@ import io.github.flowersinthesand.wes.test.ServerHttpExchangeTestTemplate;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import org.vertx.java.core.Handler;
 import org.vertx.java.core.VertxFactory;
 import org.vertx.java.core.http.HttpServer;
 import org.vertx.java.core.http.HttpServerRequest;
@@ -19,16 +18,14 @@ public class VertxServerHttpExchangeTest extends ServerHttpExchangeTestTemplate 
 
 	@Override
 	protected void startServer() {
-		server = VertxFactory.newVertx().createHttpServer()
-		.requestHandler(new Handler<HttpServerRequest>() {
+		server = VertxFactory.newVertx().createHttpServer();
+		new VertxBridge(server, "/test").httpAction(new Action<ServerHttpExchange>() {
 			@Override
-			public void handle(HttpServerRequest req) {
-				if (req.path().equals("/test")) {
-					performer.serverAction().on(new VertxServerHttpExchange(req));
-				}
+			public void on(ServerHttpExchange http) {
+				performer.serverAction().on(http);
 			}
-		})
-		.listen(port);
+		});
+		server.listen(port);
 	}
 
 	@Override

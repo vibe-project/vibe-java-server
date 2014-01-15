@@ -7,7 +7,6 @@ import io.github.flowersinthesand.wes.ServerWebSocket;
 import io.github.flowersinthesand.wes.test.ServerWebSocketTestTemplate;
 
 import org.junit.Test;
-import org.vertx.java.core.Handler;
 import org.vertx.java.core.VertxFactory;
 import org.vertx.java.core.http.HttpServer;
 
@@ -17,16 +16,14 @@ public class VertxServerWebSocketTest extends ServerWebSocketTestTemplate {
 
 	@Override
 	protected void startServer() {
-		server = VertxFactory.newVertx().createHttpServer()
-		.websocketHandler(new Handler<org.vertx.java.core.http.ServerWebSocket>() {
+		server = VertxFactory.newVertx().createHttpServer();
+		new VertxBridge(server, "/test").websocketAction(new Action<ServerWebSocket>() {
 			@Override
-			public void handle(org.vertx.java.core.http.ServerWebSocket sws) {
-				if (sws.path().equals("/test")) {
-					performer.serverAction().on(new VertxServerWebSocket(sws));
-				}
+			public void on(ServerWebSocket ws) {
+				performer.serverAction().on(ws);
 			}
-		})
-		.listen(port);
+		});
+		server.listen(port);
 	}
 
 	@Override

@@ -6,16 +6,13 @@ import io.github.flowersinthesand.wes.Action;
 import io.github.flowersinthesand.wes.ServerWebSocket;
 import io.github.flowersinthesand.wes.test.ServerWebSocketTestTemplate;
 
-import java.io.IOException;
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
 
 import org.atmosphere.cpr.AtmosphereResource;
-import org.atmosphere.cpr.AtmosphereResource.TRANSPORT;
-import org.atmosphere.cpr.AtmosphereServlet;
-import org.atmosphere.handler.AtmosphereHandlerAdapter;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.servlet.ServletHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.junit.Test;
 
 public class AtmosphereServerWebSocketTest extends ServerWebSocketTestTemplate {
@@ -30,21 +27,24 @@ public class AtmosphereServerWebSocketTest extends ServerWebSocketTestTemplate {
 		connector.setPort(port);
 		server.addConnector(connector);
 		
-		// Servlet
-		ServletHandler handler = new ServletHandler();
+		// ServletContext
+		ServletContextHandler handler = new ServletContextHandler();
 		server.setHandler(handler);
-		AtmosphereServlet servlet = new AtmosphereServlet();
-		servlet.framework().addAtmosphereHandler("/", new AtmosphereHandlerAdapter() {
+		ServletContextListener listener = new ServletContextListener() {
 			@Override
-			public void onRequest(AtmosphereResource resource) throws IOException {
-				if (resource.transport() == TRANSPORT.WEBSOCKET && resource.getRequest().getMethod().equals("GET")) {
-					performer.serverAction().on(new AtmosphereServerWebSocket(resource));
-				}
+			public void contextInitialized(ServletContextEvent event) {
+				new AtmosphereBridge(event.getServletContext(), "/test").websocketAction(new Action<ServerWebSocket>() {
+					@Override
+					public void on(ServerWebSocket ws) {
+						performer.serverAction().on(ws);
+					}
+				});
 			}
-		});
-		ServletHolder holder = new ServletHolder(servlet);
-		holder.setAsyncSupported(true);
-		handler.addServletWithMapping(holder, "/test");
+			
+			@Override
+			public void contextDestroyed(ServletContextEvent sce) {}
+		};
+		handler.addEventListener(listener);
 		
 		server.start();
 	}
