@@ -20,9 +20,9 @@ import java.util.Set;
 
 /**
  * Represents a server-side HTTP request-response exchange.
- * 
+ * <p>
  * Implementations are not thread-safe and decide whether and which event is
- * fired in asynchronous manner.
+ * fired in asynchronous manner. 
  * 
  * @author Donghwan Kim
  * @see <a href="http://www.w3.org/Protocols/rfc2616/rfc2616.html">RFC2616 -
@@ -58,7 +58,7 @@ public interface ServerHttpExchange extends Wrapper {
 
 	/**
 	 * Attaches an action to be called with the whole request body where the
-	 * request ends.
+	 * request ends. If the body is quite big, it may drain memory quickly.
 	 */
 	ServerHttpExchange bodyAction(Action<Data> action);
 

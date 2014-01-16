@@ -25,7 +25,7 @@ public class Data {
 	private String data;
 
 	/**
-	 * Creates data.
+	 * Creates data from a string.
 	 */
 	public Data(String data) {
 		this.data = data;
@@ -33,6 +33,11 @@ public class Data {
 
 	/**
 	 * Returns the given type of data.
+	 * <p>
+	 * The allowed types for {@code T} are
+	 * <ul>
+	 * <li>{@link String}</li>
+	 * </ul>
 	 */
 	public <T> T as(Class<T> clazz) {
 		if (clazz == String.class) {

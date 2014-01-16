@@ -17,7 +17,7 @@ package io.github.flowersinthesand.wes;
 
 /**
  * Represents a server-side WebSocket session.
- * 
+ * <p>
  * Implementations are not thread-safe and decide whether and which event is
  * fired in asynchronous manner.
  * 
@@ -46,7 +46,8 @@ public interface ServerWebSocket extends Wrapper {
 
 	/**
 	 * Attaches an action for the message event. The allowed message type is
-	 * {@link String} for text messages.
+	 * {@link String} for text messages. If the message is quite big, it may
+	 * drain memory quickly.
 	 */
 	ServerWebSocket messageAction(Action<Data> action);
 
