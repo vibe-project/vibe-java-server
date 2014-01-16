@@ -1,7 +1,6 @@
 #wes
 
-<p>The <strong>wes</strong> (Web Event Source) is an abstraction layer in the form of event source for various event-driven asynchronous web client and server that runs on the Java Virtual Machine allowing the end user to choose the desired framework. The <strong>wes</strong> fits well when you need to write web application running on as many framework as possible like protocol implementation or middleware.</p>
-<p>An application written with <strong>wes</strong> can run on any supported server or client, on Java.</p>
+<p>The <strong>wes</strong> (Web Event Source) is an event-driven abstraction layer for various web application platforms that runs on the Java Virtual Machine. An embeddable web application written with <strong>wes</strong> can run on any supported platform, on Java, so developers can focus on the specific purpose of application and users can choose the desired framework to run application.</p>
 
 * Website: http://flowersinthesand.github.io/wes/ 
 * Twitter: http://twitter.com/flowersits
