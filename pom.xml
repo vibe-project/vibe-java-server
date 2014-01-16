@@ -8,7 +8,7 @@
 	<groupId>io.github.flowersinthesand</groupId>
 	<artifactId>wes-parent</artifactId>
 	<packaging>pom</packaging>
-	<version>0.2.0-SNAPSHOT</version>
+	<version>0.2.0</version>
 	<name>wes</name>
 	<url>http://flowersinthesand.github.io/wes</url>
 	<description>Web Event Source</description>
