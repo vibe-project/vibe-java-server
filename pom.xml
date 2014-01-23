@@ -51,6 +51,7 @@
 		<slf4j.version>1.7.5</slf4j.version>
 		<vertx.version>2.0.2-final</vertx.version>
 		<undertow.version>1.0.0.Beta33</undertow.version>
+		<jetty.version>9.1.1.v20140108</jetty.version>
 	</properties>
 	<dependencyManagement>
 		<dependencies>
@@ -89,9 +90,21 @@
 				<scope>test</scope>
 			</dependency>
 			<dependency>
-				<groupId>org.eclipse.jetty.aggregate</groupId>
-				<artifactId>jetty-all</artifactId>
-				<version>9.1.1.v20140108</version>
+				<groupId>org.eclipse.jetty</groupId>
+				<artifactId>jetty-client</artifactId>
+				<version>${jetty.version}</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.eclipse.jetty.websocket</groupId>
+				<artifactId>javax-websocket-server-impl</artifactId>
+				<version>${jetty.version}</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.eclipse.jetty.websocket</groupId>
+				<artifactId>websocket-client</artifactId>
+				<version>${jetty.version}</version>
 				<scope>test</scope>
 			</dependency>
 			<dependency>
