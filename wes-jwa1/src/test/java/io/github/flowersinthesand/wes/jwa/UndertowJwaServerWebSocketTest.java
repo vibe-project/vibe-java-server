@@ -20,31 +20,24 @@ import static org.junit.Assert.assertThat;
 import io.github.flowersinthesand.wes.Action;
 import io.github.flowersinthesand.wes.ServerWebSocket;
 import io.github.flowersinthesand.wes.test.ServerWebSocketTestTemplate;
+import io.undertow.Undertow;
+import io.undertow.servlet.Servlets;
+import io.undertow.servlet.api.DeploymentInfo;
+import io.undertow.servlet.api.DeploymentManager;
+import io.undertow.websockets.jsr.WebSocketDeploymentInfo;
 
+import javax.servlet.ServletException;
 import javax.websocket.Session;
-import javax.websocket.server.ServerContainer;
 import javax.websocket.server.ServerEndpointConfig;
 
-import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.websocket.jsr356.server.deploy.WebSocketServerContainerInitializer;
 import org.junit.Test;
 
-public class JwaServerWebSocketTest extends ServerWebSocketTestTemplate {
+public class UndertowJwaServerWebSocketTest extends ServerWebSocketTestTemplate {
 
-	Server server;
+	Undertow server;
 
 	@Override
-	protected void startServer() throws Exception {
-		server = new Server();
-		ServerConnector connector = new ServerConnector(server);
-		connector.setPort(port);
-		server.addConnector(connector);
-		
-		// ServletContext and WebSocketServerContainerInitializer
-		ServletContextHandler handler = new ServletContextHandler();
-		server.setHandler(handler);
+	protected void startServer() throws ServletException {
 		ServerEndpointConfig config = new JwaBridge("/test").websocketAction(new Action<ServerWebSocket>() {
 			@Override
 			public void on(ServerWebSocket ws) {
@@ -52,9 +45,20 @@ public class JwaServerWebSocketTest extends ServerWebSocketTestTemplate {
 			}
 		})
 		.config();
-        ServerContainer container = WebSocketServerContainerInitializer.configureContext(handler);
-        container.addEndpoint(config);
+		
+		DeploymentInfo builder = Servlets.deployment()
+			.setClassLoader(UndertowJwaServerWebSocketTest.class.getClassLoader())
+			.setContextPath("/")
+			.addServletContextAttribute(WebSocketDeploymentInfo.ATTRIBUTE_NAME,  new WebSocketDeploymentInfo().addEndpoint(config))
+			.setDeploymentName("test.war");
+		
+		DeploymentManager manager = Servlets.defaultContainer().addDeployment(builder);
+        manager.deploy();
         
+		server = Undertow.builder()
+			.addHttpListener(port, "localhost")
+			.setHandler(manager.start())
+			.build();
 		server.start();
 	}
 	
@@ -71,7 +75,7 @@ public class JwaServerWebSocketTest extends ServerWebSocketTestTemplate {
 	}
 
 	@Override
-	protected void stopServer() throws Exception {
+	protected void stopServer() {
 		server.stop();
 	}
 

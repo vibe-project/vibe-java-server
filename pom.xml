@@ -50,6 +50,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<slf4j.version>1.7.5</slf4j.version>
 		<vertx.version>2.0.2-final</vertx.version>
+		<undertow.version>1.0.0.Beta33</undertow.version>
 	</properties>
 	<dependencyManagement>
 		<dependencies>
@@ -91,6 +92,24 @@
 				<groupId>org.eclipse.jetty.aggregate</groupId>
 				<artifactId>jetty-all</artifactId>
 				<version>9.1.1.v20140108</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>io.undertow</groupId>
+				<artifactId>undertow-core</artifactId>
+				<version>${undertow.version}</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>io.undertow</groupId>
+				<artifactId>undertow-servlet</artifactId>
+				<version>${undertow.version}</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>io.undertow</groupId>
+				<artifactId>undertow-websockets-jsr</artifactId>
+				<version>${undertow.version}</version>
 				<scope>test</scope>
 			</dependency>
 			<dependency>
