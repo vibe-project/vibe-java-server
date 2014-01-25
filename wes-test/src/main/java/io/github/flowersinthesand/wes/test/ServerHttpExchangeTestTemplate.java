@@ -16,6 +16,7 @@
 package io.github.flowersinthesand.wes.test;
 
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.either;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -125,7 +126,7 @@ public abstract class ServerHttpExchangeTestTemplate {
 		performer.serverAction(new Action<ServerHttpExchange>() {
 			@Override
 			public void on(ServerHttpExchange http) {
-				assertThat(http.requestHeaderNames(), hasItems("A", "B"));
+				assertThat(http.requestHeaderNames(), either(hasItems("a", "b")).or(hasItems("A", "B")));
 				assertThat(http.requestHeader("A"), is("A"));
 				assertThat(http.requestHeader("B"), is("B1"));
 				assertThat(http.requestHeaders("A"), contains("A"));
