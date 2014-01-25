@@ -32,7 +32,7 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.junit.Ignore;
 import org.junit.Test;
 
-public class JettyServletServerHttpExchangeTest extends ServerHttpExchangeTestTemplate {
+public class ServletServerHttpExchangeTest extends ServerHttpExchangeTestTemplate {
 
 	Server server;
 
