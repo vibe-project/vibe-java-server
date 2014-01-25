@@ -41,7 +41,9 @@ public interface ServerHttpExchange extends Wrapper {
 	String method();
 
 	/**
-	 * The names of the request headers.
+	 * The names of the request headers. HTTP header is not case-sensitive but
+	 * {@link Set} is case-sensitive. When iterating the set unlike getting the
+	 * header value, you should make it lower-case or upper-case and use it.
 	 */
 	Set<String> requestHeaderNames();
 
