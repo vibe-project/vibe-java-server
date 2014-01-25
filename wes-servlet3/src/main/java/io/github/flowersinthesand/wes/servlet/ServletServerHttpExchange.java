@@ -22,7 +22,7 @@ import io.github.flowersinthesand.wes.ServerHttpExchange;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
+import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.LinkedHashSet;
@@ -104,40 +104,54 @@ public class ServletServerHttpExchange extends AbstractServerHttpExchange {
 
 	@Override
 	protected void readBody() {
+		final ServletInputStream input;
 		try {
-			final ServletInputStream input = request.getInputStream();
-			final String charset = request.getCharacterEncoding() == null ?
-				// HTTP 1.1 says that the default charset is ISO-8859-1 
-				// http://www.w3.org/International/O-HTTP-charset#charset
-				"ISO-8859-1" : 
-				request.getCharacterEncoding();
-			
+			input = request.getInputStream();
+		} catch (IOException e) {
+			throw new RuntimeException();
+		}
+		// HTTP 1.1 says that the default charset is ISO-8859-1 
+		// http://www.w3.org/International/O-HTTP-charset#charset
+		String charsetName = request.getCharacterEncoding();
+		final Charset charset = Charset.forName(charsetName == null ? "ISO-8859-1" : charsetName);
+		final StringBuilder body = new StringBuilder();
+		
+		if (request.getServletContext().getMinorVersion() > 0) {
+			// 3.1+ asynchronous
 			input.setReadListener(new ReadListener() {
-				List<String> chunks = new ArrayList<>();
 				@Override
 				public void onDataAvailable() throws IOException {
 					int bytesRead = -1;
 					byte buffer[] = new byte[4096];
 					while (input.isReady() && (bytesRead = input.read(buffer)) != -1) {
 						String data = new String(buffer, 0, bytesRead, charset);
-						chunks.add(data);
+						body.append(data);
 					}
 				}
 
 				@Override
 				public void onAllDataRead() throws IOException {
-					StringBuilder body = new StringBuilder();
-					for (String chunk : chunks) {
-						body.append(chunk);
-					}
 					bodyActions.fire(new Data(body.toString()));
 				}
 
 				@Override
-				public void onError(Throwable t) {}
+				public void onError(Throwable t) {
+					throw new RuntimeException(t);
+				}
 			});
-		} catch (IOException e) {
-			throw new RuntimeException(e);
+		} else {
+			// 3.0 synchronous
+			try {
+				int bytesRead = -1;
+				byte buffer[] = new byte[4096];
+				while ((bytesRead = input.read(buffer)) != -1) {
+					String data = new String(buffer, 0, bytesRead, charset);
+					body.append(data);
+				}
+				bodyActions.fire(new Data(body.toString()));
+			} catch (IOException e) {
+				throw new RuntimeException();
+			}
 		}
 	}
 

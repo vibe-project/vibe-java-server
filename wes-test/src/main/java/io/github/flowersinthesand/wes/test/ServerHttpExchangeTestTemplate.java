@@ -165,6 +165,28 @@ public abstract class ServerHttpExchangeTestTemplate {
 	}
 	
 	@Test
+	public void bodyAction_charset() {
+		performer.serverAction(new Action<ServerHttpExchange>() {
+			@Override
+			public void on(ServerHttpExchange http) {
+				http.bodyAction(new Action<Data>() {
+					@Override
+					public void on(Data data) {
+						assertThat(data.as(String.class), is("희망을 잃고 쓰러져 가도 언젠가 다시 되돌아온다"));
+						performer.start();
+					}
+				});
+			}
+		})
+		.send(new Action<Request>() {
+			@Override
+			public void on(Request req) {
+				req.content(new StringContentProvider("희망을 잃고 쓰러져 가도 언젠가 다시 되돌아온다"), "text/plain; charset=utf-8");
+			}
+		});
+	}
+	
+	@Test
 	public void setResponseHeader() {
 		performer.serverAction(new Action<ServerHttpExchange>() {
 			@Override
