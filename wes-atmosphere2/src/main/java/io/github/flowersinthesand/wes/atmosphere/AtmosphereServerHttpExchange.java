@@ -16,6 +16,7 @@
 package io.github.flowersinthesand.wes.atmosphere;
 
 import io.github.flowersinthesand.wes.AbstractServerHttpExchange;
+import io.github.flowersinthesand.wes.Actions;
 import io.github.flowersinthesand.wes.Data;
 import io.github.flowersinthesand.wes.HttpStatus;
 import io.github.flowersinthesand.wes.ServerHttpExchange;
@@ -109,44 +110,96 @@ public class AtmosphereServerHttpExchange extends AbstractServerHttpExchange {
 		// http://www.w3.org/International/O-HTTP-charset#charset
 		String charsetName = request.getCharacterEncoding();
 		final Charset charset = Charset.forName(charsetName == null ? "ISO-8859-1" : charsetName);
-		final StringBuilder body = new StringBuilder();
 		
 		if (request.getServletContext().getMinorVersion() > 0) {
 			// 3.1+ asynchronous
+			new AsyncBodyReader(input, charset, bodyActions);
+		} else {
+			// 3.0 synchronous
+			new SyncBodyReader(input, charset, bodyActions);
+		}
+	}
+	
+	private abstract static class BodyReader {
+		final ServletInputStream input;
+		final Charset charset;
+		final Actions<Data> actions;
+		final StringBuilder body = new StringBuilder();
+		
+		public BodyReader(ServletInputStream input, Charset charset, Actions<Data> bodyActions) {
+			this.input = input;
+			this.charset = charset;
+			this.actions = bodyActions;
+			start();
+		}
+
+		abstract void start();
+
+		void read() throws IOException {
+			int bytesRead = -1;
+			byte buffer[] = new byte[4096];
+			while (ready() && (bytesRead = input.read(buffer)) != -1) {
+				String data = new String(buffer, 0, bytesRead, charset);
+				body.append(data);
+			}
+		}
+		
+		abstract boolean ready();
+
+		void end() {
+			actions.fire(new Data(body.toString()));
+		}
+	}
+
+	private static class AsyncBodyReader extends BodyReader {
+		public AsyncBodyReader(ServletInputStream input, Charset charset, Actions<Data> bodyActions) {
+			super(input, charset, bodyActions);
+		}
+		
+		@Override
+		void start() {
 			input.setReadListener(new ReadListener() {
 				@Override
 				public void onDataAvailable() throws IOException {
-					int bytesRead = -1;
-					byte buffer[] = new byte[4096];
-					while (input.isReady() && (bytesRead = input.read(buffer)) != -1) {
-						String data = new String(buffer, 0, bytesRead, charset);
-						body.append(data);
-					}
+					read();
 				}
-
+				
 				@Override
 				public void onAllDataRead() throws IOException {
-					bodyActions.fire(new Data(body.toString()));
+					end();
 				}
-
+				
 				@Override
 				public void onError(Throwable t) {
 					throw new RuntimeException(t);
 				}
 			});
-		} else {
-			// 3.0 synchronous
+		}
+		
+		@Override
+		boolean ready() {
+			return input.isReady();
+		}
+	}
+
+	private static class SyncBodyReader extends BodyReader {
+		public SyncBodyReader(ServletInputStream input, Charset charset, Actions<Data> bodyActions) {
+			super(input, charset, bodyActions);
+		}
+
+		@Override
+		void start() {
 			try {
-				int bytesRead = -1;
-				byte buffer[] = new byte[4096];
-				while ((bytesRead = input.read(buffer)) != -1) {
-					String data = new String(buffer, 0, bytesRead, charset);
-					body.append(data);
-				}
-				bodyActions.fire(new Data(body.toString()));
+				read();
+				end();
 			} catch (IOException e) {
-				throw new RuntimeException();
+				throw new RuntimeException(e);
 			}
+		}
+		
+		@Override
+		boolean ready() {
+			return true;
 		}
 	}
 
