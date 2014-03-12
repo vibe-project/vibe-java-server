@@ -7,8 +7,8 @@
         <version>3.0.0-SNAPSHOT</version>
     </parent>
     <artifactId>reactio-jwa1</artifactId>
-    <name>wes Java WebSocket API 1</name>
-    <description>This bridge integrates server-side wes application with the Java WebSocket API 1</description>
+    <name>react.io Java WebSocket API 1</name>
+    <description>This bridge integrates server-side react.io application with the Java WebSocket API 1</description>
     <dependencies>
         <dependency>
             <groupId>org.atmosphere</groupId>

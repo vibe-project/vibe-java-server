@@ -7,7 +7,7 @@
         <version>3.0.0-SNAPSHOT</version>
     </parent>
     <artifactId>reactio-test</artifactId>
-    <name>wes Test</name>
+    <name>react.io Test</name>
     <description>This module provides templates to test client-side and server-side bridges</description>
     <dependencies>
         <dependency>

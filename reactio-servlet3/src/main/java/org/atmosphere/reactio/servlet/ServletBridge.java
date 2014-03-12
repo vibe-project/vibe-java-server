@@ -20,14 +20,13 @@ import org.atmosphere.reactio.Actions;
 import org.atmosphere.reactio.ServerHttpExchange;
 import org.atmosphere.reactio.SimpleActions;
 
-import java.util.UUID;
-
 import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletRegistration;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.UUID;
 
 /**
  * Convenient class to install Servlet bridge.
@@ -46,7 +45,7 @@ public class ServletBridge {
                 httpActions.fire(new ServletServerHttpExchange(req, resp));
             }
         };
-        ServletRegistration.Dynamic reg = context.addServlet("wes#" + UUID.randomUUID(), servlet);
+        ServletRegistration.Dynamic reg = context.addServlet("reactio#" + UUID.randomUUID(), servlet);
         reg.setAsyncSupported(true);
         reg.addMapping(path);
     }

@@ -15,24 +15,22 @@
  */
 package org.atmosphere.reactio.atmosphere;
 
+import org.atmosphere.cpr.AtmosphereFramework;
+import org.atmosphere.cpr.AtmosphereResource;
+import org.atmosphere.cpr.AtmosphereResource.TRANSPORT;
+import org.atmosphere.cpr.AtmosphereServlet;
+import org.atmosphere.handler.AtmosphereHandlerAdapter;
 import org.atmosphere.reactio.Action;
 import org.atmosphere.reactio.Actions;
 import org.atmosphere.reactio.ServerHttpExchange;
 import org.atmosphere.reactio.ServerWebSocket;
 import org.atmosphere.reactio.SimpleActions;
 
-import java.io.IOException;
-import java.util.UUID;
-
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
-
-import org.atmosphere.cpr.AtmosphereFramework;
-import org.atmosphere.cpr.AtmosphereResource;
-import org.atmosphere.cpr.AtmosphereResource.TRANSPORT;
-import org.atmosphere.cpr.AtmosphereServlet;
-import org.atmosphere.handler.AtmosphereHandlerAdapter;
+import java.io.IOException;
+import java.util.UUID;
 
 /**
  * Convenient class to install Atmosphere bridge.
@@ -65,7 +63,7 @@ public class AtmosphereBridge {
             }
         });
 
-        ServletRegistration.Dynamic reg = context.addServlet("wes#" + UUID.randomUUID(), servlet);
+        ServletRegistration.Dynamic reg = context.addServlet("reactio#" + UUID.randomUUID(), servlet);
         reg.setAsyncSupported(true);
         reg.addMapping(path);
     }

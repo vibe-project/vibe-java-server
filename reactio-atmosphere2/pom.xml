@@ -7,8 +7,8 @@
         <version>3.0.0-SNAPSHOT</version>
     </parent>
     <artifactId>reactio-atmosphere2</artifactId>
-    <name>wes Atmosphere 2</name>
-    <description>This bridge integrates server-side wes application with the Atmosphere 2</description>
+    <name>react.io Atmosphere 2</name>
+    <description>This bridge integrates server-side react.io application with the Atmosphere 2</description>
     <dependencies>
         <dependency>
             <groupId>org.atmosphere</groupId>
