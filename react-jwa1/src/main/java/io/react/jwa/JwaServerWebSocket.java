@@ -19,12 +19,17 @@ import io.react.AbstractServerWebSocket;
 import io.react.Actions;
 import io.react.Data;
 import io.react.ServerWebSocket;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.websocket.MessageHandler;
+import javax.websocket.SendHandler;
+import javax.websocket.SendResult;
 import javax.websocket.Session;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.ByteBuffer;
+import java.util.concurrent.Semaphore;
 
 /**
  * {@link ServerWebSocket} for Java WebSocket API 1.
@@ -33,7 +38,11 @@ import java.nio.ByteBuffer;
  */
 public class JwaServerWebSocket extends AbstractServerWebSocket {
 
+    private final Logger logger = LoggerFactory.getLogger(JwaServerWebSocket.class);
+
     private final Session session;
+    // https://issues.apache.org/bugzilla/show_bug.cgi?id=56026
+    private final Semaphore semaphore = new Semaphore(1, true);
 
     public JwaServerWebSocket(Session session) {
         this.session = session;
@@ -72,12 +81,24 @@ public class JwaServerWebSocket extends AbstractServerWebSocket {
 
     @Override
     protected void doSend(byte[] data, int offset, int length) {
-        session.getAsyncRemote().sendBinary(ByteBuffer.wrap(data, offset, length));
+        try {
+            semaphore.acquireUninterruptibly();
+            session.getAsyncRemote().sendBinary(ByteBuffer.wrap(data, offset, length), new WriteResult(data));
+        } catch (IllegalStateException ex) {
+            // TODO: The message will be losr, need a cache.
+            semaphore.release();
+        }
     }
 
     @Override
     protected void doSend(String data) {
-        session.getAsyncRemote().sendText(data);
+        try {
+            semaphore.acquireUninterruptibly();
+            session.getAsyncRemote().sendText(data, new WriteResult(data));
+        } catch (IllegalStateException ex) {
+            // TODO: The message will be losr, need a cache.
+            semaphore.release();
+        }
     }
 
     /**
@@ -86,6 +107,23 @@ public class JwaServerWebSocket extends AbstractServerWebSocket {
     @Override
     public <T> T unwrap(Class<T> clazz) {
         return Session.class.isAssignableFrom(clazz) ? clazz.cast(session) : null;
+    }
+
+    private final class WriteResult implements SendHandler {
+
+        private final Object message;
+
+        private WriteResult(Object message) {
+            this.message = message;
+        }
+
+        @Override
+        public void onResult(SendResult result) {
+            semaphore.release();
+            if (!result.isOK() || result.getException() != null) {
+                logger.warn("WebSocket {} failed to write {}", session, message);
+            }
+        }
     }
 
 }
