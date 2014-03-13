@@ -28,3 +28,23 @@ local.properties
 
 # PDT-specific
 .buildpath
+
+*.class
+*~
+.*.swp
+.*.swo
+.loadpath
+.buildpath
+.settings
+.classpath
+dependency-reduced-pom.xml
+.idea
+*.iml
+*.ipr
+*.iws
+nbproject
+.DS_Store
+target
+test-output
+nbactions.xml
+atlassian-ide-plugin.xml
