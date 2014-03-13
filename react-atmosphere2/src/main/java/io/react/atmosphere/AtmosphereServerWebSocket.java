@@ -18,13 +18,12 @@ package io.react.atmosphere;
 import io.react.AbstractServerWebSocket;
 import io.react.Data;
 import io.react.ServerWebSocket;
-
-import java.io.IOException;
-import java.io.PrintWriter;
-
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.AtmosphereResourceEvent;
 import org.atmosphere.websocket.WebSocketEventListenerAdapter;
+
+import java.io.IOException;
+import java.io.PrintWriter;
 
 /**
  * {@link ServerWebSocket} for Atmosphere 2.
@@ -89,6 +88,15 @@ public class AtmosphereServerWebSocket extends AbstractServerWebSocket {
         try {
             resource.close();
         } catch (IOException e) {
+        }
+    }
+
+    @Override
+    protected void doSend(byte[] data, int offset, int length) {
+        try {
+            resource.getResponse().getOutputStream().write(data, offset, length);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 

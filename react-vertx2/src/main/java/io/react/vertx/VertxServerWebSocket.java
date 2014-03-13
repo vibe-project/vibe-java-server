@@ -15,6 +15,7 @@
  */
 package io.react.vertx;
 
+import io.netty.buffer.Unpooled;
 import io.react.AbstractServerWebSocket;
 import io.react.Data;
 import io.react.ServerWebSocket;
@@ -74,6 +75,11 @@ public class VertxServerWebSocket extends AbstractServerWebSocket {
     @Override
     protected void doSend(String data) {
         socket.writeTextFrame(data);
+    }
+
+    @Override
+    public void doSend(byte[] data, int offset, int length) {
+        socket.writeBinaryFrame(new Buffer(Unpooled.wrappedBuffer(data, offset, length)));
     }
 
     /**

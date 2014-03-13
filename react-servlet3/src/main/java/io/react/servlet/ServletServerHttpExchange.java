@@ -21,6 +21,13 @@ import io.react.Data;
 import io.react.HttpStatus;
 import io.react.ServerHttpExchange;
 
+import javax.servlet.AsyncContext;
+import javax.servlet.AsyncEvent;
+import javax.servlet.AsyncListener;
+import javax.servlet.ReadListener;
+import javax.servlet.ServletInputStream;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.Charset;
@@ -29,14 +36,6 @@ import java.util.Enumeration;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-
-import javax.servlet.AsyncContext;
-import javax.servlet.AsyncEvent;
-import javax.servlet.AsyncListener;
-import javax.servlet.ReadListener;
-import javax.servlet.ServletInputStream;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 /**
  * {@link ServerHttpExchange} for Servlet 3.
@@ -212,6 +211,15 @@ public class ServletServerHttpExchange extends AbstractServerHttpExchange {
     @Override
     protected void doSetResponseHeader(String name, String value) {
         response.setHeader(name, value);
+    }
+
+    @Override
+    protected void doWrite(byte[] data, int offset, int length) {
+        try {
+            response.getOutputStream().write(data, offset, length);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override

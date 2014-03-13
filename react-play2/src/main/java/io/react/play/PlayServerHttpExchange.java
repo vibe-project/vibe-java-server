@@ -19,16 +19,16 @@ import io.react.AbstractServerHttpExchange;
 import io.react.Data;
 import io.react.HttpStatus;
 import io.react.ServerHttpExchange;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-
 import play.libs.F.Callback0;
 import play.mvc.Http.Request;
 import play.mvc.Http.Response;
 import play.mvc.Results.Chunks;
+
+import java.io.UnsupportedEncodingException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
 /**
  * {@link ServerHttpExchange} for Play 2.
@@ -104,6 +104,17 @@ public class PlayServerHttpExchange extends AbstractServerHttpExchange {
     @Override
     public void doSetResponseHeader(String name, String value) {
         response.setHeader(name, value);
+    }
+
+    @Override
+    protected void doWrite(byte[] data, int offset, int length) {
+        // TODO: https://github.com/Atmosphere/react/issues/23
+        // TODO: We need the char encoding
+        try {
+            out.write(new String(data, offset, length, "UTF-8"));
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override

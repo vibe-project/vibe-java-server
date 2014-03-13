@@ -15,11 +15,11 @@
  */
 package io.react;
 
-import java.util.Iterator;
-import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Abstract base class for {@link ServerHttpExchange}.
@@ -88,6 +88,15 @@ public abstract class AbstractServerHttpExchange implements ServerHttpExchange {
         doWrite(data);
         return this;
     }
+
+    @Override
+    public ServerHttpExchange write(byte[] data, int offset, int length) {
+        logger.trace("{} sends a text chunk {}", this, data);
+        doWrite(data, offset, length);
+        return this;
+    }
+
+    protected abstract void doWrite(byte[] data, int offset, int length);
 
     protected abstract void doWrite(String data);
 

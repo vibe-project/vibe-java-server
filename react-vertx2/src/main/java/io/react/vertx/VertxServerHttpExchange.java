@@ -15,18 +15,18 @@
  */
 package io.react.vertx;
 
+import io.netty.buffer.Unpooled;
 import io.react.AbstractServerHttpExchange;
 import io.react.Data;
 import io.react.HttpStatus;
 import io.react.ServerHttpExchange;
-
-import java.util.List;
-import java.util.Set;
-
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.VoidHandler;
 import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpServerRequest;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * {@link ServerHttpExchange} for Vert.x 2.
@@ -80,6 +80,11 @@ public class VertxServerHttpExchange extends AbstractServerHttpExchange {
     @Override
     public void doSetResponseHeader(String name, String value) {
         request.response().putHeader(name, value);
+    }
+
+    @Override
+    protected void doWrite(byte[] data, int offset, int length) {
+        request.response().write(new Buffer(Unpooled.wrappedBuffer(data, offset, length)));
     }
 
     @Override

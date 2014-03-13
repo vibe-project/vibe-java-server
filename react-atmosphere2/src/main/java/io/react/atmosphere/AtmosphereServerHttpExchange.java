@@ -20,7 +20,13 @@ import io.react.Actions;
 import io.react.Data;
 import io.react.HttpStatus;
 import io.react.ServerHttpExchange;
+import org.atmosphere.cpr.AtmosphereResource;
+import org.atmosphere.cpr.AtmosphereResourceEvent;
+import org.atmosphere.cpr.AtmosphereResourceEventListenerAdapter;
 
+import javax.servlet.ReadListener;
+import javax.servlet.ServletInputStream;
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.Charset;
@@ -29,14 +35,6 @@ import java.util.Enumeration;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-
-import javax.servlet.ReadListener;
-import javax.servlet.ServletInputStream;
-import javax.servlet.http.HttpServletRequest;
-
-import org.atmosphere.cpr.AtmosphereResource;
-import org.atmosphere.cpr.AtmosphereResourceEvent;
-import org.atmosphere.cpr.AtmosphereResourceEventListenerAdapter;
 
 /**
  * {@link ServerHttpExchange} for Atmosphere 2.
@@ -206,6 +204,11 @@ public class AtmosphereServerHttpExchange extends AbstractServerHttpExchange {
     @Override
     public void doSetResponseHeader(String name, String value) {
         resource.getResponse().setHeader(name, value);
+    }
+
+    @Override
+    protected void doWrite(byte[] data, int offset, int length) {
+        resource.getResponse().write(data, offset, length);
     }
 
     @Override

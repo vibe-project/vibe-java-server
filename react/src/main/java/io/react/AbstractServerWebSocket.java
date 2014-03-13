@@ -69,6 +69,15 @@ public abstract class AbstractServerWebSocket implements ServerWebSocket {
         return this;
     }
 
+    @Override
+    public ServerWebSocket send(byte[] data, int offset, int length) {
+        logger.trace("{} sends a text message {}", this, data);
+        doSend(data, offset, length);
+        return this;
+    }
+
+    protected abstract void doSend(byte[] data, int offset, int length);
+
     protected abstract void doSend(String data);
 
     @Override

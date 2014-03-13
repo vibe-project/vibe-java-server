@@ -20,11 +20,11 @@ import io.react.Actions;
 import io.react.Data;
 import io.react.ServerWebSocket;
 
-import java.io.IOException;
-import java.net.URI;
-
 import javax.websocket.MessageHandler;
 import javax.websocket.Session;
+import java.io.IOException;
+import java.net.URI;
+import java.nio.ByteBuffer;
 
 /**
  * {@link ServerWebSocket} for Java WebSocket API 1.
@@ -68,6 +68,11 @@ public class JwaServerWebSocket extends AbstractServerWebSocket {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    protected void doSend(byte[] data, int offset, int length) {
+        session.getAsyncRemote().sendBinary(ByteBuffer.wrap(data, offset, length));
     }
 
     @Override

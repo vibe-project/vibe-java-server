@@ -80,6 +80,11 @@ public interface ServerHttpExchange extends Wrapper {
     ServerHttpExchange write(String data);
 
     /**
+     * Writes a byte body to the response body.
+     */
+    ServerHttpExchange write(byte[] data, int offset, int length);
+
+    /**
      * Closes the response. Each exchange must be finished with this method when
      * done. This method has no side effect if called more than once.
      */

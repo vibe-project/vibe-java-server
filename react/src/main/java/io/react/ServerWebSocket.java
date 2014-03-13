@@ -45,6 +45,11 @@ public interface ServerWebSocket extends Wrapper {
     ServerWebSocket send(String data);
 
     /**
+     * Sends bytes message through the connection
+     */
+    ServerWebSocket send(byte[] data, int offset, int length);
+
+    /**
      * Attaches an action for the message event. The allowed message type is
      * {@link String} for text messages. If the message is quite big, it may
      * drain memory quickly.
