@@ -7,7 +7,7 @@
         <version>3.0.0-SNAPSHOT</version>
     </parent>
     <artifactId>reactio</artifactId>
-    <name>react.io: Web Event Source</name>
+    <name>react.io</name>
     <description>The reactio is an abstraction layer in the form of event source for various event-driven
         asynchronous web client and server that runs on the JVM allowing the end user to choose the desired library.
     </description>
