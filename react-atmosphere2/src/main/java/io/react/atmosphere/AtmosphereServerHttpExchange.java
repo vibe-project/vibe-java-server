@@ -20,9 +20,12 @@ import io.react.Actions;
 import io.react.Data;
 import io.react.HttpStatus;
 import io.react.ServerHttpExchange;
+import org.atmosphere.cpr.AtmosphereRequest;
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.AtmosphereResourceEvent;
 import org.atmosphere.cpr.AtmosphereResourceEventListenerAdapter;
+import org.atmosphere.cpr.AtmosphereResourceImpl;
+import org.atmosphere.cpr.AtmosphereResponse;
 
 import javax.servlet.ReadListener;
 import javax.servlet.ServletInputStream;
@@ -44,9 +47,16 @@ import java.util.Set;
 public class AtmosphereServerHttpExchange extends AbstractServerHttpExchange {
 
     private final AtmosphereResource resource;
+    private final AtmosphereResponse response;
+    private final AtmosphereRequest request;
+    
 
     public AtmosphereServerHttpExchange(AtmosphereResource resource) {
         this.resource = resource.suspend();
+        // Prevent IllegalStateException when the connection gets closed.
+        this.response = AtmosphereResourceImpl.class.cast(resource).getResponse(false);
+        this.request = AtmosphereResourceImpl.class.cast(resource).getRequest(false);
+        
         resource.addEventListener(new AtmosphereResourceEventListenerAdapter() {
             @Override
             public void onResume(AtmosphereResourceEvent event) {
@@ -67,22 +77,22 @@ public class AtmosphereServerHttpExchange extends AbstractServerHttpExchange {
 
     @Override
     public String uri() {
-        String uri = resource.getRequest().getRequestURI();
-        if (resource.getRequest().getQueryString() != null) {
-            uri += "?" + resource.getRequest().getQueryString();
+        String uri = request.getRequestURI();
+        if (request.getQueryString() != null) {
+            uri += "?" + request.getQueryString();
         }
         return uri;
     }
 
     @Override
     public String method() {
-        return resource.getRequest().getMethod();
+        return request.getMethod();
     }
 
     @Override
     public Set<String> requestHeaderNames() {
         Set<String> headerNames = new LinkedHashSet<>();
-        Enumeration<String> enumeration = resource.getRequest().getHeaderNames();
+        Enumeration<String> enumeration = request.getHeaderNames();
         while (enumeration.hasMoreElements()) {
             headerNames.add(enumeration.nextElement());
         }
@@ -92,24 +102,24 @@ public class AtmosphereServerHttpExchange extends AbstractServerHttpExchange {
     @SuppressWarnings("unchecked")
     @Override
     public List<String> requestHeaders(String name) {
-        return Collections.list(resource.getRequest().getHeaders(name));
+        return Collections.list(request.getHeaders(name));
     }
 
     @Override
     protected void readBody() {
-        HttpServletRequest request = resource.getRequest();
+        HttpServletRequest hRequest = request;
         final ServletInputStream input;
         try {
-            input = request.getInputStream();
+            input = hRequest.getInputStream();
         } catch (IOException e) {
             throw new RuntimeException();
         }
         // HTTP 1.1 says that the default charset is ISO-8859-1
         // http://www.w3.org/International/O-HTTP-charset#charset
-        String charsetName = request.getCharacterEncoding();
+        String charsetName = hRequest.getCharacterEncoding();
         final Charset charset = Charset.forName(charsetName == null ? "ISO-8859-1" : charsetName);
 
-        if (request.getServletContext().getMinorVersion() > 0) {
+        if (hRequest.getServletContext().getMinorVersion() > 0) {
             // 3.1+ asynchronous
             new AsyncBodyReader(input, charset, bodyActions);
         } else {
@@ -203,23 +213,23 @@ public class AtmosphereServerHttpExchange extends AbstractServerHttpExchange {
 
     @Override
     public void doSetResponseHeader(String name, String value) {
-        resource.getResponse().setHeader(name, value);
+        response.setHeader(name, value);
     }
 
     @Override
     protected void doWrite(byte[] data, int offset, int length) {
-        resource.getResponse().write(data, offset, length);
+        response.write(data, offset, length);
     }
 
     @Override
     public void doSetStatus(HttpStatus status) {
-        resource.getResponse().setStatus(status.code());
+        response.setStatus(status.code());
     }
 
     @Override
     protected void doWrite(String data) {
         try {
-            PrintWriter writer = resource.getResponse().getWriter();
+            PrintWriter writer = response.getWriter();
             writer.print(data);
             writer.flush();
         } catch (IOException e) {
