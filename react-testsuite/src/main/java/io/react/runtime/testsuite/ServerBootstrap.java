@@ -44,7 +44,6 @@ public class ServerBootstrap implements ServletContextListener {
         Server server = new DefaultServer();
 
         // This action is equivalent to socket handler of server.js in the react repo
-        // 
         // https://github.com/atmosphere/react-js/blob/9738b4438514d2f9476b938c16b1869361e79d13/test/server.js#L593-L611
         server.socketAction(new Action<Socket>() {
             @Override
@@ -54,7 +53,8 @@ public class ServerBootstrap implements ServletContextListener {
                     public void on(Object data) {
                         socket.send("echo", data);
                     }
-                }).on("disconnect", new VoidAction() {
+                })
+                .on("disconnect", new VoidAction() {
                     @Override
                     public void on() {
                         new Timer(true).schedule(new TimerTask() {
@@ -64,7 +64,8 @@ public class ServerBootstrap implements ServletContextListener {
                             }
                         }, 100);
                     }
-                }).on("reply-by-server", new Action<Reply<Boolean>>() {
+                })
+                .on("reply-by-server", new Action<Reply<Boolean>>() {
                     @Override
                     public void on(Reply<Boolean> reply) {
                         if (reply.data()) {
@@ -73,7 +74,8 @@ public class ServerBootstrap implements ServletContextListener {
                             reply.fail(reply.data());
                         }
                     }
-                }).on("reply-by-client", new VoidAction() {
+                })
+                .on("reply-by-client", new VoidAction() {
                     @Override
                     public void on() {
                         socket.send("reply-by-client", 1, new Action<String>() {

@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * {@code Socket} is a connectivity between the two portal endpoints.
+ * {@code Socket} is a connectivity between the two react endpoints.
  * <p>
  * Do not hold a reference on {@code Socket} unless the reference shares the
  * same life cycle with it. It makes things complicated since it is stateful and

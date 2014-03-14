@@ -58,7 +58,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * Default implementation of {@link Server}.
  * <p>
  * This implementation provides and manages {@link Socket} processing HTTP request and WebSocket
- * following the portal protocol.
+ * following the react protocol.
  * <p>
  * As options, the following methods can be overridden.
  * <ul>
@@ -201,7 +201,7 @@ public class DefaultServer implements Server {
     };
 
     /**
-     * Takes a portal URI and returns a map of parameters.
+     * Takes a react URI and returns a map of parameters.
      * <p>
      * This is a counterpart of {@code urlBuilder} of client option.
      */
@@ -415,12 +415,9 @@ public class DefaultServer implements Server {
                     closeActions.fire();
                 }
             })
-                    .setResponseHeader(
-                            "content-type",
-                            "text/"
-                                    + (params.get("transport").equals("sse") ? "event-stream"
-                                            : "plain") + "; charset=utf-8")
-                    .write((isAndroidLowerThan3 ? text2KB : "") + text2KB + "\n");
+            .setResponseHeader("content-type",
+                "text/" + (params.get("transport").equals("sse") ? "event-stream" : "plain") + "; charset=utf-8")
+            .write((isAndroidLowerThan3 ? text2KB : "") + text2KB + "\n");
         }
 
         @Override

@@ -37,8 +37,8 @@ import io.react.ServerWebSocket;
  * 
  * @author Donghwan Kim
  * @see <a
- *      href="https://github.com/flowersinthesand/portal-java-examples/tree/master/server/platform/"
- *      target="_parent">Examples to install portal</a>
+ *      href="https://github.com/atmosphere/react-examples/tree/master/server/platform/"
+ *      target="_parent">Examples to install react</a>
  */
 public interface Server {
 
