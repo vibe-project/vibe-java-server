@@ -17,6 +17,7 @@
     <modules>
         <module>react-engine</module>
         <module>react-test</module>
+        <module>react-runtime</module>
         <module>react-atmosphere2</module>
         <module>react-servlet3</module>
         <module>react-jwa1</module>
@@ -75,6 +76,11 @@
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
                 <version>${slf4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>2.3.1</version>
             </dependency>
             <dependency>
                 <groupId>org.slf4j</groupId>
