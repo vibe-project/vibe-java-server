@@ -6,7 +6,7 @@
         <artifactId>react-parent</artifactId>
         <version>3.0.0.Alpha1-SNAPSHOT</version>
     </parent>
-    <artifactId>react</artifactId>
+    <artifactId>react-engine</artifactId>
     <name>react</name>
     <description>The react is an abstraction layer in the form of event source for various event-driven
         asynchronous web client and server that runs on the JVM allowing the end user to choose the desired library.
