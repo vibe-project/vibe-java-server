@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.atmosphere</groupId>
         <artifactId>react-parent</artifactId>
-        <version>3.0.0-SNAPSHOT</version>
+        <version>3.0.0.Alpha1-SNAPSHOT</version>
     </parent>
     <artifactId>react-vertx2</artifactId>
     <name>react Vert.x 2</name>
