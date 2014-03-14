@@ -17,7 +17,6 @@
     <modules>
         <module>react-engine</module>
         <module>react-test</module>
-        <module>react-runtime</module>
         <module>react-atmosphere2</module>
         <module>react-servlet3</module>
         <module>react-jwa1</module>
