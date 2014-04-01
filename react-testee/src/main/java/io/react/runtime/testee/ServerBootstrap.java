@@ -43,9 +43,9 @@ public class ServerBootstrap implements ServletContextListener {
                     @Override
                     public void on(Reply<Boolean> reply) {
                         if (reply.data()) {
-                            reply.done(reply.data());
+                            reply.resolve(reply.data());
                         } else {
-                            reply.fail(reply.data());
+                            reply.reject(reply.data());
                         }
                     }
                 });

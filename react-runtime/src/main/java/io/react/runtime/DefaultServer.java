@@ -570,22 +570,22 @@ public class DefaultServer implements Server {
                                 }
 
                                 @Override
-                                public void done() {
-                                    done(null);
+                                public void resolve() {
+                                    resolve(null);
                                 }
 
                                 @Override
-                                public void done(Object value) {
+                                public void resolve(Object value) {
                                     sendReply(value, false);
                                 }
 
                                 @Override
-                                public void fail() {
-                                    fail(null);
+                                public void reject() {
+                                    reject(null);
                                 }
 
                                 @Override
-                                public void fail(Object value) {
+                                public void reject(Object value) {
                                     sendReply(value, true);
                                 }
 

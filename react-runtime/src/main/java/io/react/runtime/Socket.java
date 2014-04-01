@@ -124,24 +124,24 @@ public interface Socket extends AbstractSocket<Socket> {
         T data();
 
         /**
-         * Replies with success.
+         * Resolves.
          */
-        void done();
+        void resolve();
 
         /**
-         * Replies with success attaching data.
+         * Resolves with the value.
          */
-        void done(Object data);
+        void resolve(Object data);
 
         /**
-         * Replies with failure.
+         * Rejects.
          */
-        void fail();
+        void reject();
 
         /**
-         * Replies with failure attaching data.
+         * Rejects with the reason.
          */
-        void fail(Object error);
+        void reject(Object error);
 
     }
 
