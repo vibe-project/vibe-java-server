@@ -182,13 +182,9 @@ public class DefaultServer implements Server {
 
         private void setCors(ServerHttpExchange http) {
             String origin = http.requestHeader("origin");
-            String acrh = http.requestHeader("access-control-request-headers");
             http
             .setResponseHeader("access-control-allow-origin", origin != null ? origin : "*")
             .setResponseHeader("access-control-allow-credentials", "true");
-            if (acrh != null) {
-                http.setResponseHeader("access-control-allow-headers", acrh);
-            }
         }
     };
 
@@ -423,10 +419,7 @@ public class DefaultServer implements Server {
         @Override
         synchronized void send(String data) {
             String payload = (isAndroidLowerThan3 ? text2KB + text2KB : "") + "";
-            for (String datum : data.split("\r\n|\r|\n")) {
-                payload += "data: " + datum + "\n";
-            }
-            payload += "\n";
+            payload += "data: " + data + "\n\n";
             http.write(payload);
         }
 
@@ -438,7 +431,8 @@ public class DefaultServer implements Server {
 
     private class LongpollTransport extends HttpTransport {
         AtomicReference<ServerHttpExchange> httpRef = new AtomicReference<>();
-        AtomicBoolean closed = new AtomicBoolean();
+        AtomicBoolean aborted = new AtomicBoolean();
+        AtomicBoolean ended = new AtomicBoolean();
         AtomicBoolean written = new AtomicBoolean();
         Set<String> buffer = new CopyOnWriteArraySet<>();
         AtomicReference<Timer> closeTimer = new AtomicReference<>();
@@ -453,18 +447,19 @@ public class DefaultServer implements Server {
             http.closeAction(new VoidAction() {
                 @Override
                 public void on() {
-                    closed.set(true);
+                    ended.set(true);
                     if (parameters.get("when").equals("poll") && !written.get()) {
                         closeActions.fire();
+                    } else {
+                        Timer timer = new Timer(true);
+                        timer.schedule(new TimerTask() {
+                            @Override
+                            public void run() {
+                                closeActions.fire();
+                            }
+                        }, 500);
+                        closeTimer.set(timer);
                     }
-                    Timer timer = new Timer(true);
-                    timer.schedule(new TimerTask() {
-                        @Override
-                        public void run() {
-                            closeActions.fire();
-                        }
-                    }, 500);
-                    closeTimer.set(timer);
                 }
             })
             .setResponseHeader("content-type",
@@ -474,11 +469,15 @@ public class DefaultServer implements Server {
                 http.close();
             } else {
                 httpRef.set(http);
-                closed.set(false);
+                ended.set(false);
                 written.set(false);
                 Timer timer = closeTimer.getAndSet(null);
                 if (timer != null) {
                     timer.cancel();
+                }
+                if (aborted.get()) {
+                    http.close();
+                    return;
                 }
                 if (parameters.containsKey("lastEventIds")) {
                     String[] lastEventIds = parameters.get("lastEventIds").split(",");
@@ -513,14 +512,17 @@ public class DefaultServer implements Server {
                 buffer.add(data);
             }
             ServerHttpExchange http = httpRef.getAndSet(null);
-            if (http != null && !closed.get()) {
+            if (http != null && !ended.get()) {
                 written.set(true);
                 String payload;
-                try {
-                    payload = params.get("transport").equals("longpolljsonp") ? 
-                        params.get("callback") + "(" + new ObjectMapper().writeValueAsString(data) + ");" : data;
-                } catch (JsonProcessingException e) {
-                    throw new RuntimeException(e);
+                if (params.get("transport").equals("longpolljsonp")) {
+                    try {
+                        payload = params.get("callback") + "(" + new ObjectMapper().writeValueAsString(data) + ");";
+                    } catch (JsonProcessingException e) {
+                        throw new RuntimeException(e);
+                    }
+                } else {
+                    payload = data;
                 }
                 http.close(payload);
             }
@@ -528,8 +530,9 @@ public class DefaultServer implements Server {
 
         @Override
         synchronized void close() {
+            aborted.set(true);
             ServerHttpExchange http = httpRef.getAndSet(null);
-            if (http != null && !closed.get()) {
+            if (http != null && !ended.get()) {
                 http.close();
             }
         }
@@ -635,6 +638,12 @@ public class DefaultServer implements Server {
                     public void on() {
                         timer.getAndSet(createTimer()).cancel();
                         send("heartbeat");
+                    }
+                });
+                on("close", new VoidAction() {
+                    @Override
+                    public void on() {
+                        timer.get().cancel();
                     }
                 });
             }
