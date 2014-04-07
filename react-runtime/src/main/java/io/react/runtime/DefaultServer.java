@@ -78,9 +78,9 @@ public class DefaultServer implements Server {
     private Action<ServerHttpExchange> httpAction = new Action<ServerHttpExchange>() {
         @Override
         public void on(final ServerHttpExchange http) {
+            final Map<String, String> params = parseURI(http.uri());
             switch (http.method()) {
             case "GET":
-                Map<String, String> params = parseURI(http.uri());
                 setNocache(http);
                 setCors(http);
                 switch (params.get("when")) {
@@ -141,7 +141,7 @@ public class DefaultServer implements Server {
                     @Override
                     public void on(Data body) {
                         String data = body.as(String.class).substring("data=".length());
-                        String id = findSocketId(data);
+                        String id = params.get("id");
 
                         DefaultSocket socket = sockets.get(id);
                         if (socket != null) {
@@ -158,12 +158,6 @@ public class DefaultServer implements Server {
                         }
                         http.close();
                     };
-
-                    private String findSocketId(String text) {
-                        Matcher matcher = Pattern.compile("\"socket\":\"([^\"]+)\"").matcher(text);
-                        matcher.find();
-                        return matcher.group(1);
-                    }
                 });
                 break;
             default:
