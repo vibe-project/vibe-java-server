@@ -38,11 +38,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -534,9 +534,10 @@ public class DefaultServer implements Server {
 
     private class DefaultSocket implements Socket {
         final Transport transport;
+        AtomicInteger eventId = new AtomicInteger();
         Set<String> tags = new CopyOnWriteArraySet<>();
         ConcurrentMap<String, Actions<Object>> actionsMap = new ConcurrentHashMap<>();
-        ConcurrentMap<String, Action<Object>> replyMap = new ConcurrentHashMap<>();
+        ConcurrentMap<String, Map<String, Action<Object>>> callbacksMap = new ConcurrentHashMap<>();
 
         DefaultSocket(final Transport transport) {
             this.transport = transport;
@@ -604,9 +605,13 @@ public class DefaultServer implements Server {
             on("reply", new Action<Map<String, Object>>() {
                 @Override
                 public void on(Map<String, Object> info) {
-                    Action<Object> reply = replyMap.remove(info.get("id"));
-                    if (reply != null) {
-                        reply.on(info.get("data"));
+                    Map<String, Action<Object>> cbs = callbacksMap.remove(info.get("id"));
+                    if (cbs != null) {
+                        Action<Object> action = (Boolean) info.get("exception") ? 
+                                cbs.get("rejected") : cbs.get("resolved");
+                        if (action != null) {
+                            action.on(info.get("data"));
+                        }
                     } else {
                         log.error("Reply callback not found in socket#{} with info, {}", id(), info);
                     }
@@ -704,21 +709,29 @@ public class DefaultServer implements Server {
             return send(event, data, null);
         }
 
+        @Override
+        public <T> Socket send(String type, Object data, Action<T> resolved) {
+            return send(type, data, resolved, null);
+        }
+        
         @SuppressWarnings("unchecked")
         @Override
-        public <T> Socket send(String type, Object data, Action<T> reply) {
-            String eventId = UUID.randomUUID().toString();
+        public <T, U> Socket send(String type, Object data, Action<T> resolved, Action<U> rejected) {
+            String id = "" + eventId.incrementAndGet();
             Map<String, Object> event = new LinkedHashMap<String, Object>();
 
-            event.put("id", eventId);
+            event.put("id", id);
             event.put("type", type);
             event.put("data", data);
-            event.put("reply", reply != null);
+            event.put("reply", resolved != null || rejected != null);
 
             String text = stringifyEvent(event);
             transport.send(text);
-            if (reply != null) {
-                replyMap.put(eventId, (Action<Object>) reply);
+            if (resolved != null || rejected != null) {
+                Map<String, Action<Object>> cbs = new LinkedHashMap<String, Action<Object>>();
+                cbs.put("resolved", (Action<Object>) resolved);
+                cbs.put("rejected", (Action<Object>) rejected);
+                callbacksMap.put(id, cbs);
             }
             return this;
         }

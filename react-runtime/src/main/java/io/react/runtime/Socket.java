@@ -102,12 +102,21 @@ public interface Socket extends AbstractSocket<Socket> {
     <T> Socket off(String event, Action<T> action);
 
     /**
-     * Sends a given event with data registering callback.
+     * Sends a given event with data attaching resolved callback.
      * <p>
      * For the allowed types for {@code T}, see
      * {@link Socket#on(String, Action)}.
      */
-    <T> Socket send(String event, Object data, Action<T> reply);
+    <T> Socket send(String event, Object data, Action<T> resolved);
+
+    /**
+     * Sends a given event with data attaching resolved callback 
+     * and rejected callback.
+     * <p>
+     * For the allowed types for {@code T}, see
+     * {@link Socket#on(String, Action)}.
+     */
+    <T, U> Socket send(String event, Object data, Action<T> resolved, Action<U> rejected);
 
     /**
      * Interface to deal with reply.
