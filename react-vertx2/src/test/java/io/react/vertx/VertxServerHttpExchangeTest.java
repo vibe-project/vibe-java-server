@@ -43,7 +43,7 @@ public class VertxServerHttpExchangeTest extends ServerHttpExchangeTestTemplate 
                 performer.start();
             }
         })
-                .send();
+        .send();
     }
 
     @Override

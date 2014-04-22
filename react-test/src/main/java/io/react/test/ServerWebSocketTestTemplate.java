@@ -89,7 +89,7 @@ public abstract class ServerWebSocketTestTemplate {
                 performer.start();
             }
         })
-                .connect("/test?hello=there");
+        .connect("/test?hello=there");
     }
 
     @Test
@@ -100,13 +100,13 @@ public abstract class ServerWebSocketTestTemplate {
                 performer.start();
             }
         })
-                .serverAction(new Action<ServerWebSocket>() {
-                    @Override
-                    public void on(ServerWebSocket ws) {
-                        ws.close();
-                    }
-                })
-                .connect();
+        .serverAction(new Action<ServerWebSocket>() {
+            @Override
+            public void on(ServerWebSocket ws) {
+                ws.close();
+            }
+        })
+        .connect();
     }
 
     @Test
@@ -117,13 +117,13 @@ public abstract class ServerWebSocketTestTemplate {
                 performer.start();
             }
         })
-                .serverAction(new Action<ServerWebSocket>() {
-                    @Override
-                    public void on(ServerWebSocket ws) {
-                        ws.close().close();
-                    }
-                })
-                .connect();
+        .serverAction(new Action<ServerWebSocket>() {
+            @Override
+            public void on(ServerWebSocket ws) {
+                ws.close().close();
+            }
+        })
+        .connect();
     }
 
     @Test
@@ -135,13 +135,13 @@ public abstract class ServerWebSocketTestTemplate {
                 performer.start();
             }
         })
-                .serverAction(new Action<ServerWebSocket>() {
-                    @Override
-                    public void on(ServerWebSocket ws) {
-                        ws.send("A Will Remains in the Ashes");
-                    }
-                })
-                .connect();
+        .serverAction(new Action<ServerWebSocket>() {
+            @Override
+            public void on(ServerWebSocket ws) {
+                ws.send("A Will Remains in the Ashes");
+            }
+        })
+        .connect();
     }
 
     @Test
@@ -162,19 +162,19 @@ public abstract class ServerWebSocketTestTemplate {
                 });
             }
         })
-                .serverAction(new Action<ServerWebSocket>() {
+        .serverAction(new Action<ServerWebSocket>() {
+            @Override
+            public void on(ServerWebSocket ws) {
+                ws.messageAction(new Action<Data>() {
                     @Override
-                    public void on(ServerWebSocket ws) {
-                        ws.messageAction(new Action<Data>() {
-                            @Override
-                            public void on(Data data) {
-                                assertThat(data.as(String.class), is("A road of winds the water builds"));
-                                performer.start();
-                            }
-                        });
+                    public void on(Data data) {
+                        assertThat(data.as(String.class), is("A road of winds the water builds"));
+                        performer.start();
                     }
-                })
-                .connect();
+                });
+            }
+        })
+        .connect();
     }
 
     // TODO
@@ -193,7 +193,7 @@ public abstract class ServerWebSocketTestTemplate {
                 });
             }
         })
-                .connect();
+        .connect();
     }
 
     @Test
@@ -204,18 +204,18 @@ public abstract class ServerWebSocketTestTemplate {
                 sess.close();
             }
         })
-                .serverAction(new Action<ServerWebSocket>() {
+        .serverAction(new Action<ServerWebSocket>() {
+            @Override
+            public void on(ServerWebSocket ws) {
+                ws.closeAction(new VoidAction() {
                     @Override
-                    public void on(ServerWebSocket ws) {
-                        ws.closeAction(new VoidAction() {
-                            @Override
-                            public void on() {
-                                performer.start();
-                            }
-                        });
+                    public void on() {
+                        performer.start();
                     }
-                })
-                .connect();
+                });
+            }
+        })
+        .connect();
     }
 
     protected class Performer {

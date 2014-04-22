@@ -42,18 +42,18 @@ public class VertxServerWebSocket extends AbstractServerWebSocket {
                 closeActions.fire();
             }
         })
-                .exceptionHandler(new Handler<Throwable>() {
-                    @Override
-                    public void handle(Throwable throwable) {
-                        errorActions.fire(throwable);
-                    }
-                })
-                .dataHandler(new Handler<Buffer>() {
-                    @Override
-                    public void handle(Buffer buffer) {
-                        messageActions.fire(new Data(buffer.toString()));
-                    }
-                });
+        .exceptionHandler(new Handler<Throwable>() {
+            @Override
+            public void handle(Throwable throwable) {
+                errorActions.fire(throwable);
+            }
+        })
+        .dataHandler(new Handler<Buffer>() {
+            @Override
+            public void handle(Buffer buffer) {
+                messageActions.fire(new Data(buffer.toString()));
+            }
+        });
     }
 
     @Override

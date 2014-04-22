@@ -66,7 +66,7 @@ public class AtmosphereServerHttpExchangeTest extends ServerHttpExchangeTestTemp
                 performer.start();
             }
         })
-                .send();
+        .send();
     }
 
     @Override

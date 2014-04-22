@@ -42,7 +42,7 @@ public class VertxServerWebSocketTest extends ServerWebSocketTestTemplate {
                 performer.start();
             }
         })
-                .connect();
+        .connect();
     }
 
 }

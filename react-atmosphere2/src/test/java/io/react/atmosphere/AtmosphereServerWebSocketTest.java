@@ -60,7 +60,7 @@ public class AtmosphereServerWebSocketTest extends ServerWebSocketTestTemplate {
                 performer.start();
             }
         })
-                .connect();
+        .connect();
     }
 
     @Override

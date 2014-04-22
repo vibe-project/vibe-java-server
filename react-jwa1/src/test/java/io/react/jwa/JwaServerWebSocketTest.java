@@ -68,7 +68,7 @@ public class JwaServerWebSocketTest extends ServerWebSocketTestTemplate {
                 performer.start();
             }
         })
-                .connect();
+        .connect();
     }
 
     @Override

@@ -101,7 +101,7 @@ public abstract class ServerHttpExchangeTestTemplate {
                 performer.start();
             }
         })
-                .send("/test?hello=there");
+        .send("/test?hello=there");
     }
 
     @Test
@@ -113,12 +113,12 @@ public abstract class ServerHttpExchangeTestTemplate {
                 performer.start();
             }
         })
-                .send(new Action<Request>() {
-                    @Override
-                    public void on(Request req) {
-                        req.method(HttpMethod.POST);
-                    }
-                });
+        .send(new Action<Request>() {
+            @Override
+            public void on(Request req) {
+                req.method(HttpMethod.POST);
+            }
+        });
     }
 
     @Test
@@ -134,12 +134,12 @@ public abstract class ServerHttpExchangeTestTemplate {
                 performer.start();
             }
         })
-                .send(new Action<Request>() {
-                    @Override
-                    public void on(Request req) {
-                        req.header("A", "A").header("B", "B1").header("B", "B2");
-                    }
-                });
+        .send(new Action<Request>() {
+            @Override
+            public void on(Request req) {
+                req.header("A", "A").header("B", "B1").header("B", "B2");
+            }
+        });
     }
 
     @Test
@@ -156,12 +156,12 @@ public abstract class ServerHttpExchangeTestTemplate {
                 });
             }
         })
-                .send(new Action<Request>() {
-                    @Override
-                    public void on(Request req) {
-                        req.content(new StringContentProvider("A Breath Clad In Happiness"));
-                    }
-                });
+        .send(new Action<Request>() {
+            @Override
+            public void on(Request req) {
+                req.content(new StringContentProvider("A Breath Clad In Happiness"));
+            }
+        });
     }
 
     @Test
@@ -178,12 +178,12 @@ public abstract class ServerHttpExchangeTestTemplate {
                 });
             }
         })
-                .send(new Action<Request>() {
-                    @Override
-                    public void on(Request req) {
-                        req.content(new StringContentProvider("희망을 잃고 쓰러져 가도 언젠가 다시 되돌아온다"), "text/plain; charset=utf-8");
-                    }
-                });
+        .send(new Action<Request>() {
+            @Override
+            public void on(Request req) {
+                req.content(new StringContentProvider("희망을 잃고 쓰러져 가도 언젠가 다시 되돌아온다"), "text/plain; charset=utf-8");
+            }
+        });
     }
 
     @Test
@@ -194,17 +194,17 @@ public abstract class ServerHttpExchangeTestTemplate {
                 http.setResponseHeader("A", "A").setResponseHeader("B", Arrays.asList("B1", "B2")).close();
             }
         })
-                .responseListener(new Response.Listener.Adapter() {
-                    @Override
-                    public void onSuccess(Response res) {
-                        HttpFields headers = res.getHeaders();
-                        assertThat(headers.getFieldNamesCollection(), hasItems("A", "B"));
-                        assertThat(headers.get("A"), is("A"));
-                        assertThat(headers.get("B"), is("B1, B2"));
-                        performer.start();
-                    }
-                })
-                .send();
+        .responseListener(new Response.Listener.Adapter() {
+            @Override
+            public void onSuccess(Response res) {
+                HttpFields headers = res.getHeaders();
+                assertThat(headers.getFieldNamesCollection(), hasItems("A", "B"));
+                assertThat(headers.get("A"), is("A"));
+                assertThat(headers.get("B"), is("B1, B2"));
+                performer.start();
+            }
+        })
+        .send();
     }
 
     @Test
@@ -215,23 +215,23 @@ public abstract class ServerHttpExchangeTestTemplate {
                 http.write("X").write("Y").write("Z").close();
             }
         })
-                .responseListener(new Response.Listener.Adapter() {
-                    List<String> chunks = new ArrayList<>();
+        .responseListener(new Response.Listener.Adapter() {
+            List<String> chunks = new ArrayList<>();
 
-                    @Override
-                    public void onContent(Response response, ByteBuffer content) {
-                        byte[] bytes = new byte[content.remaining()];
-                        content.get(bytes);
-                        chunks.add(new String(bytes, Charset.forName("ISO-8859-1")));
-                    }
+            @Override
+            public void onContent(Response response, ByteBuffer content) {
+                byte[] bytes = new byte[content.remaining()];
+                content.get(bytes);
+                chunks.add(new String(bytes, Charset.forName("ISO-8859-1")));
+            }
 
-                    @Override
-                    public void onSuccess(Response response) {
-                        assertThat(chunks, contains("X", "Y", "Z"));
-                        performer.start();
-                    }
-                })
-                .send();
+            @Override
+            public void onSuccess(Response response) {
+                assertThat(chunks, contains("X", "Y", "Z"));
+                performer.start();
+            }
+        })
+        .send();
     }
 
     @Test
@@ -242,13 +242,13 @@ public abstract class ServerHttpExchangeTestTemplate {
                 http.close();
             }
         })
-                .responseListener(new Response.Listener.Adapter() {
-                    @Override
-                    public void onSuccess(Response response) {
-                        performer.start();
-                    }
-                })
-                .send();
+        .responseListener(new Response.Listener.Adapter() {
+            @Override
+            public void onSuccess(Response response) {
+                performer.start();
+            }
+        })
+        .send();
     }
 
     @Test
@@ -259,23 +259,23 @@ public abstract class ServerHttpExchangeTestTemplate {
                 http.close("Out of existence");
             }
         })
-                .responseListener(new Response.Listener.Adapter() {
-                    String body;
+        .responseListener(new Response.Listener.Adapter() {
+            String body;
 
-                    @Override
-                    public void onContent(Response response, ByteBuffer content) {
-                        byte[] bytes = new byte[content.remaining()];
-                        content.get(bytes);
-                        body = new String(bytes, Charset.forName("ISO-8859-1"));
-                    }
+            @Override
+            public void onContent(Response response, ByteBuffer content) {
+                byte[] bytes = new byte[content.remaining()];
+                content.get(bytes);
+                body = new String(bytes, Charset.forName("ISO-8859-1"));
+            }
 
-                    @Override
-                    public void onSuccess(Response response) {
-                        assertThat(body, is("Out of existence"));
-                        performer.start();
-                    }
-                })
-                .send();
+            @Override
+            public void onSuccess(Response response) {
+                assertThat(body, is("Out of existence"));
+                performer.start();
+            }
+        })
+        .send();
     }
 
     @Test
@@ -286,14 +286,14 @@ public abstract class ServerHttpExchangeTestTemplate {
                 http.setStatus(HttpStatus.NOT_FOUND).close();
             }
         })
-                .responseListener(new Response.Listener.Adapter() {
-                    @Override
-                    public void onSuccess(Response response) {
-                        assertThat(response.getStatus(), is(404));
-                        performer.start();
-                    }
-                })
-                .send();
+        .responseListener(new Response.Listener.Adapter() {
+            @Override
+            public void onSuccess(Response response) {
+                assertThat(response.getStatus(), is(404));
+                performer.start();
+            }
+        })
+        .send();
     }
 
     @Test
@@ -309,7 +309,7 @@ public abstract class ServerHttpExchangeTestTemplate {
                 });
             }
         })
-                .send();
+        .send();
     }
 
     @Test
@@ -325,17 +325,17 @@ public abstract class ServerHttpExchangeTestTemplate {
                 });
             }
         })
-                .send(new Action<Request>() {
+        .send(new Action<Request>() {
+            @Override
+            public void on(final Request req) {
+                new Timer(true).schedule(new TimerTask() {
                     @Override
-                    public void on(final Request req) {
-                        new Timer(true).schedule(new TimerTask() {
-                            @Override
-                            public void run() {
-                                req.abort(new RuntimeException());
-                            }
-                        }, 1000);
+                    public void run() {
+                        req.abort(new RuntimeException());
                     }
-                });
+                }, 1000);
+            }
+        });
     }
 
     protected class Performer {
