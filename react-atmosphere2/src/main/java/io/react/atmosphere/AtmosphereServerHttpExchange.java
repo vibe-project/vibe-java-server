@@ -145,7 +145,7 @@ public class AtmosphereServerHttpExchange extends AbstractServerHttpExchange {
 
         void read() throws IOException {
             int bytesRead = -1;
-            byte buffer[] = new byte[4096];
+            byte buffer[] = new byte[8192];
             while (ready() && (bytesRead = input.read(buffer)) != -1) {
                 String data = new String(buffer, 0, bytesRead, charset);
                 body.append(data);
