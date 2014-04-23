@@ -18,6 +18,8 @@ package io.react;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.ByteBuffer;
+
 /**
  * Abstract base class for {@link ServerWebSocket}.
  *
@@ -70,13 +72,15 @@ public abstract class AbstractServerWebSocket implements ServerWebSocket {
     }
 
     @Override
-    public ServerWebSocket send(byte[] data, int offset, int length) {
-        logger.trace("{} sends a text message {}", this, data);
-        doSend(data, offset, length);
+    public ServerWebSocket send(ByteBuffer byteBuffer) {
+        if (logger.isTraceEnabled() && byteBuffer.hasArray()) {
+            logger.trace("{} sends a text message {}", this, new String(byteBuffer.array()));
+        }
+        doSend(byteBuffer);
         return this;
     }
 
-    protected abstract void doSend(byte[] data, int offset, int length);
+    protected abstract void doSend(ByteBuffer byteBuffer);
 
     protected abstract void doSend(String data);
 

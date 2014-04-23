@@ -15,6 +15,8 @@
  */
 package io.react;
 
+import java.nio.ByteBuffer;
+
 /**
  * Represents a server-side WebSocket session.
  * <p/>
@@ -46,8 +48,9 @@ public interface ServerWebSocket extends Wrapper {
 
     /**
      * Sends bytes message through the connection
+     * @param byteBuffer
      */
-    ServerWebSocket send(byte[] data, int offset, int length);
+    ServerWebSocket send(ByteBuffer byteBuffer);
 
     /**
      * Attaches an action for the message event. The allowed message type is

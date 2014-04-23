@@ -15,14 +15,14 @@
  */
 package io.react.vertx;
 
-import io.netty.buffer.Unpooled;
 import io.react.AbstractServerWebSocket;
 import io.react.Data;
 import io.react.ServerWebSocket;
-
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.VoidHandler;
 import org.vertx.java.core.buffer.Buffer;
+
+import java.nio.ByteBuffer;
 
 /**
  * {@link ServerWebSocket} for Vert.x 2.
@@ -78,8 +78,8 @@ public class VertxServerWebSocket extends AbstractServerWebSocket {
     }
 
     @Override
-    public void doSend(byte[] data, int offset, int length) {
-        socket.writeBinaryFrame(new Buffer(Unpooled.wrappedBuffer(data, offset, length)));
+    public void doSend(ByteBuffer byteBuffer) {
+        socket.writeBinaryFrame(new Buffer().setBytes(0, byteBuffer));
     }
 
     /**

@@ -24,6 +24,7 @@ import org.atmosphere.websocket.WebSocketEventListenerAdapter;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.ByteBuffer;
 
 /**
  * {@link ServerWebSocket} for Atmosphere 2.
@@ -92,9 +93,10 @@ public class AtmosphereServerWebSocket extends AbstractServerWebSocket {
     }
 
     @Override
-    protected void doSend(byte[] data, int offset, int length) {
+    protected void doSend(ByteBuffer byteBuffer) {
         try {
-            resource.getResponse().getOutputStream().write(data, offset, length);
+            byte[] b = byteBuffer.array();
+            resource.getResponse().getOutputStream().write(b, 0, b.length);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

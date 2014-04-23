@@ -26,6 +26,7 @@ import play.mvc.WebSocket.In;
 import play.mvc.WebSocket.Out;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
 
 /**
  * {@link ServerWebSocket} for Play 2.
@@ -65,10 +66,11 @@ public class PlayServerWebSocket extends AbstractServerWebSocket {
     }
 
     @Override
-    protected void doSend(byte[] data, int offset, int length) {
+    protected void doSend(ByteBuffer byteBuffer) {
         // https://github.com/Atmosphere/react/issues/23
         try {
-            out.write(new String(data, offset, length, "UTF-8"));
+            byte[] b = byteBuffer.array();
+            out.write(new String(b, 0, b.length, "UTF-8"));
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }

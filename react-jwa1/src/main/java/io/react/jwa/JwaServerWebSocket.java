@@ -80,10 +80,10 @@ public class JwaServerWebSocket extends AbstractServerWebSocket {
     }
 
     @Override
-    protected void doSend(byte[] data, int offset, int length) {
+    protected void doSend(ByteBuffer byteBuffer) {
         try {
             semaphore.acquireUninterruptibly();
-            session.getAsyncRemote().sendBinary(ByteBuffer.wrap(data, offset, length), new WriteResult(data));
+            session.getAsyncRemote().sendBinary(byteBuffer, new WriteResult(byteBuffer));
         } catch (IllegalStateException ex) {
             // TODO: The message will be losr, need a cache.
             semaphore.release();
