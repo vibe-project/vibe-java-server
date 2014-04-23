@@ -1,4 +1,5 @@
 ## React Java Server
+[![Build Status](https://buildhive.cloudbees.com/job/Atmosphere/job/react/badge/icon)](https://buildhive.cloudbees.com/job/Atmosphere/job/react/)
 
 The React Java Server is a versatile and flexible Java server. It provides an application model and pattern for modern Java based enterprise web applications by implementing React protocol, which is based on I/O abstraction layer designed to run application on every platforms and frameworks on Java Virtual Machine like Servlet and Netty.
 
