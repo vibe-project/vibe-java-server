@@ -16,7 +16,7 @@
 package io.react.runtime;
 
 /**
- * {@code AbstractSocket} consists of a set of common functionalities of {@link Sentence} and
+ * {@code AbstractSocket} consists of a set of common functionality of {@link Sentence} and
  * {@link Socket}.
  * 
  * @author Donghwan Kim
