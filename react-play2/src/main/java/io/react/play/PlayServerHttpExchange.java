@@ -19,40 +19,27 @@ import io.react.AbstractServerHttpExchange;
 import io.react.Data;
 import io.react.HttpStatus;
 import io.react.ServerHttpExchange;
-import play.libs.F.Callback0;
-import play.mvc.Http.Request;
-import play.mvc.Http.Response;
-import play.mvc.Results.Chunks;
 
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+
+import play.libs.F.Callback0;
+import play.libs.F.Function0;
+import play.libs.F.Promise;
+import play.mvc.Http.Request;
+import play.mvc.Http.Response;
+import play.mvc.Result;
+import play.mvc.Results;
+import play.mvc.Results.Chunks;
+import play.mvc.Results.StringChunks;
 
 /**
  * {@link ServerHttpExchange} for Play 2.
- * <p/>
- * <h3>Quirks</h3>
- * <pre><code>{@literal @}BodyParser.Of(BodyParser.TolerantText.class)
- * public static Result http() {
- * final Request request = request();
- * final Response response = response();
- * // <strong>Response header is settable here</strong>
- * // <strong>Status is set in return</strong>
- * return ok(new Chunks&lt;String&gt;(JavaResults.writeString(Codec.utf_8())) {
- * {@literal @}Override
- * public void onReady(Chunks.Out&lt;String&gt; out) {
- * // <strong>Response header is not settable from here on</strong>
- * new PlayServerHttpExchange(request, response, out);
- * }
- * });
- * }</code></pre>
- * <ul>
- * <li><code>setStatus</code> doesn't work because it have to be specified in return.</li>
- * <li><code>setResponseHeader</code> doesn't work because PlayServerHttpExchange is created after onReady.</li>
- * <li>Request body is read in a synchronous manner.</li>
- * </ul>
  *
  * @author Donghwan Kim
  */
@@ -60,16 +47,48 @@ public class PlayServerHttpExchange extends AbstractServerHttpExchange {
 
     private final Request request;
     private final Response response;
-    private final Chunks.Out<String> out;
+    private boolean aborted;
+    private CountDownLatch written = new CountDownLatch(1);
+    private List<String> buffer = new ArrayList<>();
+    private HttpStatus status = HttpStatus.OK;
+    private Chunks.Out<String> out;
 
-    public PlayServerHttpExchange(Request request, Response response, Chunks.Out<String> out) {
+    public PlayServerHttpExchange(Request request, Response response) {
         this.request = request;
         this.response = response;
-        this.out = out;
-        out.onDisconnected(new Callback0() {
+    }
+
+    public Promise<Result> result() {
+        return Promise.promise(new Function0<Result>() {
             @Override
-            public void invoke() throws Throwable {
-                closeActions.fire();
+            public Result apply() throws Throwable {
+                // Block the current thread until the first call of write or close
+                // Is there any other solution?
+                written.await();
+                // Because ServerHttpExchange is not thread-safe
+                synchronized (PlayServerHttpExchange.this) {
+                    return Results.status(status.code(), new StringChunks() {
+                        @Override
+                        public void onReady(Chunks.Out<String> out) {
+                            // With the same reason as above
+                            synchronized (PlayServerHttpExchange.this) {
+                                PlayServerHttpExchange.this.out = out;
+                                out.onDisconnected(new Callback0() {
+                                    @Override
+                                    public void invoke() throws Throwable {
+                                        closeActions.fire();
+                                    }
+                                });
+                                for (String data : buffer) {
+                                    out.write(data);
+                                }
+                                if (aborted) {
+                                    out.close();
+                                }
+                            }
+                        }
+                    });
+                }
             }
         });
     }
@@ -91,8 +110,12 @@ public class PlayServerHttpExchange extends AbstractServerHttpExchange {
 
     @Override
     public List<String> requestHeaders(String name) {
-        return request.headers().containsKey(name) ?
-                Arrays.asList(request.headers().get(name)) : Collections.<String>emptyList();
+        for (String h : request.headers().keySet()) {
+            if (name.toLowerCase().equals(h.toLowerCase())) {
+                return Arrays.asList(request.headers().get(h));
+            }
+        }
+        return Collections.<String> emptyList();
     }
 
     @Override
@@ -100,9 +123,27 @@ public class PlayServerHttpExchange extends AbstractServerHttpExchange {
         // Play can't read body asynchronously
         bodyActions.fire(new Data(request.body().asText()));
     }
+    
+    private void throwIfWritten() {
+        if (written.getCount() == 0) {
+            throw new IllegalStateException("Response has already been written");
+        }
+    }
+
+    @Override
+    public void doSetStatus(HttpStatus status) {
+        throwIfWritten();
+        this.status = status;
+    }
 
     @Override
     public void doSetResponseHeader(String name, String value) {
+        throwIfWritten();
+        // 'content-type' doesn't work. It must be 'Content-Type'. 
+        // TODO file an issue to Play
+        if (name.equalsIgnoreCase(Response.CONTENT_TYPE)) {
+            name = Response.CONTENT_TYPE;
+        }
         response.setHeader(name, value);
     }
 
@@ -111,25 +152,30 @@ public class PlayServerHttpExchange extends AbstractServerHttpExchange {
         // TODO: https://github.com/Atmosphere/react/issues/23
         // TODO: We need the char encoding
         try {
-            out.write(new String(data, offset, length, "UTF-8"));
+            doWrite(new String(data, offset, length, "UTF-8"));
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }
     }
 
     @Override
-    public void doSetStatus(HttpStatus status) {
-        // TODO Is it better to throw an unsupported operation exception?
-    }
-
-    @Override
     protected void doWrite(String data) {
-        out.write(data);
+        if (out == null) {
+            written.countDown();
+            buffer.add(data);
+        } else {
+            out.write(data);
+        }
     }
 
     @Override
     protected void doClose() {
-        out.close();
+        if (out == null) {
+            written.countDown();
+            aborted = true;
+        } else {
+            out.close();
+        }
     }
 
     /**
