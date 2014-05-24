@@ -1,7 +1,0 @@
-{
-    "description": "React for Vert.x 2",
-    "licenses": ["The Apache Software License Version 2.0"],
-    "author": "Donghwan Kim",
-    "keywords": ["web"],
-    "homepage": "http://atmosphere.github.io/react/"
-}

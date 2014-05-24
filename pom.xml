@@ -7,23 +7,23 @@
         <version>7</version>
     </parent>
     <groupId>org.atmosphere</groupId>
-    <artifactId>react-parent</artifactId>
+    <artifactId>vibe-parent</artifactId>
     <packaging>pom</packaging>
     <version>3.0.0.Alpha1-SNAPSHOT</version>
-    <name>react</name>
-    <url>http://atmosphere.github.io/react</url>
-    <description>react</description>
+    <name>vibe</name>
+    <url>http://atmosphere.github.io/vibe</url>
+    <description>vibe</description>
     <inceptionYear>2013</inceptionYear>
     <modules>
-        <module>react-engine</module>
-        <module>react-test</module>
-        <module>react-runtime</module>
-        <module>react-testee</module>
-        <module>react-atmosphere2</module>
-        <module>react-servlet3</module>
-        <module>react-jwa1</module>
-        <module>react-vertx2</module>
-        <module>react-play2</module>
+        <module>vibe-engine</module>
+        <module>vibe-test</module>
+        <module>vibe-runtime</module>
+        <module>vibe-testee</module>
+        <module>vibe-atmosphere2</module>
+        <module>vibe-servlet3</module>
+        <module>vibe-jwa1</module>
+        <module>vibe-vertx2</module>
+        <module>vibe-play2</module>
     </modules>
     <licenses>
         <license>
@@ -33,9 +33,9 @@
         </license>
     </licenses>
     <scm>
-        <url>http://github.com/Atmosphere/react</url>
-        <connection>scm:git:git@github.com:Atmosphere/react.git</connection>
-        <developerConnection>scm:git:git@github.com:Atmosphere/react.git</developerConnection>
+        <url>http://github.com/Atmosphere/vibe</url>
+        <connection>scm:git:git@github.com:Atmosphere/vibe.git</connection>
+        <developerConnection>scm:git:git@github.com:Atmosphere/vibe.git</developerConnection>
         <tag>HEAD</tag>
     </scm>
     <developers>
@@ -52,7 +52,7 @@
     </developers>
     <issueManagement>
         <system>GitHub</system>
-        <url>https://github.com/Atmosphere/react/issues</url>
+        <url>https://github.com/Atmosphere/vibe/issues</url>
     </issueManagement>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -64,12 +64,12 @@
         <dependencies>
             <dependency>
                 <groupId>org.atmosphere</groupId>
-                <artifactId>react-engine</artifactId>
+                <artifactId>vibe-engine</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.atmosphere</groupId>
-                <artifactId>react-test</artifactId>
+                <artifactId>vibe-test</artifactId>
                 <version>${project.version}</version>
                 <scope>test</scope>
             </dependency>
@@ -181,7 +181,7 @@
                 <configuration>
                     <bottom>
                         <![CDATA[Copyright {inceptionYear}-{currentYear}, <a href="https://twitter.com/flowersits">Donghwan Kim</a>]]></bottom>
-                    <packagesheader>react</packagesheader>
+                    <packagesheader>vibe</packagesheader>
                     <links>
                         <link>http://atmosphere.github.io/atmosphere/apidocs/</link>
                         <link>http://docs.oracle.com/javaee/7/api/</link>

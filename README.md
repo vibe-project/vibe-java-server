@@ -1,7 +1,7 @@
-## React Java Server
-[![Build Status](https://buildhive.cloudbees.com/job/Atmosphere/job/react/badge/icon)](https://buildhive.cloudbees.com/job/Atmosphere/job/react/)
+## Vibe Java Server
+[![Build Status](https://buildhive.cloudbees.com/job/Atmosphere/job/vibe/badge/icon)](https://buildhive.cloudbees.com/job/Atmosphere/job/vibe/)
 
-The React Java Server is a versatile and flexible Java server. It provides an application model and pattern for modern Java based enterprise web applications by implementing React protocol, which is based on I/O abstraction layer designed to run application on every platforms and frameworks on Java Virtual Machine like Servlet and Netty.
+The Vibe Java Server is a versatile and flexible Java server. It provides an application model and pattern for modern Java based enterprise web applications by implementing Vibe protocol, which is based on I/O abstraction layer designed to run application on every platforms and frameworks on Java Virtual Machine like Servlet and Netty.
 
 ### Features
 
@@ -10,4 +10,4 @@ The React Java Server is a versatile and flexible Java server. It provides an ap
 * Simple architecture: Server and Socket.
 * Scalable by clustering and clouding.
 
-Please see the [website](http://atmosphere.github.io/react/) for full documentation.
+Please see the [website](http://atmosphere.github.io/vibe/) for full documentation.
