@@ -13,7 +13,7 @@
     <name>vibe</name>
     <url>http://atmosphere.github.io/vibe</url>
     <description>vibe</description>
-    <inceptionYear>2013</inceptionYear>
+    <inceptionYear>2014</inceptionYear>
     <modules>
         <module>vibe-engine</module>
         <module>vibe-test</module>
@@ -179,8 +179,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <bottom>
-                        <![CDATA[Copyright {inceptionYear}-{currentYear}, <a href="https://twitter.com/flowersits">Donghwan Kim</a>]]></bottom>
+                    <bottom><![CDATA[Copyright ${inceptionYear}, <a href="https://atmosphere.github.io/vibe">The Vibe Project</a>]]></bottom>
                     <packagesheader>vibe</packagesheader>
                     <links>
                         <link>http://atmosphere.github.io/atmosphere/apidocs/</link>
