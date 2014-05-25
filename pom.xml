@@ -179,7 +179,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <bottom><![CDATA[Copyright ${inceptionYear}, <a href="https://atmosphere.github.io/vibe">The Vibe Project</a>]]></bottom>
+                    <bottom><![CDATA[Copyright ${project.inceptionYear}, <a href="https://atmosphere.github.io/vibe">The Vibe Project</a>]]></bottom>
                     <packagesheader>vibe</packagesheader>
                     <links>
                         <link>http://atmosphere.github.io/atmosphere/apidocs/</link>
