@@ -1,5 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.sonatype.oss</groupId>
@@ -15,15 +14,7 @@
     <description>vibe</description>
     <inceptionYear>2014</inceptionYear>
     <modules>
-        <module>vibe-engine</module>
-        <module>vibe-test</module>
-        <module>vibe-runtime</module>
-        <module>vibe-testee</module>
-        <module>vibe-atmosphere2</module>
-        <module>vibe-servlet3</module>
-        <module>vibe-jwa1</module>
-        <module>vibe-vertx2</module>
-        <module>vibe-play2</module>
+        <module>vibe</module>
     </modules>
     <licenses>
         <license>
@@ -56,22 +47,20 @@
     </issueManagement>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <vibe.platform.version>3.0.0.Alpha1-SNAPSHOT</vibe.platform.version>
         <slf4j.version>1.7.5</slf4j.version>
-        <vertx.version>2.0.2-final</vertx.version>
-        <jetty.version>9.1.1.v20140108</jetty.version>
     </properties>
     <dependencyManagement>
         <dependencies>
             <dependency>
                 <groupId>org.atmosphere</groupId>
-                <artifactId>vibe-engine</artifactId>
+                <artifactId>vibe</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.atmosphere</groupId>
-                <artifactId>vibe-test</artifactId>
-                <version>${project.version}</version>
-                <scope>test</scope>
+                <artifactId>vibe-platform</artifactId>
+                <version>${vibe.platform.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.slf4j</groupId>
@@ -101,59 +90,6 @@
                 <version>1.3</version>
                 <scope>test</scope>
             </dependency>
-            <dependency>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-client</artifactId>
-                <version>${jetty.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.eclipse.jetty.websocket</groupId>
-                <artifactId>javax-websocket-server-impl</artifactId>
-                <version>${jetty.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.eclipse.jetty.websocket</groupId>
-                <artifactId>websocket-client</artifactId>
-                <version>${jetty.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>io.vertx</groupId>
-                <artifactId>vertx-core</artifactId>
-                <version>${vertx.version}</version>
-                <scope>provided</scope>
-            </dependency>
-            <dependency>
-                <groupId>io.vertx</groupId>
-                <artifactId>vertx-platform</artifactId>
-                <version>${vertx.version}</version>
-                <scope>provided</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.atmosphere</groupId>
-                <artifactId>atmosphere-runtime</artifactId>
-                <version>2.1.1</version>
-            </dependency>
-            <dependency>
-                <groupId>javax.servlet</groupId>
-                <artifactId>javax.servlet-api</artifactId>
-                <version>3.1.0</version>
-                <scope>provided</scope>
-            </dependency>
-            <dependency>
-                <groupId>javax.websocket</groupId>
-                <artifactId>javax.websocket-api</artifactId>
-                <version>1.0</version>
-                <scope>provided</scope>
-            </dependency>
-            <dependency>
-                <groupId>com.typesafe.play</groupId>
-                <artifactId>play_2.10</artifactId>
-                <version>2.2.1</version>
-                <scope>provided</scope>
-            </dependency>
         </dependencies>
     </dependencyManagement>
     <build>
@@ -182,13 +118,8 @@
                     <bottom><![CDATA[Copyright ${project.inceptionYear}, <a href="https://atmosphere.github.io/vibe">The Vibe Project</a>]]></bottom>
                     <packagesheader>vibe</packagesheader>
                     <links>
-                        <link>http://atmosphere.github.io/atmosphere/apidocs/</link>
                         <link>http://docs.oracle.com/javaee/7/api/</link>
-                        <link>http://vertx.io/api/java/</link>
-                        <link>http://www.playframework.com/documentation/2.2.x/api/java/</link>
                     </links>
-                    <linksource>true</linksource>
-                    <sourcetab>4</sourcetab>
                 </configuration>
             </plugin>
             <plugin>
@@ -202,11 +133,4 @@
             </plugin>
         </plugins>
     </build>
-    <repositories>
-        <repository>
-            <id>typesafe</id>
-            <name>typesafe-releases</name>
-            <url>http://repo.typesafe.com/typesafe/releases/</url>
-        </repository>
-    </repositories>
 </project>
