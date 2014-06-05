@@ -393,12 +393,9 @@ public class DefaultServer implements Server {
     final static String text2KB = CharBuffer.allocate(2048).toString().replace('\0', ' ');
 
     private class StreamTransport extends HttpTransport {
-        final boolean isAndroidLowerThan3;
-
         StreamTransport(Map<String, String> params, ServerHttpExchange http) {
             super(params, http);
             String ua = http.requestHeader("user-agent");
-            this.isAndroidLowerThan3 = ua == null ? false : ua.matches(".*Android\\s[23]\\..*");
             http.closeAction(new VoidAction() {
                 @Override
                 public void on() {
@@ -407,13 +404,12 @@ public class DefaultServer implements Server {
             })
             .setResponseHeader("content-type",
                 "text/" + (params.get("transport").equals("sse") ? "event-stream" : "plain") + "; charset=utf-8")
-            .write((isAndroidLowerThan3 ? text2KB : "") + text2KB + "\n");
+            .write(text2KB + "\n");
         }
 
         @Override
         synchronized void send(String data) {
-            String payload = (isAndroidLowerThan3 ? text2KB + text2KB : "") + "";
-            payload += "data: " + data + "\n\n";
+            String payload = "data: " + data + "\n\n";
             http.write(payload);
         }
 
