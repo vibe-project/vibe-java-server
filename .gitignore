@@ -5,3 +5,7 @@ pom.xml.releaseBackup
 pom.xml.versionsBackup
 pom.xml.next
 release.properties
+
+# Local Node
+vibe/src/test/resources/node
+vibe/src/test/resources/node_modules

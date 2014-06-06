@@ -1,0 +1,8 @@
+{
+  "private": "true",
+  "devDependencies": {
+    "vibe-protocol": "Atmosphere/vibe-protocol#e2ba4a8f04",
+    "mocha": "1.20.1",
+    "chai": "1.9.1"
+  }
+}
