@@ -1,50 +1,7 @@
 # https://github.com/github/gitignore/blob/master/Maven.gitignore
 target/
-
-# https://github.com/github/gitignore/blob/master/Global/Eclipse.gitignore
-*.pydevproject
-.project
-.metadata
-bin/**
-tmp/**
-tmp/**/*
-*.tmp
-*.bak
-*.swp
-*~.nib
-local.properties
-.classpath
-.settings/
-.loadpath
-
-# External tool builders
-.externalToolBuilders/
-
-# Locally stored "Eclipse launch configurations"
-*.launch
-
-# CDT-specific
-.cproject
-
-# PDT-specific
-.buildpath
-
-*.class
-*~
-.*.swp
-.*.swo
-.loadpath
-.buildpath
-.settings
-.classpath
-dependency-reduced-pom.xml
-.idea
-*.iml
-*.ipr
-*.iws
-nbproject
-.DS_Store
-target
-test-output
-nbactions.xml
-atlassian-ide-plugin.xml
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
