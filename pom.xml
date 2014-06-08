@@ -8,7 +8,7 @@
     <groupId>org.atmosphere</groupId>
     <artifactId>vibe-parent</artifactId>
     <packaging>pom</packaging>
-    <version>3.0.0.Alpha1-SNAPSHOT</version>
+    <version>3.0.0-Alpha1-SNAPSHOT</version>
     <name>vibe</name>
     <url>http://atmosphere.github.io/vibe</url>
     <description>vibe</description>
@@ -47,7 +47,7 @@
     </issueManagement>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <vibe.platform.version>3.0.0.Alpha1-SNAPSHOT</vibe.platform.version>
+        <vibe.platform.version>3.0.0-Alpha1-SNAPSHOT</vibe.platform.version>
         <vertx.version>2.0.2-final</vertx.version>
         <slf4j.version>1.7.5</slf4j.version>
     </properties>
