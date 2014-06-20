@@ -10,4 +10,4 @@ The Vibe Java Server is a versatile and flexible Java server. It provides an app
 * Simple architecture: Server and Socket.
 * Scalable by clustering and clouding.
 
-Please see the [website](http://atmosphere.github.io/vibe/) for full documentation.
+Please see the [website](http://atmosphere.github.io/vibe/projects/vibe-java-server//) for full documentation.

@@ -10,7 +10,7 @@
     <packaging>pom</packaging>
     <version>3.0.0-Alpha1-SNAPSHOT</version>
     <name>vibe</name>
-    <url>http://atmosphere.github.io/vibe</url>
+    <url>http://atmosphere.github.io/vibe/projects/vibe-java-server/</url>
     <description>vibe</description>
     <inceptionYear>2014</inceptionYear>
     <modules>
@@ -149,7 +149,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <bottom><![CDATA[Copyright ${project.inceptionYear}, <a href="https://atmosphere.github.io/vibe">The Vibe Project</a>]]></bottom>
+                    <bottom><![CDATA[Copyright ${project.inceptionYear}, <a href="https://atmosphere.github.io/vibe/projects/vibe-java-server/">The Vibe Project</a>]]></bottom>
                     <packagesheader>vibe</packagesheader>
                     <links>
                         <link>http://docs.oracle.com/javaee/7/api/</link>
