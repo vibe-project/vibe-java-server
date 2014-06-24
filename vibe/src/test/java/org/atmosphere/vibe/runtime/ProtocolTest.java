@@ -1,22 +1,22 @@
 package org.atmosphere.vibe.runtime;
 
-import java.io.IOException;
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
 
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
-import org.apache.commons.exec.ExecuteException;
 import org.atmosphere.vibe.Action;
+import org.atmosphere.vibe.atmosphere.AtmosphereBridge;
 import org.atmosphere.vibe.runtime.Socket.Reply;
-import org.atmosphere.vibe.vertx.VertxBridge;
+import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.junit.Test;
-import org.vertx.java.core.VertxFactory;
-import org.vertx.java.core.http.HttpServer;
 
 public class ProtocolTest {
 
     @Test
-    public void protocol() throws ExecuteException, IOException {
-        Server server = new DefaultServer();
+    public void protocol() throws Exception {
+        final Server server = new DefaultServer();
         server.socketAction(new Action<Socket>() {
             @Override
             public void on(final Socket socket) {
@@ -38,10 +38,25 @@ public class ProtocolTest {
                 });
             }
         });
+        
+        org.eclipse.jetty.server.Server jetty = new org.eclipse.jetty.server.Server();
+        ServerConnector connector = new ServerConnector(jetty);
+        connector.setPort(8000);
+        jetty.addConnector(connector);
+        ServletContextHandler handler = new ServletContextHandler();
+        jetty.setHandler(handler);
+        ServletContextListener listener = new ServletContextListener() {
+            @Override
+            public void contextInitialized(ServletContextEvent event) {
+                new AtmosphereBridge(event.getServletContext(), "/vibe").httpAction(server.httpAction()).websocketAction(server.websocketAction());
+            }
 
-        final HttpServer httpServer = VertxFactory.newVertx().createHttpServer();
-        new VertxBridge(httpServer, "/vibe").httpAction(server.httpAction()).websocketAction(server.websocketAction());
-        httpServer.listen(8000);
+            @Override
+            public void contextDestroyed(ServletContextEvent sce) {
+            }
+        };
+        handler.addEventListener(listener);
+        jetty.start();
         
         // Equivalent to: mocha ./node_modules/vibe-protocol/test/server --reporter spec
         CommandLine cmdLine = CommandLine.parse("./src/test/resources/node/node ./src/test/resources/runner");
@@ -50,7 +65,7 @@ public class ProtocolTest {
         executor.setExitValue(0);
         executor.execute(cmdLine);
         
-        httpServer.close();
+        jetty.stop();
     }
 
 }
