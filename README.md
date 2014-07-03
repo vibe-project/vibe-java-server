@@ -1,13 +1,15 @@
 ## Vibe Java Server
 [![Build Status](https://buildhive.cloudbees.com/job/Atmosphere/job/vibe/badge/icon)](https://buildhive.cloudbees.com/job/Atmosphere/job/vibe/)
 
-The Vibe Java Server is a versatile and flexible Java server. It provides an application model and pattern for modern Java based enterprise web applications by implementing Vibe protocol, which is based on I/O abstraction layer designed to run application on every platforms and frameworks on Java Virtual Machine like Servlet and Netty.
 
-### Features
-
-* Based on I/O abstraction layer to run on any full-stack application framework (Play, Spring), micro framework (Grizzly, Spark) and platform (Netty, Undertow).
-* Separation of concerns: Application layer and I/O layer.
-* Simple architecture: Server and Socket.
-* Scalable by clustering and clouding.
+<p>Vibe Java Server is a simple <sup><strong>A</strong></sup>, scalable <sup><strong>B</strong></sup> Java server designed to run any framework or platform on Java Virtual Machine <sup><strong>C</strong></sup>.</p>
+<dl>
+    <dt>A</dt>
+    <dd>All interface you need to know is Server and Socket. Indeed.</dd>
+    <dt>B</dt>
+    <dd>Shared nothing architecture is adopted to help scale application horizontally with ease.</dd>
+    <dt>C</dt>
+    <dd>Because it is built on Vibe Java Server Platform which is I/O abstraction layer, you can run your application on any platform that it supports seamlessly e.g. Play, Vert.x, Atmosphere and Servlet.</dd>
+</dl>
 
 Please see the [website](http://atmosphere.github.io/vibe/projects/vibe-java-server//) for full documentation.
