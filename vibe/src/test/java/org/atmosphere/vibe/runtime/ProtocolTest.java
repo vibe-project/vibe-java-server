@@ -26,14 +26,38 @@ public class ProtocolTest {
                         socket.send("echo", data);
                     }
                 })
-                .on("replyable", new Action<Reply<Boolean>>() {
+                .on("rre.resolve", new Action<Reply<Object>>() {
                     @Override
-                    public void on(Reply<Boolean> reply) {
-                        if (reply.data()) {
-                            reply.resolve(reply.data());
-                        } else {
-                            reply.reject(reply.data());
-                        }
+                    public void on(Reply<Object> reply) {
+                        reply.resolve(reply.data());
+                    }
+                })
+                .on("rre.reject", new Action<Reply<Object>>() {
+                    @Override
+                    public void on(Reply<Object> reply) {
+                        reply.reject(reply.data());
+                    }
+                })
+                .on("sre.resolve", new Action<Object>() {
+                    @Override
+                    public void on(Object data) {
+                        socket.send("sre.resolve", data, new Action<Object>() {
+                            @Override
+                            public void on(Object data) {
+                                socket.send("sre.done", data);
+                            }
+                        });
+                    }
+                })
+                .on("sre.reject", new Action<Object>() {
+                    @Override
+                    public void on(Object data) {
+                        socket.send("sre.reject", data, null, new Action<Object>() {
+                            @Override
+                            public void on(Object data) {
+                                socket.send("sre.done", data);
+                            }
+                        });
                     }
                 });
             }
