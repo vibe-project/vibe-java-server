@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.atmosphere.vibe.runtime;
+package org.atmosphere.vibe.server;
 
-import org.atmosphere.vibe.Action;
-import org.atmosphere.vibe.ServerHttpExchange;
-import org.atmosphere.vibe.ServerWebSocket;
+import org.atmosphere.vibe.server.platform.Action;
+import org.atmosphere.vibe.server.platform.ServerHttpExchange;
+import org.atmosphere.vibe.server.platform.ServerWebSocket;
 
 /**
  * Interface used to interact with the socket.

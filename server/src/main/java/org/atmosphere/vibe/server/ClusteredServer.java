@@ -13,16 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.atmosphere.vibe.runtime;
+package org.atmosphere.vibe.server;
 
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.atmosphere.vibe.Action;
-import org.atmosphere.vibe.Actions;
-import org.atmosphere.vibe.ConcurrentActions;
+import org.atmosphere.vibe.server.platform.Action;
+import org.atmosphere.vibe.server.platform.Actions;
+import org.atmosphere.vibe.server.platform.ConcurrentActions;
 
 /**
  * {@link Server} implementation for clustering.

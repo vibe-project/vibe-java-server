@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.atmosphere.vibe.runtime;
+package org.atmosphere.vibe.server;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -38,14 +38,14 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.atmosphere.vibe.Action;
-import org.atmosphere.vibe.Actions;
-import org.atmosphere.vibe.ConcurrentActions;
-import org.atmosphere.vibe.Data;
-import org.atmosphere.vibe.HttpStatus;
-import org.atmosphere.vibe.ServerHttpExchange;
-import org.atmosphere.vibe.ServerWebSocket;
-import org.atmosphere.vibe.VoidAction;
+import org.atmosphere.vibe.server.platform.Action;
+import org.atmosphere.vibe.server.platform.Actions;
+import org.atmosphere.vibe.server.platform.ConcurrentActions;
+import org.atmosphere.vibe.server.platform.Data;
+import org.atmosphere.vibe.server.platform.HttpStatus;
+import org.atmosphere.vibe.server.platform.ServerHttpExchange;
+import org.atmosphere.vibe.server.platform.ServerWebSocket;
+import org.atmosphere.vibe.server.platform.VoidAction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

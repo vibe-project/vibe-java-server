@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.atmosphere.vibe.runtime;
-
-import org.atmosphere.vibe.Action;
+package org.atmosphere.vibe.server;
 
 import java.io.Serializable;
+
+import org.atmosphere.vibe.server.platform.Action;
 
 /**
  * {@code Sentence} is a series of predicates that a group of socket have to

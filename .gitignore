@@ -7,5 +7,5 @@ pom.xml.next
 release.properties
 
 # Local Node
-vibe/src/test/resources/node
-vibe/src/test/resources/node_modules
+server/src/test/resources/node
+server/src/test/resources/node_modules

@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.atmosphere.vibe.runtime;
-
-import org.atmosphere.vibe.Action;
+package org.atmosphere.vibe.server;
 
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.atmosphere.vibe.server.platform.Action;
 
 /**
  * {@code Socket} is a connectivity between the two vibe endpoints.

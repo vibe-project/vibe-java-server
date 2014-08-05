@@ -2,16 +2,15 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.atmosphere</groupId>
-        <artifactId>vibe-parent</artifactId>
+        <artifactId>vibe-server-parent</artifactId>
         <version>3.0.0-Alpha1-SNAPSHOT</version>
     </parent>
-    <artifactId>vibe</artifactId>
-    <name>vibe</name>
-    <description>vibe</description>
+    <artifactId>vibe-server</artifactId>
+    <name>Vibe Java Server</name>
     <dependencies>
         <dependency>
             <groupId>org.atmosphere</groupId>
-            <artifactId>vibe-platform</artifactId>
+            <artifactId>vibe-server-platform</artifactId>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -19,7 +18,7 @@
         </dependency>
         <dependency>
             <groupId>org.atmosphere</groupId>
-            <artifactId>vibe-platform-atmosphere2</artifactId>
+            <artifactId>vibe-server-platform-atmosphere2</artifactId>
         </dependency>
         <dependency>
             <groupId>org.eclipse.jetty.websocket</groupId>

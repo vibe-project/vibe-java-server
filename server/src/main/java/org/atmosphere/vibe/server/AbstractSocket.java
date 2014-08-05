@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.atmosphere.vibe.runtime;
+package org.atmosphere.vibe.server;
 
 /**
  * {@code AbstractSocket} consists of a set of common functionality of {@link Sentence} and
