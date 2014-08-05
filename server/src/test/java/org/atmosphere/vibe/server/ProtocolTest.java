@@ -5,12 +5,9 @@ import javax.servlet.ServletContextListener;
 
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
-import org.atmosphere.vibe.server.DefaultServer;
-import org.atmosphere.vibe.server.Server;
-import org.atmosphere.vibe.server.Socket;
 import org.atmosphere.vibe.server.Socket.Reply;
 import org.atmosphere.vibe.server.platform.Action;
-import org.atmosphere.vibe.server.platform.atmosphere.AtmosphereBridge;
+import org.atmosphere.vibe.server.platform.atmosphere2.AtmosphereBridge;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.junit.Test;
