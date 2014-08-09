@@ -1,12 +1,23 @@
 package org.atmosphere.vibe.server;
 
+import java.io.IOException;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRegistration;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.atmosphere.vibe.server.Socket.Reply;
 import org.atmosphere.vibe.server.platform.Action;
+import org.atmosphere.vibe.server.platform.VoidAction;
 import org.atmosphere.vibe.server.platform.atmosphere2.AtmosphereBridge;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletContextHandler;
@@ -16,11 +27,19 @@ public class ProtocolTest {
 
     @Test
     public void protocol() throws Exception {
+        final Map<String, Socket> sockets = new ConcurrentHashMap<String, Socket>();
         final Server server = new DefaultServer();
         server.socketAction(new Action<Socket>() {
             @Override
             public void on(final Socket socket) {
-                socket.on("echo", new Action<Object>() {
+                sockets.put(socket.id(), socket);
+                socket.on("close", new VoidAction() {
+                    @Override
+                    public void on() {
+                        sockets.remove(socket.id());
+                    }
+                })
+                .on("echo", new Action<Object>() {
                     @Override
                     public void on(Object data) {
                         socket.send("echo", data);
@@ -62,7 +81,7 @@ public class ProtocolTest {
                 });
             }
         });
-        
+
         org.eclipse.jetty.server.Server jetty = new org.eclipse.jetty.server.Server();
         ServerConnector connector = new ServerConnector(jetty);
         connector.setPort(8000);
@@ -72,7 +91,17 @@ public class ProtocolTest {
         ServletContextListener listener = new ServletContextListener() {
             @Override
             public void contextInitialized(ServletContextEvent event) {
-                new AtmosphereBridge(event.getServletContext(), "/vibe").httpAction(server.httpAction()).websocketAction(server.websocketAction());
+                ServletContext context = event.getServletContext();
+                new AtmosphereBridge(context, "/vibe").httpAction(server.httpAction()).websocketAction(server.websocketAction());
+                @SuppressWarnings("serial")
+                ServletRegistration.Dynamic reg = context.addServlet("/alive", new HttpServlet() {
+                    @Override
+                    protected void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
+                        String id = req.getParameter("id");
+                        res.getWriter().print(sockets.containsKey(id));
+                    }
+                });
+                reg.addMapping("/alive");
             }
 
             @Override

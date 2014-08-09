@@ -421,7 +421,7 @@ public class DefaultServer implements Server {
                             public void run() {
                                 closeActions.fire();
                             }
-                        }, 500);
+                        }, 2000);
                         closeTimer.set(timer);
                     }
                 }
