@@ -1,5 +1,4 @@
 ## Vibe Java Server
-[![Build Status](http://img.shields.io/travis/Atmosphere/vibe-java-server/master.svg?style=flat)](https://travis-ci.org/Atmosphere/vibe-java-server)
 
 <p>Vibe Java Server is a simple <sup><strong>A</strong></sup>, scalable <sup><strong>B</strong></sup> Java server designed to run any framework or platform on Java Virtual Machine <sup><strong>C</strong></sup>.</p>
 <dl>
