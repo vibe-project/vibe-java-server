@@ -348,7 +348,6 @@ public class DefaultServer implements Server {
 
         @Override
         synchronized void close() {
-            System.out.println("closed" + params.get("id"));
             ws.close();
         }
     }
