@@ -327,7 +327,8 @@ public class DefaultServer implements Server {
                 public void on() {
                     closeActions.fire();
                 }
-            }).messageAction(new Action<Data>() {
+            })
+            .messageAction(new Action<Data>() {
                 @Override
                 public void on(Data data) {
                     messageActions.fire(data.as(String.class));
@@ -347,6 +348,7 @@ public class DefaultServer implements Server {
 
         @Override
         synchronized void close() {
+            System.out.println("closed" + params.get("id"));
             ws.close();
         }
     }
@@ -514,7 +516,7 @@ public class DefaultServer implements Server {
             transport.closeActions.add(new VoidAction() {
                 @Override
                 public void on() {
-                    sockets.remove(transport.params.get("id"));
+                    sockets.remove(id());
                     Actions<Object> closeActions = actionsMap.get("close");
                     if (closeActions != null) {
                         closeActions.fire();
