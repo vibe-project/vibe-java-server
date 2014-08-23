@@ -577,15 +577,8 @@ public class DefaultServer implements Server {
                 @Override
                 public void on(Map<String, Object> info) {
                     Map<String, Action<Object>> cbs = callbacksMap.remove(info.get("id"));
-                    if (cbs != null) {
-                        Action<Object> action = (Boolean) info.get("exception") ? 
-                                cbs.get("rejected") : cbs.get("resolved");
-                        if (action != null) {
-                            action.on(info.get("data"));
-                        }
-                    } else {
-                        log.error("Reply callback not found in socket#{} with info, {}", id(), info);
-                    }
+                    Action<Object> action = (Boolean) info.get("exception") ? cbs.get("rejected") : cbs.get("resolved");
+                    action.on(info.get("data"));
                 }
             });
             
