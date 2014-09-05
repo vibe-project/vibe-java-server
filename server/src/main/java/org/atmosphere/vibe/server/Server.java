@@ -37,7 +37,7 @@ import org.atmosphere.vibe.server.platform.ServerWebSocket;
  * 
  * @author Donghwan Kim
  * @see <a
- *      href="https://github.com/atmosphere/vibe-examples/tree/master/server/platform/"
+ *      href="https://github.com/vibe-project/vibe-examples/tree/master/server/platform/"
  *      target="_parent">Examples to install vibe</a>
  */
 public interface Server {

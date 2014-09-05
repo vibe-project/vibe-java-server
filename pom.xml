@@ -23,9 +23,9 @@
         </license>
     </licenses>
     <scm>
-        <url>http://github.com/Atmosphere/vibe-java-server</url>
-        <connection>scm:git:git@github.com:Atmosphere/vibe-java-server.git</connection>
-        <developerConnection>scm:git:git@github.com:Atmosphere/vibe-java-server.git</developerConnection>
+        <url>http://github.com/vibe-project/vibe-java-server</url>
+        <connection>scm:git:git@github.com:vibe-project/vibe-java-server.git</connection>
+        <developerConnection>scm:git:git@github.com:vibe-project/vibe-java-server.git</developerConnection>
         <tag>HEAD</tag>
     </scm>
     <developers>
@@ -42,7 +42,7 @@
     </developers>
     <issueManagement>
         <system>GitHub</system>
-        <url>https://github.com/Atmosphere/vibe-java-server/issues</url>
+        <url>https://github.com/vibe-project/vibe-java-server/issues</url>
     </issueManagement>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
