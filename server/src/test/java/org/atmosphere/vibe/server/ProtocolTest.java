@@ -15,10 +15,10 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
+import org.atmosphere.vibe.platform.Action;
+import org.atmosphere.vibe.platform.VoidAction;
+import org.atmosphere.vibe.platform.server.atmosphere2.AtmosphereBridge;
 import org.atmosphere.vibe.server.Socket.Reply;
-import org.atmosphere.vibe.server.platform.Action;
-import org.atmosphere.vibe.server.platform.VoidAction;
-import org.atmosphere.vibe.server.platform.atmosphere2.AtmosphereBridge;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.junit.Test;

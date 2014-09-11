@@ -5,7 +5,7 @@
         </encoder>
     </appender>
     <logger name="org.atmosphere.vibe.server" level="TRACE" />
-    <logger name="org.atmosphere.vibe.server.platform" level="INFO" />
+    <logger name="org.atmosphere.vibe.platform.server" level="INFO" />
     <logger name="org.atmosphere.cpr" level="WARN" />
     <logger name="org.eclipse.jetty" level="INFO"/>
     <root>

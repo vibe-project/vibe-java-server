@@ -46,7 +46,7 @@
     </issueManagement>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <vibe.server.platform.version>3.0.0-Alpha1-SNAPSHOT</vibe.server.platform.version>
+        <vibe.platform.version>3.0.0-Alpha1-SNAPSHOT</vibe.platform.version>
         <slf4j.version>1.7.7</slf4j.version>
         <logback.version>1.1.2</logback.version>
     </properties>
@@ -59,8 +59,8 @@
             </dependency>
             <dependency>
                 <groupId>org.atmosphere</groupId>
-                <artifactId>vibe-server-platform</artifactId>
-                <version>${vibe.server.platform.version}</version>
+                <artifactId>vibe-platform-server</artifactId>
+                <version>${vibe.platform.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.slf4j</groupId>
@@ -74,8 +74,8 @@
             </dependency>
             <dependency>
                 <groupId>org.atmosphere</groupId>
-                <artifactId>vibe-server-platform-atmosphere2</artifactId>
-                <version>${vibe.server.platform.version}</version>
+                <artifactId>vibe-platform-server-atmosphere2</artifactId>
+                <version>${vibe.platform.version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>

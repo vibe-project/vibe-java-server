@@ -38,14 +38,14 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.atmosphere.vibe.server.platform.Action;
-import org.atmosphere.vibe.server.platform.Actions;
-import org.atmosphere.vibe.server.platform.ConcurrentActions;
-import org.atmosphere.vibe.server.platform.Data;
-import org.atmosphere.vibe.server.platform.HttpStatus;
-import org.atmosphere.vibe.server.platform.ServerHttpExchange;
-import org.atmosphere.vibe.server.platform.ServerWebSocket;
-import org.atmosphere.vibe.server.platform.VoidAction;
+import org.atmosphere.vibe.platform.Action;
+import org.atmosphere.vibe.platform.Actions;
+import org.atmosphere.vibe.platform.ConcurrentActions;
+import org.atmosphere.vibe.platform.Data;
+import org.atmosphere.vibe.platform.HttpStatus;
+import org.atmosphere.vibe.platform.VoidAction;
+import org.atmosphere.vibe.platform.server.ServerHttpExchange;
+import org.atmosphere.vibe.platform.server.ServerWebSocket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

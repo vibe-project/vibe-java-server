@@ -15,9 +15,9 @@
  */
 package org.atmosphere.vibe.server;
 
-import org.atmosphere.vibe.server.platform.Action;
-import org.atmosphere.vibe.server.platform.ServerHttpExchange;
-import org.atmosphere.vibe.server.platform.ServerWebSocket;
+import org.atmosphere.vibe.platform.Action;
+import org.atmosphere.vibe.platform.server.ServerHttpExchange;
+import org.atmosphere.vibe.platform.server.ServerWebSocket;
 
 /**
  * Interface used to interact with the socket.
