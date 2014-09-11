@@ -117,7 +117,7 @@ public class DefaultServer implements Server {
                     if (socket != null) {
                         socket.close();
                     }
-                    http.setResponseHeader("content-type", "text/javascript; charset=utf-8").close();
+                    http.setHeader("content-type", "text/javascript; charset=utf-8").close();
                     break;
                 }
                 default:
@@ -161,16 +161,16 @@ public class DefaultServer implements Server {
 
         private void setNocache(ServerHttpExchange http) {
             http
-            .setResponseHeader("cache-control", "no-cache, no-store, must-revalidate")
-            .setResponseHeader("pragma", "no-cache")
-            .setResponseHeader("expires", "0");
+            .setHeader("cache-control", "no-cache, no-store, must-revalidate")
+            .setHeader("pragma", "no-cache")
+            .setHeader("expires", "0");
         }
 
         private void setCors(ServerHttpExchange http) {
-            String origin = http.requestHeader("origin");
+            String origin = http.header("origin");
             http
-            .setResponseHeader("access-control-allow-origin", origin != null ? origin : "*")
-            .setResponseHeader("access-control-allow-credentials", "true");
+            .setHeader("access-control-allow-origin", origin != null ? origin : "*")
+            .setHeader("access-control-allow-credentials", "true");
         }
     };
 
@@ -377,7 +377,7 @@ public class DefaultServer implements Server {
                     closeActions.fire();
                 }
             })
-            .setResponseHeader("content-type",
+            .setHeader("content-type",
                 "text/" + (params.get("transport").equals("sse") ? "event-stream" : "plain") + "; charset=utf-8")
             .write(text2KB + "\n");
         }
@@ -427,7 +427,7 @@ public class DefaultServer implements Server {
                     }
                 }
             })
-            .setResponseHeader("content-type",
+            .setHeader("content-type",
                 "text/" + (params.get("transport").equals("longpolljsonp") ? "javascript" : "plain") + "; charset=utf-8");
 
             if (parameters.get("when").equals("open")) {
