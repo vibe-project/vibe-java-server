@@ -28,11 +28,11 @@ import org.atmosphere.vibe.platform.Action;
  * 
  * @author Donghwan Kim
  */
-public class Sentence implements AbstractSocket<Sentence> {
+public class Sentence implements AbstractServerSocket<Sentence> {
 
-    private final Action<Action<Socket>> serverAction;
+    private final Action<Action<ServerSocket>> serverAction;
 
-    Sentence(Action<Action<Socket>> serverAction) {
+    Sentence(Action<Action<ServerSocket>> serverAction) {
         this.serverAction = serverAction;
     }
 
@@ -65,14 +65,14 @@ public class Sentence implements AbstractSocket<Sentence> {
         return this;
     }
 
-    private void execute(Action<Socket> action) {
+    private void execute(Action<ServerSocket> action) {
         serverAction.on(action);
     }
 
     static interface SerializableAction<T> extends Action<T>, Serializable {
     }
 
-    static class SendAction implements SerializableAction<Socket> {
+    static class SendAction implements SerializableAction<ServerSocket> {
         private static final long serialVersionUID = 2178442626501531717L;
         final String event;
         final Object data;
@@ -83,21 +83,21 @@ public class Sentence implements AbstractSocket<Sentence> {
         }
 
         @Override
-        public void on(Socket socket) {
+        public void on(ServerSocket socket) {
             socket.send(event, data);
         }
     }
 
-    static class CloseAction implements SerializableAction<Socket> {
+    static class CloseAction implements SerializableAction<ServerSocket> {
         private static final long serialVersionUID = 8154281469036373698L;
 
         @Override
-        public void on(Socket socket) {
+        public void on(ServerSocket socket) {
             socket.close();
         }
     }
 
-    static class TagAction implements SerializableAction<Socket> {
+    static class TagAction implements SerializableAction<ServerSocket> {
         private static final long serialVersionUID = -7789207688974771161L;
         final String[] names;
 
@@ -106,12 +106,12 @@ public class Sentence implements AbstractSocket<Sentence> {
         }
 
         @Override
-        public void on(Socket socket) {
+        public void on(ServerSocket socket) {
             socket.tag(names);
         }
     }
 
-    static class UntagAction implements SerializableAction<Socket> {
+    static class UntagAction implements SerializableAction<ServerSocket> {
         private static final long serialVersionUID = -4173842573981245930L;
         final String[] names;
 
@@ -120,7 +120,7 @@ public class Sentence implements AbstractSocket<Sentence> {
         }
 
         @Override
-        public void on(Socket socket) {
+        public void on(ServerSocket socket) {
             socket.untag(names);
         }
     }

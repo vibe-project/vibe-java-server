@@ -18,7 +18,7 @@ import org.apache.commons.exec.DefaultExecutor;
 import org.atmosphere.vibe.platform.Action;
 import org.atmosphere.vibe.platform.VoidAction;
 import org.atmosphere.vibe.platform.server.atmosphere2.AtmosphereBridge;
-import org.atmosphere.vibe.server.Socket.Reply;
+import org.atmosphere.vibe.server.ServerSocket.Reply;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.junit.Test;
@@ -27,11 +27,11 @@ public class ProtocolTest {
 
     @Test
     public void protocol() throws Exception {
-        final Map<String, Socket> sockets = new ConcurrentHashMap<String, Socket>();
+        final Map<String, ServerSocket> sockets = new ConcurrentHashMap<String, ServerSocket>();
         final Server server = new DefaultServer();
-        server.socketAction(new Action<Socket>() {
+        server.socketAction(new Action<ServerSocket>() {
             @Override
-            public void on(final Socket socket) {
+            public void on(final ServerSocket socket) {
                 sockets.put(socket.id(), socket);
                 socket.on("close", new VoidAction() {
                     @Override

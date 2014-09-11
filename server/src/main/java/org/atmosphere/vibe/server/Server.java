@@ -22,7 +22,7 @@ import org.atmosphere.vibe.platform.server.ServerWebSocket;
 /**
  * Interface used to interact with the socket.
  * <p>
- * A {@code Server} instance provides {@link Socket} processing HTTP request and
+ * A {@code Server} instance provides {@link ServerSocket} processing HTTP request and
  * WebSocket under the specific URI pattern and manages their life cycles. The
  * {@code Server} API is used to accept socket and to find socket by id and tag.
  * If you are using dependency injection support, make a {@code Server} as
@@ -52,7 +52,7 @@ public interface Server {
      * Executes the given action retrieving all of the socket in this server or
      * all of the server if it's in a clustered environment .
      */
-    Server all(Action<Socket> action);
+    Server all(Action<ServerSocket> action);
 
     /**
      * Returns a sentence that the socket of the given id in this server or all
@@ -66,7 +66,7 @@ public interface Server {
      * action will be executed only once if socket is found and won't be
      * executed if not found.
      */
-    Server byId(String id, Action<Socket> action);
+    Server byId(String id, Action<ServerSocket> action);
 
     /**
      * Returns a sentence that the socket tagged with all of the given names in
@@ -81,7 +81,7 @@ public interface Server {
      * environment. The given action will be executed multiple times if sockets
      * are found and won't be executed if not found.
      */
-    Server byTag(String name, Action<Socket> action);
+    Server byTag(String name, Action<ServerSocket> action);
 
     /**
      * Executes the given action retrieving the socket tagged with all of the
@@ -89,7 +89,7 @@ public interface Server {
      * environment. The given action will be executed multiple times if sockets
      * are found and won't be executed if not found.
      */
-    Server byTag(String[] names, Action<Socket> action);
+    Server byTag(String[] names, Action<ServerSocket> action);
 
     /**
      * Registers an action to be called when the socket has been opened in this
@@ -97,7 +97,7 @@ public interface Server {
      * before and after installation, so you don't need to centralize all your
      * code to one class.
      */
-    Server socketAction(Action<Socket> action);
+    Server socketAction(Action<ServerSocket> action);
 
     /**
      * ServerHttpExchange action to install in wes

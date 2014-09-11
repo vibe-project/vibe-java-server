@@ -17,11 +17,11 @@ package org.atmosphere.vibe.server;
 
 /**
  * {@code AbstractSocket} consists of a set of common functionality of {@link Sentence} and
- * {@link Socket}.
+ * {@link ServerSocket}.
  * 
  * @author Donghwan Kim
  */
-public interface AbstractSocket<T> {
+public interface AbstractServerSocket<T> {
 
     /**
      * Sends a given event without data.

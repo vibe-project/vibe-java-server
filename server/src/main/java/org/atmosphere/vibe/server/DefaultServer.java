@@ -56,7 +56,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 /**
  * Default implementation of {@link Server}.
  * <p>
- * This implementation provides and manages {@link Socket} processing HTTP request and WebSocket
+ * This implementation provides and manages {@link ServerSocket} processing HTTP request and WebSocket
  * following the vibe protocol.
  * 
  * @author Donghwan Kim
@@ -64,8 +64,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class DefaultServer implements Server {
 
     private final Logger log = LoggerFactory.getLogger(DefaultServer.class);
-    private ConcurrentMap<String, DefaultSocket> sockets = new ConcurrentHashMap<>();
-    private Actions<Socket> socketActions = new ConcurrentActions<>();
+    private ConcurrentMap<String, DefaultServerSocket> sockets = new ConcurrentHashMap<>();
+    private Actions<ServerSocket> socketActions = new ConcurrentActions<>();
 
     private Action<ServerHttpExchange> httpAction = new Action<ServerHttpExchange>() {
         @Override
@@ -82,12 +82,12 @@ public class DefaultServer implements Server {
                     case "streamxhr":
                     case "streamxdr":
                     case "streamiframe":
-                        socketActions.fire(new DefaultSocket(new StreamTransport(params, http)));
+                        socketActions.fire(new DefaultServerSocket(new StreamTransport(params, http)));
                         break;
                     case "longpollajax":
                     case "longpollxdr":
                     case "longpolljsonp":
-                        socketActions.fire(new DefaultSocket(new LongpollTransport(params, http)));
+                        socketActions.fire(new DefaultServerSocket(new LongpollTransport(params, http)));
                         break;
                     default:
                         log.error("Transport, {}, is not supported", params.get("transport"));
@@ -96,7 +96,7 @@ public class DefaultServer implements Server {
                     break;
                 case "poll": {
                     String id = params.get("id");
-                    DefaultSocket socket = sockets.get(id);
+                    DefaultServerSocket socket = sockets.get(id);
                     if (socket != null) {
                         Transport transport = socket.transport;
                         if (transport instanceof LongpollTransport) {
@@ -113,7 +113,7 @@ public class DefaultServer implements Server {
                 }
                 case "abort": {
                     String id = params.get("id");
-                    Socket socket = sockets.get(id);
+                    ServerSocket socket = sockets.get(id);
                     if (socket != null) {
                         socket.close();
                     }
@@ -135,7 +135,7 @@ public class DefaultServer implements Server {
                         String data = body.as(String.class).substring("data=".length());
                         String id = params.get("id");
 
-                        DefaultSocket socket = sockets.get(id);
+                        DefaultServerSocket socket = sockets.get(id);
                         if (socket != null) {
                             Transport transport = socket.transport;
                             if (transport instanceof HttpTransport) {
@@ -178,7 +178,7 @@ public class DefaultServer implements Server {
         @Override
         public void on(ServerWebSocket ws) {
             Map<String, String> params = parseURI(ws.uri());
-            socketActions.fire(new DefaultSocket(new WebSocketTransport(params, ws)));
+            socketActions.fire(new DefaultServerSocket(new WebSocketTransport(params, ws)));
         }
     };
 
@@ -223,17 +223,17 @@ public class DefaultServer implements Server {
 
     @Override
     public Sentence all() {
-        return new Sentence(new Action<Action<Socket>>() {
+        return new Sentence(new Action<Action<ServerSocket>>() {
             @Override
-            public void on(Action<Socket> action) {
+            public void on(Action<ServerSocket> action) {
                 all(action);
             }
         });
     }
 
     @Override
-    public Server all(Action<Socket> action) {
-        for (Socket socket : sockets.values()) {
+    public Server all(Action<ServerSocket> action) {
+        for (ServerSocket socket : sockets.values()) {
             action.on(socket);
         }
         return this;
@@ -241,17 +241,17 @@ public class DefaultServer implements Server {
 
     @Override
     public Sentence byId(final String id) {
-        return new Sentence(new Action<Action<Socket>>() {
+        return new Sentence(new Action<Action<ServerSocket>>() {
             @Override
-            public void on(Action<Socket> action) {
+            public void on(Action<ServerSocket> action) {
                 byId(id, action);
             }
         });
     }
 
     @Override
-    public Server byId(String id, Action<Socket> action) {
-        Socket socket = sockets.get(id);
+    public Server byId(String id, Action<ServerSocket> action) {
+        ServerSocket socket = sockets.get(id);
         if (socket != null) {
             action.on(socket);
         }
@@ -260,23 +260,23 @@ public class DefaultServer implements Server {
 
     @Override
     public Sentence byTag(final String... names) {
-        return new Sentence(new Action<Action<Socket>>() {
+        return new Sentence(new Action<Action<ServerSocket>>() {
             @Override
-            public void on(Action<Socket> action) {
+            public void on(Action<ServerSocket> action) {
                 byTag(names, action);
             }
         });
     }
 
     @Override
-    public Server byTag(String name, Action<Socket> action) {
+    public Server byTag(String name, Action<ServerSocket> action) {
         return byTag(new String[] { name }, action);
     }
 
     @Override
-    public Server byTag(String[] names, Action<Socket> action) {
+    public Server byTag(String[] names, Action<ServerSocket> action) {
         List<String> nameList = Arrays.asList(names);
-        for (Socket socket : sockets.values()) {
+        for (ServerSocket socket : sockets.values()) {
             if (socket.tags().containsAll(nameList)) {
                 action.on(socket);
             }
@@ -285,7 +285,7 @@ public class DefaultServer implements Server {
     }
 
     @Override
-    public Server socketAction(Action<Socket> action) {
+    public Server socketAction(Action<ServerSocket> action) {
         socketActions.add(action);
         return this;
     }
@@ -503,14 +503,14 @@ public class DefaultServer implements Server {
         }
     }
 
-    private class DefaultSocket implements Socket {
+    private class DefaultServerSocket implements ServerSocket {
         final Transport transport;
         AtomicInteger eventId = new AtomicInteger();
         Set<String> tags = new CopyOnWriteArraySet<>();
         ConcurrentMap<String, Actions<Object>> actionsMap = new ConcurrentHashMap<>();
         ConcurrentMap<String, Map<String, Action<Object>>> callbacksMap = new ConcurrentHashMap<>();
 
-        DefaultSocket(final Transport transport) {
+        DefaultServerSocket(final Transport transport) {
             this.transport = transport;
             transport.closeActions.add(new VoidAction() {
                 @Override
@@ -640,7 +640,7 @@ public class DefaultServer implements Server {
 
         @SuppressWarnings("unchecked")
         @Override
-        public <T> Socket on(String event, Action<T> action) {
+        public <T> ServerSocket on(String event, Action<T> action) {
             Actions<Object> actions = actionsMap.get(event);
             if (actions == null) {
                 Actions<Object> value = new ConcurrentActions<>();
@@ -655,7 +655,7 @@ public class DefaultServer implements Server {
 
         @SuppressWarnings("unchecked")
         @Override
-        public <T> Socket off(String event, Action<T> action) {
+        public <T> ServerSocket off(String event, Action<T> action) {
             Actions<Object> actions = actionsMap.get(event);
             if (actions != null) {
                 actions.remove((Action<Object>) action);
@@ -664,23 +664,23 @@ public class DefaultServer implements Server {
         }
 
         @Override
-        public Socket send(String event) {
+        public ServerSocket send(String event) {
             return send(event, null);
         }
 
         @Override
-        public Socket send(String event, Object data) {
+        public ServerSocket send(String event, Object data) {
             return send(event, data, null);
         }
 
         @Override
-        public <T> Socket send(String type, Object data, Action<T> resolved) {
+        public <T> ServerSocket send(String type, Object data, Action<T> resolved) {
             return send(type, data, resolved, null);
         }
         
         @SuppressWarnings("unchecked")
         @Override
-        public <T, U> Socket send(String type, Object data, Action<T> resolved, Action<U> rejected) {
+        public <T, U> ServerSocket send(String type, Object data, Action<T> resolved, Action<U> rejected) {
             String id = "" + eventId.incrementAndGet();
             Map<String, Object> event = new LinkedHashMap<String, Object>();
 
@@ -701,19 +701,19 @@ public class DefaultServer implements Server {
         }
 
         @Override
-        public Socket close() {
+        public ServerSocket close() {
             transport.close();
             return this;
         }
 
         @Override
-        public Socket tag(String... names) {
+        public ServerSocket tag(String... names) {
             tags.addAll(Arrays.asList(names));
             return this;
         }
 
         @Override
-        public Socket untag(String... names) {
+        public ServerSocket untag(String... names) {
             tags.removeAll(Arrays.asList(names));
             return this;
         }
@@ -734,7 +734,7 @@ public class DefaultServer implements Server {
                 return false;
             if (getClass() != obj.getClass())
                 return false;
-            DefaultSocket other = (DefaultSocket) obj;
+            DefaultServerSocket other = (DefaultServerSocket) obj;
             if (id() == null) {
                 if (other.id() != null)
                     return false;
