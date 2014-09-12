@@ -10,4 +10,4 @@
     <dd>Because it is built on Vibe Java Server Platform which is I/O abstraction layer, you can run your application on any platform that it supports seamlessly e.g. Play, Vert.x, Atmosphere and Servlet.</dd>
 </dl>
 
-Please see the [website](http://atmosphere.github.io/vibe/projects/vibe-java-server//) for full documentation.
+Please see the [website](http://vibe-project.github.io/projects/vibe-java-server/) for full documentation.
