@@ -45,38 +45,41 @@ public class ProtocolTest {
                         socket.send("echo", data);
                     }
                 })
-                .on("rre.resolve", new Action<Reply<Object>>() {
+                .on("/reply/inbound", new Action<Reply<Map<String, Object>>>() {
                     @Override
-                    public void on(Reply<Object> reply) {
-                        reply.resolve(reply.data());
+                    public void on(Reply<Map<String, Object>> reply) {
+                        Map<String, Object> data = reply.data();
+                        switch ((String) data.get("type")) {
+                        case "resolved":
+                            reply.resolve(data.get("data"));
+                            break;
+                        case "rejected":
+                            reply.reject(data.get("data"));
+                            break;
+                        }
                     }
                 })
-                .on("rre.reject", new Action<Reply<Object>>() {
+                .on("/reply/outbound", new Action<Map<String, Object>>() {
                     @Override
-                    public void on(Reply<Object> reply) {
-                        reply.reject(reply.data());
-                    }
-                })
-                .on("sre.resolve", new Action<Object>() {
-                    @Override
-                    public void on(Object data) {
-                        socket.send("sre.resolve", data, new Action<Object>() {
-                            @Override
-                            public void on(Object data) {
-                                socket.send("sre.done", data);
-                            }
-                        });
-                    }
-                })
-                .on("sre.reject", new Action<Object>() {
-                    @Override
-                    public void on(Object data) {
-                        socket.send("sre.reject", data, null, new Action<Object>() {
-                            @Override
-                            public void on(Object data) {
-                                socket.send("sre.done", data);
-                            }
-                        });
+                    public void on(Map<String, Object> data) {
+                        switch ((String) data.get("type")) {
+                        case "resolved":
+                            socket.send("test", data.get("data"), new Action<Object>() {
+                                @Override
+                                public void on(Object data) {
+                                    socket.send("done", data);
+                                }
+                            });
+                            break;
+                        case "rejected":
+                            socket.send("test", data.get("data"), null, new Action<Object>() {
+                                @Override
+                                public void on(Object data) {
+                                    socket.send("done", data);
+                                }
+                            });
+                            break;
+                        }
                     }
                 });
             }
