@@ -44,6 +44,7 @@ import org.atmosphere.vibe.platform.ConcurrentActions;
 import org.atmosphere.vibe.platform.Data;
 import org.atmosphere.vibe.platform.HttpStatus;
 import org.atmosphere.vibe.platform.VoidAction;
+import org.atmosphere.vibe.platform.Wrapper;
 import org.atmosphere.vibe.platform.server.ServerHttpExchange;
 import org.atmosphere.vibe.platform.server.ServerWebSocket;
 import org.slf4j.Logger;
@@ -300,7 +301,7 @@ public class DefaultServer implements Server {
         return websocketAction;
     }
 
-    private abstract class Transport {
+    private abstract class Transport implements Wrapper {
         final Map<String, String> params;
         Actions<String> messageActions = new ConcurrentActions<>();
         Actions<Void> closeActions = new ConcurrentActions<>();
@@ -350,6 +351,11 @@ public class DefaultServer implements Server {
         synchronized void close() {
             ws.close();
         }
+
+        @Override
+        public <T> T unwrap(Class<T> clazz) {
+            return ws.unwrap(clazz);
+        }
     }
 
     private abstract class HttpTransport extends Transport {
@@ -363,6 +369,11 @@ public class DefaultServer implements Server {
         @Override
         String uri() {
             return http.uri();
+        }
+
+        @Override
+        public <T> T unwrap(Class<T> clazz) {
+            return http.unwrap(clazz);
         }
     }
 
@@ -716,6 +727,11 @@ public class DefaultServer implements Server {
         public ServerSocket untag(String... names) {
             tags.removeAll(Arrays.asList(names));
             return this;
+        }
+
+        @Override
+        public <T> T unwrap(Class<T> clazz) {
+            return transport.unwrap(clazz);
         }
 
         @Override
