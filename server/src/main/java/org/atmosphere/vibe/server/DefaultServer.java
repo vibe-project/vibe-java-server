@@ -65,6 +65,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class DefaultServer implements Server {
 
+    private final ObjectMapper mapper = new ObjectMapper();
     private final Logger log = LoggerFactory.getLogger(DefaultServer.class);
     private ConcurrentMap<String, DefaultServerSocket> sockets = new ConcurrentHashMap<>();
     private Actions<ServerSocket> socketActions = new ConcurrentActions<>();
@@ -89,9 +90,9 @@ public class DefaultServer implements Server {
                     result.put("_heartbeat", _heartbeat);
 
                     try {
-                        String text = new ObjectMapper().writeValueAsString(result);
+                        String text = mapper.writeValueAsString(result);
                         if (params.containsKey("callback")) {
-                            text = params.get("callback") + "(" + new ObjectMapper().writeValueAsString(text) + ")";
+                            text = params.get("callback") + "(" + mapper.writeValueAsString(text) + ")";
                         }
                         http.close(text);
                     } catch (JsonProcessingException e) {
@@ -229,7 +230,7 @@ public class DefaultServer implements Server {
 
     private Map<String, Object> parseEvent(String text) {
         try {
-            return new ObjectMapper().readValue(text, new TypeReference<Map<String, Object>>() {});
+            return mapper.readValue(text, new TypeReference<Map<String, Object>>() {});
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -237,7 +238,7 @@ public class DefaultServer implements Server {
 
     private String stringifyEvent(Map<String, Object> event) {
         try {
-            return new ObjectMapper().writeValueAsString(event);
+            return mapper.writeValueAsString(event);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
@@ -540,7 +541,7 @@ public class DefaultServer implements Server {
                 String payload;
                 if (params.get("transport").equals("longpolljsonp")) {
                     try {
-                        payload = params.get("callback") + "(" + new ObjectMapper().writeValueAsString(data) + ");";
+                        payload = params.get("callback") + "(" + mapper.writeValueAsString(data) + ");";
                     } catch (JsonProcessingException e) {
                         throw new RuntimeException(e);
                     }
