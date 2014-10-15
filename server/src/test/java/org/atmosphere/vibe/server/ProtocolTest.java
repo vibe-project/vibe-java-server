@@ -2,7 +2,9 @@ package org.atmosphere.vibe.server;
 
 import java.io.IOException;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Set;
+import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
@@ -17,6 +19,8 @@ import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.atmosphere.vibe.platform.Action;
 import org.atmosphere.vibe.platform.VoidAction;
+import org.atmosphere.vibe.platform.server.ServerHttpExchange;
+import org.atmosphere.vibe.platform.server.ServerWebSocket;
 import org.atmosphere.vibe.platform.server.atmosphere2.AtmosphereBridge;
 import org.atmosphere.vibe.server.ServerSocket.Reply;
 import org.eclipse.jetty.server.ServerConnector;
@@ -25,14 +29,22 @@ import org.junit.Test;
 
 public class ProtocolTest {
 
-    @Test
-    public void protocol() throws Exception {
-        final Map<String, ServerSocket> sockets = new ConcurrentHashMap<String, ServerSocket>();
-        final Server server = new DefaultServer();
+    Set<String> sockets = new ConcurrentSkipListSet<String>();
+    AtomicReference<Server> server = new AtomicReference<Server>();
+
+    Server createServer(Map<String, String[]> params) {
+        final DefaultServer server = new DefaultServer();
+        server.setTransports(params.get("transports")[0].split(","));
+        if (params.containsKey("heartbeat")) {
+            server.setHeartbeat(Integer.parseInt(params.get("heartbeat")[0]));
+        }
+        if (params.containsKey("_heartbeat")) {
+            server.set_heartbeat(Integer.parseInt(params.get("_heartbeat")[0]));
+        }
         server.socketAction(new Action<ServerSocket>() {
             @Override
             public void on(final ServerSocket socket) {
-                sockets.put(socket.id(), socket);
+                sockets.add(socket.id());
                 socket.on("close", new VoidAction() {
                     @Override
                     public void on() {
@@ -84,41 +96,66 @@ public class ProtocolTest {
                 });
             }
         });
+        return server;
+    }
 
+    @Test
+    public void protocol() throws Exception {
         org.eclipse.jetty.server.Server jetty = new org.eclipse.jetty.server.Server();
         ServerConnector connector = new ServerConnector(jetty);
         connector.setPort(8000);
         jetty.addConnector(connector);
         ServletContextHandler handler = new ServletContextHandler();
-        jetty.setHandler(handler);
-        ServletContextListener listener = new ServletContextListener() {
+        handler.addEventListener(new ServletContextListener() {
             @Override
+            @SuppressWarnings("serial")
             public void contextInitialized(ServletContextEvent event) {
                 ServletContext context = event.getServletContext();
-                new AtmosphereBridge(context, "/vibe").httpAction(server.httpAction()).websocketAction(server.websocketAction());
-                @SuppressWarnings("serial")
-                ServletRegistration.Dynamic reg = context.addServlet("/alive", new HttpServlet() {
+                // /setup
+                ServletRegistration regSetup = context.addServlet("/setup", new HttpServlet() {
                     @Override
                     protected void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
-                        String id = req.getParameter("id");
-                        res.getWriter().print(sockets.containsKey(id));
+                        server.set(createServer(req.getParameterMap()));
                     }
                 });
-                reg.addMapping("/alive");
+                regSetup.addMapping("/setup");
+                // /alive
+                ServletRegistration regAlive = context.addServlet("/alive", new HttpServlet() {
+                    @Override
+                    protected void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
+                        res.getWriter().print(sockets.contains(req.getParameter("id")));
+                    }
+                });
+                regAlive.addMapping("/alive");
+                // /vibe
+                new AtmosphereBridge(context, "/vibe").httpAction(new Action<ServerHttpExchange>() {
+                    @Override
+                    public void on(ServerHttpExchange http) {
+                        server.get().httpAction().on(http);
+                    }
+                })
+                .websocketAction(new Action<ServerWebSocket>() {
+                    @Override
+                    public void on(ServerWebSocket ws) {
+                        server.get().websocketAction().on(ws);
+                    }
+                });
             }
 
             @Override
-            public void contextDestroyed(ServletContextEvent sce) {
-            }
-        };
-        handler.addEventListener(listener);
+            public void contextDestroyed(ServletContextEvent sce) {}
+        });
+        jetty.setHandler(handler);
         jetty.start();
         
-        // Equivalent to: mocha ./node_modules/vibe-protocol/test/server --reporter spec
-        CommandLine cmdLine = CommandLine.parse("./src/test/resources/node/node ./src/test/resources/runner");
+        CommandLine cmdLine = CommandLine.parse("./src/test/resources/node/node")
+        .addArgument("./src/test/resources/runner")
+        .addArgument("--vibe.transports")
+        .addArgument("ws,sse,streamxhr,streamxdr,streamiframe,longpollajax,longpollxdr,longpolljsonp")
+        .addArgument("--vibe.extension")
+        .addArgument("reply");
         DefaultExecutor executor = new DefaultExecutor();
         // The exit value of mocha is the number of failed tests.
-        executor.setExitValue(0);
         executor.execute(cmdLine);
         
         jetty.stop();

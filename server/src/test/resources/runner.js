@@ -2,7 +2,7 @@
 // which tell the result of the test for some reason. This way seem to prevent
 // the issue.
 var Mocha = require("mocha");
-var mocha = new Mocha({reporter: "spec"});
+var mocha = new Mocha();
 
 mocha.addFile("./src/test/resources/node_modules/vibe-protocol/test/server.js");
 mocha.run(function(failures) {

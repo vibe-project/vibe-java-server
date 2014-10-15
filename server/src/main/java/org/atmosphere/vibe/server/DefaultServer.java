@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -58,7 +59,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * Default implementation of {@link Server}.
  * <p>
  * This implementation provides and manages {@link ServerSocket} processing HTTP request and WebSocket
- * following the vibe protocol.
+ * following the Vibe protocol.
  * 
  * @author Donghwan Kim
  */
@@ -67,6 +68,9 @@ public class DefaultServer implements Server {
     private final Logger log = LoggerFactory.getLogger(DefaultServer.class);
     private ConcurrentMap<String, DefaultServerSocket> sockets = new ConcurrentHashMap<>();
     private Actions<ServerSocket> socketActions = new ConcurrentActions<>();
+    private String[] transports = new String[] { "ws", "sse", "streamxhr", "streamxdr", "streamiframe", "longpollajax", "longpollxdr", "longpolljsonp" };
+    private int heartbeat = 20000;
+    private int _heartbeat = 5000;
 
     private Action<ServerHttpExchange> httpAction = new Action<ServerHttpExchange>() {
         @Override
@@ -77,6 +81,23 @@ public class DefaultServer implements Server {
                 setNocache(http);
                 setCors(http);
                 switch (params.get("when")) {
+                case "handshake":
+                    Map<String, Object> result = new LinkedHashMap<String, Object>();
+                    result.put("id", UUID.randomUUID().toString());
+                    result.put("transports", transports);
+                    result.put("heartbeat", heartbeat);
+                    result.put("_heartbeat", _heartbeat);
+
+                    try {
+                        String text = new ObjectMapper().writeValueAsString(result);
+                        if (params.containsKey("callback")) {
+                            text = params.get("callback") + "(" + new ObjectMapper().writeValueAsString(text) + ")";
+                        }
+                        http.close(text);
+                    } catch (JsonProcessingException e) {
+                        http.setStatus(HttpStatus.INTERNAL_SERVER_ERROR).close();
+                    }
+                    break;
                 case "open":
                     switch (params.get("transport")) {
                     case "sse":
@@ -299,6 +320,32 @@ public class DefaultServer implements Server {
     @Override
     public Action<ServerWebSocket> websocketAction() {
         return websocketAction;
+    }
+
+    /**
+     * A set of transports to allow connections. The default is <code>ws</code>,
+     * <code>sse</code>, <code>streamxhr</code>, <code>streamxdr</code>,
+     * <code>streamiframe</code>, <code>longpollajax</code>,
+     * <code>longpollxdr</code> and <code>longpolljsonp</code>.
+     */
+    public void setTransports(String... transports) {
+        this.transports = transports;
+    }
+
+    /**
+     * A heartbeat interval in milliseconds to maintain a connection alive and
+     * prevent server from holding idle connections. The default is 20s and
+     * should be larger than 5s.
+     */
+    public void setHeartbeat(int heartbeat) {
+        this.heartbeat = heartbeat;
+    }
+
+    /**
+     * To speed up the protocol tests. Not for production use.
+     */
+    public void set_heartbeat(int _heartbeat) {
+        this._heartbeat = _heartbeat;
     }
 
     private abstract class Transport implements Wrapper {
@@ -593,18 +640,15 @@ public class DefaultServer implements Server {
                 }
             });
             
-            try {
-                new HeartbeatHelper(Long.valueOf(transport.params.get("heartbeat")));
-            } catch (NumberFormatException e) {}
-
+            new HeartbeatHelper(heartbeat);
             sockets.put(id(), this);
         }
 
         class HeartbeatHelper {
-            final long delay;
-            AtomicReference<Timer> timer = new AtomicReference<>();
+            final int delay;
+            final AtomicReference<Timer> timer = new AtomicReference<>();
 
-            HeartbeatHelper(long delay) {
+            HeartbeatHelper(int delay) {
                 this.delay = delay;
                 timer.set(createTimer());
                 on("heartbeat", new VoidAction() {
