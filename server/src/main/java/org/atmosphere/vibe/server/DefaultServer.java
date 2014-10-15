@@ -96,6 +96,7 @@ public class DefaultServer implements Server {
                         }
                         http.close(text);
                     } catch (JsonProcessingException e) {
+                        log.error("Failed to write a JSON", e);
                         http.setStatus(HttpStatus.INTERNAL_SERVER_ERROR).close();
                     }
                     break;
