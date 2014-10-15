@@ -642,42 +642,8 @@ public class DefaultServer implements Server {
                 }
             });
             
-            new HeartbeatHelper(heartbeat);
+            new HeartbeatHelper(this, heartbeat);
             sockets.put(id(), this);
-        }
-
-        class HeartbeatHelper {
-            final int delay;
-            final AtomicReference<Timer> timer = new AtomicReference<>();
-
-            HeartbeatHelper(int delay) {
-                this.delay = delay;
-                timer.set(createTimer());
-                on("heartbeat", new VoidAction() {
-                    @Override
-                    public void on() {
-                        timer.getAndSet(createTimer()).cancel();
-                        send("heartbeat");
-                    }
-                });
-                on("close", new VoidAction() {
-                    @Override
-                    public void on() {
-                        timer.get().cancel();
-                    }
-                });
-            }
-
-            Timer createTimer() {
-                Timer timer = new Timer(true);
-                timer.schedule(new TimerTask() {
-                    @Override
-                    public void run() {
-                        close();
-                    }
-                }, delay);
-                return timer;
-            }
         }
 
         @Override
@@ -803,6 +769,42 @@ public class DefaultServer implements Server {
             } else if (!id().equals(other.id()))
                 return false;
             return true;
+        }
+    }
+
+    private static class HeartbeatHelper {
+        final DefaultServerSocket socket;
+        final int delay;
+        final AtomicReference<Timer> timer = new AtomicReference<>();
+
+        HeartbeatHelper(final DefaultServerSocket socket, int delay) {
+            this.socket = socket;
+            this.delay = delay;
+            timer.set(createTimer());
+            socket.on("heartbeat", new VoidAction() {
+                @Override
+                public void on() {
+                    timer.getAndSet(createTimer()).cancel();
+                    socket.send("heartbeat");
+                }
+            });
+            socket.on("close", new VoidAction() {
+                @Override
+                public void on() {
+                    timer.get().cancel();
+                }
+            });
+        }
+
+        Timer createTimer() {
+            Timer timer = new Timer(true);
+            timer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    socket.close();
+                }
+            }, delay);
+            return timer;
         }
     }
 
