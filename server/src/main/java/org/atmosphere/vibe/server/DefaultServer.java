@@ -65,7 +65,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class DefaultServer implements Server {
 
-    private final static ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper mapper = new ObjectMapper();
     private final Logger log = LoggerFactory.getLogger(DefaultServer.class);
     private ConcurrentMap<String, DefaultServerSocket> sockets = new ConcurrentHashMap<>();
     private String[] transports = new String[] { "ws", "sse", "streamxhr", "streamxdr", "streamiframe", "longpollajax", "longpollxdr", "longpolljsonp" };
@@ -346,22 +346,6 @@ public class DefaultServer implements Server {
         return Collections.unmodifiableMap(map);
     }
 
-    private static Map<String, Object> parseEvent(String text) {
-        try {
-            return mapper.readValue(text, new TypeReference<Map<String, Object>>() {});
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private static String stringifyEvent(Map<String, Object> event) {
-        try {
-            return mapper.writeValueAsString(event);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     private abstract static class Transport implements Wrapper {
         final Map<String, String> params;
         Actions<String> messageActions = new ConcurrentActions<>();
@@ -473,6 +457,7 @@ public class DefaultServer implements Server {
         AtomicBoolean written = new AtomicBoolean();
         Set<String> buffer = new CopyOnWriteArraySet<>();
         AtomicReference<Timer> closeTimer = new AtomicReference<>();
+        ObjectMapper mapper = new ObjectMapper();
 
         LongpollTransport(Map<String, String> params, ServerHttpExchange http) {
             super(params, http);
@@ -577,6 +562,7 @@ public class DefaultServer implements Server {
 
     private static class DefaultServerSocket implements ServerSocket {
         final Transport transport;
+        ObjectMapper mapper = new ObjectMapper();
         AtomicInteger eventId = new AtomicInteger();
         Set<String> tags = new CopyOnWriteArraySet<>();
         ConcurrentMap<String, Actions<Object>> actionsMap = new ConcurrentHashMap<>();
@@ -752,6 +738,22 @@ public class DefaultServer implements Server {
         @Override
         public <T> T unwrap(Class<T> clazz) {
             return transport.unwrap(clazz);
+        }
+        
+        Map<String, Object> parseEvent(String text) {
+            try {
+                return mapper.readValue(text, new TypeReference<Map<String, Object>>() {});
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        
+        String stringifyEvent(Map<String, Object> event) {
+            try {
+                return mapper.writeValueAsString(event);
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         @Override
