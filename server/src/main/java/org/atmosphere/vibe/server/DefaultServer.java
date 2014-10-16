@@ -340,7 +340,9 @@ public class DefaultServer implements Server {
                 }
 
                 map.put(name, pair.length > 1 ? URLDecoder.decode(pair[1], "UTF-8") : "");
-            } catch (UnsupportedEncodingException e) {}
+            } catch (UnsupportedEncodingException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         return Collections.unmodifiableMap(map);
