@@ -65,14 +65,26 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class DefaultServer implements Server {
 
-    private final ObjectMapper mapper = new ObjectMapper();
+    private final static ObjectMapper mapper = new ObjectMapper();
     private final Logger log = LoggerFactory.getLogger(DefaultServer.class);
     private ConcurrentMap<String, DefaultServerSocket> sockets = new ConcurrentHashMap<>();
-    private Actions<ServerSocket> socketActions = new ConcurrentActions<>();
     private String[] transports = new String[] { "ws", "sse", "streamxhr", "streamxdr", "streamiframe", "longpollajax", "longpollxdr", "longpolljsonp" };
     private int heartbeat = 20000;
     private int _heartbeat = 5000;
-
+    private Actions<ServerSocket> socketActions = new ConcurrentActions<ServerSocket>()
+    .add(new Action<ServerSocket>() {
+        @Override
+        public void on(final ServerSocket socket) {
+            sockets.put(socket.id(), (DefaultServerSocket) socket);
+            new HeartbeatHelper(socket, heartbeat);
+            socket.on("close", new VoidAction() {
+                @Override
+                public void on() {
+                    sockets.remove(socket.id());
+                }
+            });
+        }
+    });
     private Action<ServerHttpExchange> httpAction = new Action<ServerHttpExchange>() {
         @Override
         public void on(final ServerHttpExchange http) {
@@ -206,45 +218,6 @@ public class DefaultServer implements Server {
         }
     };
 
-    private Map<String, String> parseURI(String uri) {
-        Map<String, String> map = new LinkedHashMap<>();
-        String query = URI.create(uri).getQuery();
-        if ((query == null) || (query.equals(""))) {
-            return map;
-        }
-
-        String[] params = query.split("&");
-        for (String param : params) {
-            try {
-                String[] pair = param.split("=", 2);
-                String name = URLDecoder.decode(pair[0], "UTF-8");
-                if (name == "") {
-                    continue;
-                }
-
-                map.put(name, pair.length > 1 ? URLDecoder.decode(pair[1], "UTF-8") : "");
-            } catch (UnsupportedEncodingException e) {}
-        }
-
-        return Collections.unmodifiableMap(map);
-    }
-
-    private Map<String, Object> parseEvent(String text) {
-        try {
-            return mapper.readValue(text, new TypeReference<Map<String, Object>>() {});
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private String stringifyEvent(Map<String, Object> event) {
-        try {
-            return mapper.writeValueAsString(event);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     @Override
     public Sentence all() {
         return new Sentence(new Action<Action<ServerSocket>>() {
@@ -350,7 +323,46 @@ public class DefaultServer implements Server {
         this._heartbeat = _heartbeat;
     }
 
-    private abstract class Transport implements Wrapper {
+    private static Map<String, String> parseURI(String uri) {
+        Map<String, String> map = new LinkedHashMap<>();
+        String query = URI.create(uri).getQuery();
+        if ((query == null) || (query.equals(""))) {
+            return map;
+        }
+
+        String[] params = query.split("&");
+        for (String param : params) {
+            try {
+                String[] pair = param.split("=", 2);
+                String name = URLDecoder.decode(pair[0], "UTF-8");
+                if (name == "") {
+                    continue;
+                }
+
+                map.put(name, pair.length > 1 ? URLDecoder.decode(pair[1], "UTF-8") : "");
+            } catch (UnsupportedEncodingException e) {}
+        }
+
+        return Collections.unmodifiableMap(map);
+    }
+
+    private static Map<String, Object> parseEvent(String text) {
+        try {
+            return mapper.readValue(text, new TypeReference<Map<String, Object>>() {});
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static String stringifyEvent(Map<String, Object> event) {
+        try {
+            return mapper.writeValueAsString(event);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private abstract static class Transport implements Wrapper {
         final Map<String, String> params;
         Actions<String> messageActions = new ConcurrentActions<>();
         Actions<Void> closeActions = new ConcurrentActions<>();
@@ -366,7 +378,7 @@ public class DefaultServer implements Server {
         abstract void close();
     }
 
-    private class WebSocketTransport extends Transport {
+    private static class WebSocketTransport extends Transport {
         final ServerWebSocket ws;
 
         WebSocketTransport(Map<String, String> params, ServerWebSocket ws) {
@@ -407,7 +419,7 @@ public class DefaultServer implements Server {
         }
     }
 
-    private abstract class HttpTransport extends Transport {
+    private abstract static class HttpTransport extends Transport {
         final ServerHttpExchange http;
 
         HttpTransport(Map<String, String> params, ServerHttpExchange http) {
@@ -428,7 +440,7 @@ public class DefaultServer implements Server {
 
     final static String text2KB = CharBuffer.allocate(2048).toString().replace('\0', ' ');
 
-    private class StreamTransport extends HttpTransport {
+    private static class StreamTransport extends HttpTransport {
         StreamTransport(Map<String, String> params, ServerHttpExchange http) {
             super(params, http);
             http.closeAction(new VoidAction() {
@@ -454,7 +466,7 @@ public class DefaultServer implements Server {
         }
     }
 
-    private class LongpollTransport extends HttpTransport {
+    private static class LongpollTransport extends HttpTransport {
         AtomicReference<ServerHttpExchange> httpRef = new AtomicReference<>();
         AtomicBoolean aborted = new AtomicBoolean();
         AtomicBoolean ended = new AtomicBoolean();
@@ -563,7 +575,7 @@ public class DefaultServer implements Server {
         }
     }
 
-    private class DefaultServerSocket implements ServerSocket {
+    private static class DefaultServerSocket implements ServerSocket {
         final Transport transport;
         AtomicInteger eventId = new AtomicInteger();
         Set<String> tags = new CopyOnWriteArraySet<>();
@@ -575,7 +587,6 @@ public class DefaultServer implements Server {
             transport.closeActions.add(new VoidAction() {
                 @Override
                 public void on() {
-                    sockets.remove(id());
                     Actions<Object> closeActions = actionsMap.get("close");
                     if (closeActions != null) {
                         closeActions.fire();
@@ -641,9 +652,6 @@ public class DefaultServer implements Server {
                     action.on(info.get("data"));
                 }
             });
-            
-            new HeartbeatHelper(this, heartbeat);
-            sockets.put(id(), this);
         }
 
         @Override
@@ -773,11 +781,11 @@ public class DefaultServer implements Server {
     }
 
     private static class HeartbeatHelper {
-        final DefaultServerSocket socket;
+        final ServerSocket socket;
         final int delay;
         final AtomicReference<Timer> timer = new AtomicReference<>();
 
-        HeartbeatHelper(final DefaultServerSocket socket, int delay) {
+        HeartbeatHelper(final ServerSocket socket, int delay) {
             this.socket = socket;
             this.delay = delay;
             timer.set(createTimer());
