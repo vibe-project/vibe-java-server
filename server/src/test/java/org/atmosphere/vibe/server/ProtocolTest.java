@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
-import java.util.concurrent.atomic.AtomicReference;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
@@ -19,8 +18,6 @@ import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.atmosphere.vibe.platform.Action;
 import org.atmosphere.vibe.platform.VoidAction;
-import org.atmosphere.vibe.platform.server.ServerHttpExchange;
-import org.atmosphere.vibe.platform.server.ServerWebSocket;
 import org.atmosphere.vibe.platform.server.atmosphere2.AtmosphereBridge;
 import org.atmosphere.vibe.server.ServerSocket.Reply;
 import org.eclipse.jetty.server.ServerConnector;
@@ -29,18 +26,10 @@ import org.junit.Test;
 
 public class ProtocolTest {
 
-    Set<String> sockets = new ConcurrentSkipListSet<String>();
-    AtomicReference<Server> server = new AtomicReference<Server>();
-
-    Server createServer(Map<String, String[]> params) {
+    @Test
+    public void protocol() throws Exception {
+        final Set<String> sockets = new ConcurrentSkipListSet<String>();
         final DefaultServer server = new DefaultServer();
-        server.setTransports(params.get("transports")[0].split(","));
-        if (params.containsKey("heartbeat")) {
-            server.setHeartbeat(Integer.parseInt(params.get("heartbeat")[0]));
-        }
-        if (params.containsKey("_heartbeat")) {
-            server.set_heartbeat(Integer.parseInt(params.get("_heartbeat")[0]));
-        }
         server.socketAction(new Action<ServerSocket>() {
             @Override
             public void on(final ServerSocket socket) {
@@ -96,11 +85,7 @@ public class ProtocolTest {
                 });
             }
         });
-        return server;
-    }
 
-    @Test
-    public void protocol() throws Exception {
         org.eclipse.jetty.server.Server jetty = new org.eclipse.jetty.server.Server();
         ServerConnector connector = new ServerConnector(jetty);
         connector.setPort(8000);
@@ -115,7 +100,14 @@ public class ProtocolTest {
                 ServletRegistration regSetup = context.addServlet("/setup", new HttpServlet() {
                     @Override
                     protected void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
-                        server.set(createServer(req.getParameterMap()));
+                        Map<String, String[]> params = req.getParameterMap();
+                        server.setTransports(params.get("transports")[0].split(","));
+                        if (params.containsKey("heartbeat")) {
+                            server.setHeartbeat(Integer.parseInt(params.get("heartbeat")[0]));
+                        }
+                        if (params.containsKey("_heartbeat")) {
+                            server.set_heartbeat(Integer.parseInt(params.get("_heartbeat")[0]));
+                        }
                     }
                 });
                 regSetup.addMapping("/setup");
@@ -128,18 +120,7 @@ public class ProtocolTest {
                 });
                 regAlive.addMapping("/alive");
                 // /vibe
-                new AtmosphereBridge(context, "/vibe").httpAction(new Action<ServerHttpExchange>() {
-                    @Override
-                    public void on(ServerHttpExchange http) {
-                        server.get().httpAction().on(http);
-                    }
-                })
-                .websocketAction(new Action<ServerWebSocket>() {
-                    @Override
-                    public void on(ServerWebSocket ws) {
-                        server.get().websocketAction().on(ws);
-                    }
-                });
+                new AtmosphereBridge(context, "/vibe").httpAction(server.httpAction()).websocketAction(server.websocketAction());
             }
 
             @Override
