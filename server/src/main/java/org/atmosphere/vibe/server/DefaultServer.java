@@ -74,15 +74,16 @@ public class DefaultServer implements Server {
     private Actions<ServerSocket> socketActions = new ConcurrentActions<ServerSocket>()
     .add(new Action<ServerSocket>() {
         @Override
-        public void on(final ServerSocket socket) {
-            sockets.put(socket.id(), (DefaultServerSocket) socket);
-            new HeartbeatHelper(socket, heartbeat);
+        public void on(ServerSocket s) {
+            final DefaultServerSocket socket = (DefaultServerSocket) s;
+            sockets.put(socket.id(), socket);
             socket.on("close", new VoidAction() {
                 @Override
                 public void on() {
                     sockets.remove(socket.id());
                 }
             });
+            socket.setHeartbeat(heartbeat);
         }
     });
     private Action<ServerHttpExchange> httpAction = new Action<ServerHttpExchange>() {
@@ -569,6 +570,7 @@ public class DefaultServer implements Server {
         Set<String> tags = new CopyOnWriteArraySet<>();
         ConcurrentMap<String, Actions<Object>> actionsMap = new ConcurrentHashMap<>();
         ConcurrentMap<String, Map<String, Action<Object>>> callbacksMap = new ConcurrentHashMap<>();
+        AtomicReference<Timer> heartbeatTimer = new AtomicReference<>();
 
         DefaultServerSocket(final Transport transport) {
             this.transport = transport;
@@ -758,6 +760,34 @@ public class DefaultServer implements Server {
             }
         }
 
+        void setHeartbeat(final int heartbeat) {
+            heartbeatTimer.set(createCloseTimer(heartbeat));
+            on("heartbeat", new VoidAction() {
+                @Override
+                public void on() {
+                    heartbeatTimer.getAndSet(createCloseTimer(heartbeat)).cancel();
+                    send("heartbeat");
+                }
+            });
+            on("close", new VoidAction() {
+                @Override
+                public void on() {
+                    heartbeatTimer.get().cancel();
+                }
+            });
+        }
+
+        Timer createCloseTimer(int heartbeat) {
+            Timer timer = new Timer(true);
+            timer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    close();
+                }
+            }, heartbeat);
+            return timer;
+        }
+
         @Override
         public int hashCode() {
             final int prime = 31;
@@ -781,42 +811,6 @@ public class DefaultServer implements Server {
             } else if (!id().equals(other.id()))
                 return false;
             return true;
-        }
-    }
-
-    private static class HeartbeatHelper {
-        final ServerSocket socket;
-        final int delay;
-        final AtomicReference<Timer> timer = new AtomicReference<>();
-
-        HeartbeatHelper(final ServerSocket socket, int delay) {
-            this.socket = socket;
-            this.delay = delay;
-            timer.set(createTimer());
-            socket.on("heartbeat", new VoidAction() {
-                @Override
-                public void on() {
-                    timer.getAndSet(createTimer()).cancel();
-                    socket.send("heartbeat");
-                }
-            });
-            socket.on("close", new VoidAction() {
-                @Override
-                public void on() {
-                    timer.get().cancel();
-                }
-            });
-        }
-
-        Timer createTimer() {
-            Timer timer = new Timer(true);
-            timer.schedule(new TimerTask() {
-                @Override
-                public void run() {
-                    socket.close();
-                }
-            }, delay);
-            return timer;
         }
     }
 
