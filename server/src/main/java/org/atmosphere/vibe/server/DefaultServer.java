@@ -461,7 +461,7 @@ public class DefaultServer implements Server {
     private static class LongpollTransport extends HttpTransport {
         AtomicReference<ServerHttpExchange> httpRef = new AtomicReference<>();
         AtomicBoolean aborted = new AtomicBoolean();
-        AtomicBoolean ended = new AtomicBoolean();
+        AtomicBoolean closed = new AtomicBoolean();
         AtomicBoolean written = new AtomicBoolean();
         Set<String> buffer = new CopyOnWriteArraySet<>();
         AtomicReference<Timer> closeTimer = new AtomicReference<>();
@@ -482,7 +482,7 @@ public class DefaultServer implements Server {
             .closeAction(new VoidAction() {
                 @Override
                 public void on() {
-                    ended.set(true);
+                    closed.set(true);
                     if (parameters.get("when").equals("poll") && !written.get()) {
                         closeActions.fire();
                     } else {
@@ -504,7 +504,7 @@ public class DefaultServer implements Server {
                 http.end();
             } else {
                 httpRef.set(http);
-                ended.set(false);
+                closed.set(false);
                 written.set(false);
                 Timer timer = closeTimer.getAndSet(null);
                 if (timer != null) {
@@ -547,7 +547,7 @@ public class DefaultServer implements Server {
                 buffer.add(data);
             }
             ServerHttpExchange http = httpRef.getAndSet(null);
-            if (http != null && !ended.get()) {
+            if (http != null && !closed.get()) {
                 written.set(true);
                 String payload;
                 if (params.get("transport").equals("longpolljsonp")) {
@@ -567,7 +567,7 @@ public class DefaultServer implements Server {
         synchronized void close() {
             aborted.set(true);
             ServerHttpExchange http = httpRef.getAndSet(null);
-            if (http != null && !ended.get()) {
+            if (http != null && !closed.get()) {
                 http.end();
             }
         }
