@@ -352,7 +352,7 @@ public class DefaultServer implements Server {
     private abstract static class Transport implements Wrapper {
         final Map<String, String> params;
         Actions<String> messageActions = new ConcurrentActions<>();
-        Actions<Void> closeActions = new ConcurrentActions<>();
+        Actions<Void> closeActions = new ConcurrentActions<>(new Actions.Options().once(true).memory(true));
 
         Transport(Map<String, String> params) {
             this.params = params;
@@ -584,13 +584,11 @@ public class DefaultServer implements Server {
 
         DefaultServerSocket(final Transport transport) {
             this.transport = transport;
+            actionsMap.put("close", new ConcurrentActions<>(new Actions.Options().once(true).memory(true)));
             transport.closeActions.add(new VoidAction() {
                 @Override
                 public void on() {
-                    Actions<Object> closeActions = actionsMap.get("close");
-                    if (closeActions != null) {
-                        closeActions.fire();
-                    }
+                    actionsMap.get("close").fire();
                 }
             });
             transport.messageActions.add(new Action<String>() {
