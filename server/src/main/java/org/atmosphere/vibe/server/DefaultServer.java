@@ -107,10 +107,10 @@ public class DefaultServer implements Server {
                         if (params.containsKey("callback")) {
                             text = params.get("callback") + "(" + mapper.writeValueAsString(text) + ")";
                         }
-                        http.close(text);
+                        http.end(text);
                     } catch (JsonProcessingException e) {
                         log.error("Failed to write a JSON", e);
-                        http.setStatus(HttpStatus.INTERNAL_SERVER_ERROR).close();
+                        http.setStatus(HttpStatus.INTERNAL_SERVER_ERROR).end();
                     }
                     break;
                 case "open":
@@ -128,7 +128,7 @@ public class DefaultServer implements Server {
                         break;
                     default:
                         log.error("Transport, {}, is not supported", params.get("transport"));
-                        http.setStatus(HttpStatus.NOT_IMPLEMENTED).close();
+                        http.setStatus(HttpStatus.NOT_IMPLEMENTED).end();
                     }
                     break;
                 case "poll": {
@@ -140,11 +140,11 @@ public class DefaultServer implements Server {
                             ((LongpollTransport) transport).refresh(http);
                         } else {
                             log.error("Non-long polling transport#{} sent poll request", id);
-                            http.setStatus(HttpStatus.INTERNAL_SERVER_ERROR).close();
+                            http.setStatus(HttpStatus.INTERNAL_SERVER_ERROR).end();
                         }
                     } else {
                         log.error("Long polling transport#{} is not found in poll request", id);
-                        http.setStatus(HttpStatus.INTERNAL_SERVER_ERROR).close();
+                        http.setStatus(HttpStatus.INTERNAL_SERVER_ERROR).end();
                     }
                     break;
                 }
@@ -154,12 +154,12 @@ public class DefaultServer implements Server {
                     if (socket != null) {
                         socket.close();
                     }
-                    http.setHeader("content-type", "text/javascript; charset=utf-8").close();
+                    http.setHeader("content-type", "text/javascript; charset=utf-8").end();
                     break;
                 }
                 default:
                     log.error("when, {}, is not supported", params.get("when"));
-                    http.setStatus(HttpStatus.NOT_IMPLEMENTED).close();
+                    http.setStatus(HttpStatus.NOT_IMPLEMENTED).end();
                     break;
                 }
                 break;
@@ -185,13 +185,13 @@ public class DefaultServer implements Server {
                             log.error("A POST message arrived but no socket#{} is found", id);
                             http.setStatus(HttpStatus.INTERNAL_SERVER_ERROR);
                         }
-                        http.close();
+                        http.end();
                     };
                 });
                 break;
             default:
                 log.error("HTTP method, {}, is not supported", http.method());
-                http.setStatus(HttpStatus.METHOD_NOT_ALLOWED).close();
+                http.setStatus(HttpStatus.METHOD_NOT_ALLOWED).end();
                 break;
             }
         }
@@ -430,7 +430,12 @@ public class DefaultServer implements Server {
     private static class StreamTransport extends HttpTransport {
         StreamTransport(Map<String, String> params, ServerHttpExchange http) {
             super(params, http);
-            http.closeAction(new VoidAction() {
+            // Add an empty body action to make closeAction be fired on http.end
+            http.bodyAction(new Action<Data>() {
+                @Override
+                public void on(Data _) {}
+            })
+            .closeAction(new VoidAction() {
                 @Override
                 public void on() {
                     closeActions.fire();
@@ -449,7 +454,7 @@ public class DefaultServer implements Server {
 
         @Override
         synchronized void close() {
-            http.close();
+            http.end();
         }
     }
 
@@ -469,7 +474,12 @@ public class DefaultServer implements Server {
 
         void refresh(ServerHttpExchange http) {
             final Map<String, String> parameters = parseURI(http.uri());
-            http.closeAction(new VoidAction() {
+            // Add an empty body action to make closeAction be fired on http.end
+            http.bodyAction(new Action<Data>() {
+                @Override
+                public void on(Data _) {}
+            })
+            .closeAction(new VoidAction() {
                 @Override
                 public void on() {
                     ended.set(true);
@@ -491,7 +501,7 @@ public class DefaultServer implements Server {
                 "text/" + (params.get("transport").equals("longpolljsonp") ? "javascript" : "plain") + "; charset=utf-8");
 
             if (parameters.get("when").equals("open")) {
-                http.close();
+                http.end();
             } else {
                 httpRef.set(http);
                 ended.set(false);
@@ -501,7 +511,7 @@ public class DefaultServer implements Server {
                     timer.cancel();
                 }
                 if (aborted.get()) {
-                    http.close();
+                    http.end();
                     return;
                 }
                 if (parameters.containsKey("lastEventIds")) {
@@ -549,7 +559,7 @@ public class DefaultServer implements Server {
                 } else {
                     payload = data;
                 }
-                http.close(payload);
+                http.end(payload);
             }
         }
 
@@ -558,7 +568,7 @@ public class DefaultServer implements Server {
             aborted.set(true);
             ServerHttpExchange http = httpRef.getAndSet(null);
             if (http != null && !ended.get()) {
-                http.close();
+                http.end();
             }
         }
     }
