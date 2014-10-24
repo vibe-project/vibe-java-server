@@ -702,6 +702,16 @@ public class DefaultServer implements Server {
             return this;
         }
 
+        @Override
+        public ServerSocket closeAction(Action<Void> action) {
+            return on("close", action);
+        }
+
+        @Override
+        public ServerSocket errorAction(Action<Throwable> action) {
+            return on("error", action);
+        }
+
         @SuppressWarnings("unchecked")
         @Override
         public <T> ServerSocket off(String event, Action<T> action) {

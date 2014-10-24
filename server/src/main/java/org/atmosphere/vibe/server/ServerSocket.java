@@ -98,6 +98,16 @@ public interface ServerSocket extends AbstractServerSocket<ServerSocket>, Wrappe
     <T> ServerSocket on(String event, Action<T> action);
 
     /**
+     * Equivalent to <code>socket.on("close", action)</code>
+     */
+    ServerSocket closeAction(Action<Void> action);
+
+    /**
+     * Equivalent to <code>socket.on("error", action)</code>
+     */
+    ServerSocket errorAction(Action<Throwable> action);
+
+    /**
      * Removes a given added event handler for a given event.
      */
     <T> ServerSocket off(String event, Action<T> action);
