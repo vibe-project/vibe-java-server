@@ -352,6 +352,7 @@ public class DefaultServer implements Server {
     private abstract static class Transport implements Wrapper {
         final Map<String, String> params;
         Actions<String> messageActions = new ConcurrentActions<>();
+        Actions<Throwable> errorActions = new ConcurrentActions<>();
         Actions<Void> closeActions = new ConcurrentActions<>(new Actions.Options().once(true).memory(true));
 
         Transport(Map<String, String> params) {
@@ -371,7 +372,13 @@ public class DefaultServer implements Server {
         WebSocketTransport(Map<String, String> params, ServerWebSocket ws) {
             super(params);
             this.ws = ws;
-            ws.closeAction(new VoidAction() {
+            ws.errorAction(new Action<Throwable>() {
+                @Override
+                public void on(Throwable throwable) {
+                    errorActions.fire(throwable);
+                }
+            })
+            .closeAction(new VoidAction() {
                 @Override
                 public void on() {
                     closeActions.fire();
@@ -412,6 +419,12 @@ public class DefaultServer implements Server {
         HttpTransport(Map<String, String> params, ServerHttpExchange http) {
             super(params);
             this.http = http;
+            http.errorAction(new Action<Throwable>() {
+                @Override
+                public void on(Throwable throwable) {
+                    errorActions.fire(throwable);
+                }
+            });
         }
 
         @Override
@@ -584,6 +597,13 @@ public class DefaultServer implements Server {
 
         DefaultServerSocket(final Transport transport) {
             this.transport = transport;
+            actionsMap.put("error", new ConcurrentActions<>());
+            transport.errorActions.add(new Action<Throwable>() {
+                @Override
+                public void on(Throwable throwable) {
+                    actionsMap.get("error").fire(throwable);
+                }
+            });
             actionsMap.put("close", new ConcurrentActions<>(new Actions.Options().once(true).memory(true)));
             transport.closeActions.add(new VoidAction() {
                 @Override
@@ -790,6 +810,7 @@ public class DefaultServer implements Server {
             timer.schedule(new TimerTask() {
                 @Override
                 public void run() {
+                    actionsMap.get("error").fire(new HeartbeatFailedException());
                     close();
                 }
             }, heartbeat);
