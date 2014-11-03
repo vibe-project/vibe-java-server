@@ -42,7 +42,6 @@ import java.util.regex.Pattern;
 import org.atmosphere.vibe.platform.Action;
 import org.atmosphere.vibe.platform.Actions;
 import org.atmosphere.vibe.platform.ConcurrentActions;
-import org.atmosphere.vibe.platform.Data;
 import org.atmosphere.vibe.platform.HttpStatus;
 import org.atmosphere.vibe.platform.VoidAction;
 import org.atmosphere.vibe.platform.Wrapper;
@@ -166,10 +165,10 @@ public class DefaultServer implements Server {
             case "POST":
                 setNocache(http);
                 setCors(http);
-                http.bodyAction(new Action<Data>() {
+                http.bodyAction(new Action<String>() {
                     @Override
-                    public void on(Data body) {
-                        String data = body.as(String.class).substring("data=".length());
+                    public void on(String body) {
+                        String data = body.substring("data=".length());
                         String id = params.get("id");
 
                         DefaultServerSocket socket = sockets.get(id);
@@ -187,7 +186,8 @@ public class DefaultServer implements Server {
                         }
                         http.end();
                     };
-                });
+                })
+                .read();
                 break;
             default:
                 log.error("HTTP method, {}, is not supported", http.method());
@@ -384,10 +384,10 @@ public class DefaultServer implements Server {
                     closeActions.fire();
                 }
             })
-            .messageAction(new Action<Data>() {
+            .textAction(new Action<String>() {
                 @Override
-                public void on(Data data) {
-                    messageActions.fire(data.as(String.class));
+                public void on(String data) {
+                    messageActions.fire(data);
                 }
             });
         }
@@ -443,12 +443,8 @@ public class DefaultServer implements Server {
     private static class StreamTransport extends HttpTransport {
         StreamTransport(Map<String, String> params, ServerHttpExchange http) {
             super(params, http);
-            // Add an empty body action to make closeAction be fired on http.end
-            http.bodyAction(new Action<Data>() {
-                @Override
-                public void on(Data _) {}
-            })
-            .closeAction(new VoidAction() {
+            // Reads the request to make closeAction be fired on http.end
+            http.read().closeAction(new VoidAction() {
                 @Override
                 public void on() {
                     closeActions.fire();
@@ -487,12 +483,8 @@ public class DefaultServer implements Server {
 
         void refresh(ServerHttpExchange http) {
             final Map<String, String> parameters = parseURI(http.uri());
-            // Add an empty body action to make closeAction be fired on http.end
-            http.bodyAction(new Action<Data>() {
-                @Override
-                public void on(Data _) {}
-            })
-            .closeAction(new VoidAction() {
+            // Reads the request to make closeAction be fired on http.end
+            http.read().closeAction(new VoidAction() {
                 @Override
                 public void on() {
                     closed.set(true);
