@@ -16,8 +16,8 @@
 package org.atmosphere.vibe.server;
 
 /**
- * {@code AbstractSocket} consists of a set of common functionality of {@link Sentence} and
- * {@link ServerSocket}.
+ * {@code AbstractSocket} consists of a set of common functionality of
+ * {@link Sentence} and {@link ServerSocket}.
  * 
  * @author Donghwan Kim
  */

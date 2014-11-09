@@ -57,8 +57,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 /**
  * Default implementation of {@link Server}.
  * <p>
- * This implementation provides and manages {@link ServerSocket} processing HTTP request and WebSocket
- * following the Vibe protocol.
+ * This implementation consumes {@link ServerHttpExchange} and
+ * {@link ServerWebSocket} and provides {@link ServerSocket} following the Vibe
+ * protocol
+ * <p>
+ * The following options are configurable.
+ * <ul>
+ * <li>{@link DefaultServer#setTransports(String...)}</li>
+ * <li>{@link DefaultServer#setHeartbeat(int)}</li>
+ * </ul>
  * 
  * @author Donghwan Kim
  */
@@ -308,8 +315,8 @@ public class DefaultServer implements Server {
 
     /**
      * A heartbeat interval in milliseconds to maintain a connection alive and
-     * prevent server from holding idle connections. The default is 20s and
-     * should be larger than 5s.
+     * prevent server from holding idle connections. The default is
+     * <code>20</code>s and should be larger than <code>5</code>s.
      */
     public void setHeartbeat(int heartbeat) {
         this.heartbeat = heartbeat;

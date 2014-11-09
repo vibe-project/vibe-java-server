@@ -142,7 +142,6 @@
                     <bottom><![CDATA[Copyright ${project.inceptionYear}, <a href="https://vibe-project.github.io/projects/vibe-java-server/">The Vibe Project</a>]]></bottom>
                     <packagesheader>vibe</packagesheader>
                     <links>
-                        <link>http://docs.oracle.com/javaee/7/api/</link>
                         <link>http://vibe-project.github.io/projects/vibe-java-platform/${vibe.platform.version}/apidocs/</link>
                     </links>
                 </configuration>

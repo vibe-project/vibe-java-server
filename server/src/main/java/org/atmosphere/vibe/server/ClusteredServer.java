@@ -27,29 +27,37 @@ import org.atmosphere.vibe.platform.ConcurrentActions;
 /**
  * {@link Server} implementation for clustering.
  * <p>
- * This implementation follows the publish and subscribe model from Java Message Service (JMS) to
- * support clustering. Here, the message represents invocation of socket action and is created when
- * one of selector actions is called. The publisher should publish the message passed from
- * {@link ClusteredServer#publishAction(Action)} to all nodes in cluster and the subscriber should
- * propagate a message sent from one of node in cluster to {@link ClusteredServer#messageAction()}.
+ * With this implementation, {@code server.all(action)} have {@code action} be
+ * executed with every socket in every server in the cluster.
  * <p>
- * An invocation of the following socket finder actions will propagate to all the server in cluster:
+ * This implementation adopts the publish and subscribe model from Java Message
+ * Service to support clustering. Here, the exchanged message represents method
+ * invocation to be executed by every server in the cluster. The following
+ * methods create such messages.
  * <ul>
- * <li>{@link ClusteredServer#all(Action)}</li>
- * <li>{@link ClusteredServer#byId(Action)}</li>
- * <li>{@link ClusteredServer#byTag(Action)}</li>
+ * <li>{@link Server#all())}</li>
+ * <li>{@link Server#all(Action)}</li>
+ * <li>{@link Server#byId(String)}</li>
+ * <li>{@link Server#byId(String, Action)}</li>
+ * <li>{@link Server#byTag(String...))}</li>
+ * <li>{@link Server#byTag(String, Action)))}</li>
+ * <li>{@link Server#byTag(String[], Action)}</li>
  * </ul>
- * That means {@code server.all(action)} executes a given action with not only all the sockets in
- * this server but also all the sockets in all the other servers in the cluster.
+ * A message created by this server is passed to
+ * {@link ClusteredServer#publishAction(Action)} and a message created by other
+ * servers is expected to be passed to {@link ClusteredServer#messageAction()}.
+ * Therefore, what you need to do is to publish a message given through
+ * {@link ClusteredServer#publishAction(Action)} to every server in the cluster
+ * and to subscribe a published message by other servers to delegate it to
+ * {@link ClusteredServer#messageAction()}.
  * <p>
- * Accordingly, most of Message Oriented Middlware requires message to be serialized and you may
- * have to have pass {@link Action} implementing {@link Serializable} on method call. See the
- * provided link, serialization of inner classes including local and anonymous classes, is
- * discouraged and doesn't work in some cases. Therefore, always use {@link Sentence} instead of
- * action if possible.
+ * Accordingly, such message must be able to be serialized and you have to pass
+ * {@link Action} implementing {@link Serializable}. However, serialization of
+ * inner classes doesn't work in some cases as expected so that always use
+ * {@link Sentence} instead of action if possible unless you use lambda
+ * expressions.
  * 
  * @author Donghwan Kim
- * @see Sentence
  * @see <a
  *      href="http://docs.oracle.com/javase/7/docs/platform/serialization/spec/serial-arch.html#4539">Note
  *      of the Serializable Interface</a>
@@ -106,8 +114,8 @@ public class ClusteredServer extends DefaultServer {
     }
 
     /**
-     * Attaches an action to be called with a map containing method name and arguments of socket
-     * action when it's called.
+     * Adds an action to be called with a message to be published to every node
+     * in the cluster.
      */
     public Server publishAction(Action<Map<String, Object>> action) {
         publishActions.add(action);
@@ -115,8 +123,8 @@ public class ClusteredServer extends DefaultServer {
     }
 
     /**
-     * This action receives a map fired from one of node in cluster and invokes socket action in
-     * this server.
+     * An action to receive a message published from one of nodes in the
+     * cluster.
      */
     public Action<Map<String, Object>> messageAction() {
         return messageAction;
