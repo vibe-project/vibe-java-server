@@ -120,7 +120,7 @@ public class ProtocolTest {
                 });
                 regAlive.addMapping("/alive");
                 // /vibe
-                new AtmosphereBridge(context, "/vibe").httpAction(server.httpAction()).websocketAction(server.websocketAction());
+                new AtmosphereBridge(context, "/vibe").httpAction(server.httpAction()).websocketAction(server.wsAction());
             }
 
             @Override

@@ -197,21 +197,19 @@ public class DefaultServer implements Server {
         }
 
         private void setNocache(ServerHttpExchange http) {
-            http
-            .setHeader("cache-control", "no-cache, no-store, must-revalidate")
+            http.setHeader("cache-control", "no-cache, no-store, must-revalidate")
             .setHeader("pragma", "no-cache")
             .setHeader("expires", "0");
         }
 
         private void setCors(ServerHttpExchange http) {
             String origin = http.header("origin");
-            http
-            .setHeader("access-control-allow-origin", origin != null ? origin : "*")
+            http.setHeader("access-control-allow-origin", origin != null ? origin : "*")
             .setHeader("access-control-allow-credentials", "true");
         }
     };
 
-    private Action<ServerWebSocket> websocketAction = new Action<ServerWebSocket>() {
+    private Action<ServerWebSocket> wsAction = new Action<ServerWebSocket>() {
         @Override
         public void on(ServerWebSocket ws) {
             Map<String, String> params = parseURI(ws.uri());
@@ -294,8 +292,8 @@ public class DefaultServer implements Server {
     }
 
     @Override
-    public Action<ServerWebSocket> websocketAction() {
-        return websocketAction;
+    public Action<ServerWebSocket> wsAction() {
+        return wsAction;
     }
 
     /**
@@ -327,8 +325,8 @@ public class DefaultServer implements Server {
     private static Map<String, String> parseURI(String uri) {
         Map<String, String> map = new LinkedHashMap<>();
         String query = URI.create(uri).getQuery();
-        if ((query == null) || (query.equals(""))) {
-            return map;
+        if (query == null || query.equals("")) {
+            return Collections.unmodifiableMap(map);
         }
 
         String[] params = query.split("&");

@@ -107,6 +107,6 @@ public interface Server {
     /**
      * ServerWebSocket action to install in wes
      */
-    Action<ServerWebSocket> websocketAction();
+    Action<ServerWebSocket> wsAction();
 
 }
