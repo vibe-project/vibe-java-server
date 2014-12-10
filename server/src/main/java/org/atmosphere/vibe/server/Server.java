@@ -45,19 +45,6 @@ public interface Server {
     Server all(Action<ServerSocket> action);
 
     /**
-     * Returns a sentence that the socket of the given id in this server have to
-     * follow.
-     */
-    Sentence byId(String id);
-
-    /**
-     * Executes the given action retrieving the socket of the given id in this
-     * server. The given action will be executed only once if socket is found
-     * and won't be executed if not found.
-     */
-    Server byId(String id, Action<ServerSocket> action);
-
-    /**
      * Returns a sentence that the socket tagged with the given tags in this
      * server have to follow.
      */

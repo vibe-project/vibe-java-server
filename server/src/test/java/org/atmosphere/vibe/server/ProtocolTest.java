@@ -17,8 +17,7 @@ package org.atmosphere.vibe.server;
 
 import java.io.IOException;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
@@ -31,9 +30,12 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
+import org.atmosphere.cpr.ApplicationConfig;
 import org.atmosphere.vibe.platform.Action;
 import org.atmosphere.vibe.platform.VoidAction;
-import org.atmosphere.vibe.platform.server.atmosphere2.AtmosphereBridge;
+import org.atmosphere.vibe.platform.server.ServerHttpExchange;
+import org.atmosphere.vibe.platform.server.ServerWebSocket;
+import org.atmosphere.vibe.platform.server.atmosphere2.VibeAtmosphereServlet;
 import org.atmosphere.vibe.server.ServerSocket.Reply;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletContextHandler;
@@ -43,16 +45,21 @@ public class ProtocolTest {
 
     @Test
     public void protocol() throws Exception {
-        final Set<String> sockets = new ConcurrentSkipListSet<String>();
+        final Map<String, ServerSocket> sockets = new ConcurrentHashMap<>();
         final DefaultServer server = new DefaultServer();
         server.socketAction(new Action<ServerSocket>() {
             @Override
             public void on(final ServerSocket socket) {
-                sockets.add(socket.id());
-                socket.on("close", new VoidAction() {
+                socket.on("abort", new VoidAction() {
                     @Override
                     public void on() {
-                        sockets.remove(socket.id());
+                        socket.close();
+                    }
+                })
+                .on("name", new Action<String>() {
+                    @Override
+                    public void on(String name) {
+                        sockets.put(name, socket);
                     }
                 })
                 .on("echo", new Action<Object>() {
@@ -116,7 +123,6 @@ public class ProtocolTest {
                     @Override
                     protected void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
                         Map<String, String[]> params = req.getParameterMap();
-                        server.setTransports(params.get("transports")[0].split(","));
                         if (params.containsKey("heartbeat")) {
                             server.setHeartbeat(Integer.parseInt(params.get("heartbeat")[0]));
                         }
@@ -130,12 +136,25 @@ public class ProtocolTest {
                 ServletRegistration regAlive = context.addServlet("/alive", new HttpServlet() {
                     @Override
                     protected void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
-                        res.getWriter().print(sockets.contains(req.getParameter("id")));
+                        res.getWriter().print(sockets.remove(req.getParameter("name")) != null);
                     }
                 });
                 regAlive.addMapping("/alive");
                 // /vibe
-                new AtmosphereBridge(context, "/vibe").httpAction(server.httpAction()).websocketAction(server.wsAction());
+                ServletRegistration.Dynamic reg = context.addServlet(VibeAtmosphereServlet.class.getName(), new VibeAtmosphereServlet() {
+                    @Override
+                    protected Action<ServerHttpExchange> httpAction() {
+                        return server.httpAction();
+                    }
+                    
+                    @Override
+                    protected Action<ServerWebSocket> wsAction() {
+                        return server.wsAction();
+                    }
+                });
+                reg.setAsyncSupported(true);
+                reg.setInitParameter(ApplicationConfig.DISABLE_ATMOSPHEREINTERCEPTOR, Boolean.TRUE.toString());
+                reg.addMapping("/vibe");
             }
 
             @Override
@@ -147,7 +166,7 @@ public class ProtocolTest {
         CommandLine cmdLine = CommandLine.parse("./src/test/resources/node/node")
         .addArgument("./src/test/resources/runner")
         .addArgument("--vibe.transports")
-        .addArgument("ws,sse,streamxhr,streamxdr,streamiframe,longpollajax,longpollxdr,longpolljsonp")
+        .addArgument("ws,stream,longpoll")
         .addArgument("--vibe.extension")
         .addArgument("reply");
         DefaultExecutor executor = new DefaultExecutor();

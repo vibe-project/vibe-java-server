@@ -40,11 +40,6 @@ import org.atmosphere.vibe.platform.Wrapper;
 public interface ServerSocket extends AbstractServerSocket<ServerSocket>, Wrapper {
 
     /**
-     * A unique identifier.
-     */
-    String id();
-
-    /**
      * A URI used to connect. To work with URI parts, use {@link URI} or
      * something like that.
      */

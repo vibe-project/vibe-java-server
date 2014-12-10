@@ -37,8 +37,6 @@ import org.atmosphere.vibe.platform.ConcurrentActions;
  * <ul>
  * <li>{@link Server#all())}</li>
  * <li>{@link Server#all(Action)}</li>
- * <li>{@link Server#byId(String)}</li>
- * <li>{@link Server#byId(String, Action)}</li>
  * <li>{@link Server#byTag(String...))}</li>
  * <li>{@link Server#byTag(String, Action)))}</li>
  * <li>{@link Server#byTag(String[], Action)}</li>
@@ -75,9 +73,6 @@ public class ClusteredServer extends DefaultServer {
             case "all":
                 ClusteredServer.super.all((Action<ServerSocket>) args[0]);
                 break;
-            case "byId":
-                ClusteredServer.super.byId((String) args[0], (Action<ServerSocket>) args[1]);
-                break;
             case "byTag":
                 ClusteredServer.super.byTag((String[]) args[0], (Action<ServerSocket>) args[1]);
                 break;
@@ -91,12 +86,6 @@ public class ClusteredServer extends DefaultServer {
     @Override
     public Server all(Action<ServerSocket> action) {
         publishMessage("all", action);
-        return this;
-    }
-
-    @Override
-    public Server byId(String id, Action<ServerSocket> action) {
-        publishMessage("byId", id, action);
         return this;
     }
 

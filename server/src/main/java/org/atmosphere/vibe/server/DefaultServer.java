@@ -19,13 +19,14 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.nio.CharBuffer;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -36,8 +37,6 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.atmosphere.vibe.platform.Action;
 import org.atmosphere.vibe.platform.Actions;
@@ -63,7 +62,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * <p>
  * The following options are configurable.
  * <ul>
- * <li>{@link DefaultServer#setTransports(String...)}</li>
  * <li>{@link DefaultServer#setHeartbeat(int)}</li>
  * </ul>
  * 
@@ -71,94 +69,81 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class DefaultServer implements Server {
 
-    private final ObjectMapper mapper = new ObjectMapper();
     private final Logger log = LoggerFactory.getLogger(DefaultServer.class);
-    private ConcurrentMap<String, DefaultServerSocket> sockets = new ConcurrentHashMap<>();
-    private String[] transports = new String[] { "ws", "sse", "streamxhr", "streamxdr", "streamiframe", "longpollajax", "longpollxdr", "longpolljsonp" };
+    private Set<ServerSocket> sockets = new CopyOnWriteArraySet<>();
     private int heartbeat = 20000;
     private int _heartbeat = 5000;
+    // Socket
     private Actions<ServerSocket> socketActions = new ConcurrentActions<ServerSocket>()
     .add(new Action<ServerSocket>() {
         @Override
         public void on(ServerSocket s) {
             final DefaultServerSocket socket = (DefaultServerSocket) s;
-            sockets.put(socket.id(), socket);
+            sockets.add(socket);
             socket.on("close", new VoidAction() {
                 @Override
                 public void on() {
-                    sockets.remove(socket.id());
+                    sockets.remove(socket);
                 }
             });
             socket.setHeartbeat(heartbeat);
         }
     });
+    // Transport
+    private Action<Transport> transportAction = new Action<Transport>() {
+        @Override
+        public void on(Transport transport) {
+            Map<String, String> map = new LinkedHashMap<>();
+            map.put("heartbeat", "" + heartbeat);
+            map.put("_heartbeat", "" + _heartbeat);
+            socketActions.fire(new DefaultServerSocket(transport, map));
+        }
+    };
+    // HTTP transport
+    private Map<String, HttpTransport> httpTransports = new ConcurrentHashMap<>();
     private Action<ServerHttpExchange> httpAction = new Action<ServerHttpExchange>() {
         @Override
         public void on(final ServerHttpExchange http) {
-            final Map<String, String> params = parseURI(http.uri());
+            final Map<String, String> params = parseQuery(http.uri());
             switch (http.method()) {
             case "GET":
                 setNocache(http);
                 setCors(http);
                 switch (params.get("when")) {
-                case "handshake":
-                    Map<String, Object> result = new LinkedHashMap<String, Object>();
-                    result.put("id", UUID.randomUUID().toString());
-                    result.put("transports", transports);
-                    result.put("heartbeat", heartbeat);
-                    result.put("_heartbeat", _heartbeat);
-
-                    try {
-                        String text = mapper.writeValueAsString(result);
-                        if (params.containsKey("callback")) {
-                            text = params.get("callback") + "(" + mapper.writeValueAsString(text) + ")";
-                        }
-                        http.end(text);
-                    } catch (JsonProcessingException e) {
-                        log.error("Failed to write a JSON", e);
-                        http.setStatus(HttpStatus.INTERNAL_SERVER_ERROR).end();
-                    }
-                    break;
-                case "open":
-                    switch (params.get("transport")) {
-                    case "sse":
-                    case "streamxhr":
-                    case "streamxdr":
-                    case "streamiframe":
-                        socketActions.fire(new DefaultServerSocket(new StreamTransport(params, http)));
-                        break;
-                    case "longpollajax":
-                    case "longpollxdr":
-                    case "longpolljsonp":
-                        socketActions.fire(new DefaultServerSocket(new LongpollTransport(params, http)));
-                        break;
-                    default:
-                        log.error("Transport, {}, is not supported", params.get("transport"));
+                case "open": {
+                    String transportName = params.get("transport");
+                    final HttpTransport transport = createTransport(transportName, http);
+                    if (transport != null) {
+                        httpTransports.put(transport.id, transport);
+                        transport.closeActions.add(new VoidAction() {
+                            @Override
+                            public void on() {
+                                httpTransports.remove(transport.id);
+                            }
+                        });
+                        transportAction.on(transport);
+                    } else {
+                        log.error("Transport, {}, is not implemented", transportName);
                         http.setStatus(HttpStatus.NOT_IMPLEMENTED).end();
                     }
                     break;
+                }
                 case "poll": {
                     String id = params.get("id");
-                    DefaultServerSocket socket = sockets.get(id);
-                    if (socket != null) {
-                        Transport transport = socket.transport;
-                        if (transport instanceof LongpollTransport) {
-                            ((LongpollTransport) transport).refresh(http);
-                        } else {
-                            log.error("Non-long polling transport#{} sent poll request", id);
-                            http.setStatus(HttpStatus.INTERNAL_SERVER_ERROR).end();
-                        }
+                    HttpTransport transport = httpTransports.get(id);
+                    if (transport != null && transport instanceof LongpollTransport) {
+                        ((LongpollTransport) transport).refresh(http);
                     } else {
-                        log.error("Long polling transport#{} is not found in poll request", id);
+                        log.error("Long polling transport#{} is not found", id);
                         http.setStatus(HttpStatus.INTERNAL_SERVER_ERROR).end();
                     }
                     break;
                 }
                 case "abort": {
                     String id = params.get("id");
-                    ServerSocket socket = sockets.get(id);
-                    if (socket != null) {
-                        socket.close();
+                    HttpTransport transport = httpTransports.get(id);
+                    if (transport != null) {
+                        transport.close();
                     }
                     http.setHeader("content-type", "text/javascript; charset=utf-8").end();
                     break;
@@ -177,18 +162,11 @@ public class DefaultServer implements Server {
                     public void on(String body) {
                         String data = body.substring("data=".length());
                         String id = params.get("id");
-
-                        DefaultServerSocket socket = sockets.get(id);
-                        if (socket != null) {
-                            Transport transport = socket.transport;
-                            if (transport instanceof HttpTransport) {
-                                transport.messageActions.fire(data);
-                            } else {
-                                log.error("Non-HTTP socket#{} receives a POST message", id);
-                                http.setStatus(HttpStatus.INTERNAL_SERVER_ERROR);
-                            }
+                        HttpTransport transport = httpTransports.get(id);
+                        if (transport != null) {
+                            transport.messageActions.fire(data);
                         } else {
-                            log.error("A POST message arrived but no socket#{} is found", id);
+                            log.error("A POST message arrived but no transport#{} is found", id);
                             http.setStatus(HttpStatus.INTERNAL_SERVER_ERROR);
                         }
                         http.end();
@@ -214,13 +192,23 @@ public class DefaultServer implements Server {
             http.setHeader("access-control-allow-origin", origin != null ? origin : "*")
             .setHeader("access-control-allow-credentials", "true");
         }
+        
+        private HttpTransport createTransport(String transportName, ServerHttpExchange http) {
+            switch (transportName) {
+            case "stream":
+                return new StreamTransport(http);
+            case "longpoll":
+                return new LongpollTransport(http);
+            default:
+                return null;
+            }
+        }
     };
-
+    // WebSocket transport
     private Action<ServerWebSocket> wsAction = new Action<ServerWebSocket>() {
         @Override
         public void on(ServerWebSocket ws) {
-            Map<String, String> params = parseURI(ws.uri());
-            socketActions.fire(new DefaultServerSocket(new WebSocketTransport(params, ws)));
+            transportAction.on(new WebSocketTransport(ws));
         }
     };
 
@@ -236,26 +224,7 @@ public class DefaultServer implements Server {
 
     @Override
     public Server all(Action<ServerSocket> action) {
-        for (ServerSocket socket : sockets.values()) {
-            action.on(socket);
-        }
-        return this;
-    }
-
-    @Override
-    public Sentence byId(final String id) {
-        return new Sentence(new Action<Action<ServerSocket>>() {
-            @Override
-            public void on(Action<ServerSocket> action) {
-                byId(id, action);
-            }
-        });
-    }
-
-    @Override
-    public Server byId(String id, Action<ServerSocket> action) {
-        ServerSocket socket = sockets.get(id);
-        if (socket != null) {
+        for (ServerSocket socket : sockets) {
             action.on(socket);
         }
         return this;
@@ -279,7 +248,7 @@ public class DefaultServer implements Server {
     @Override
     public Server byTag(String[] names, Action<ServerSocket> action) {
         List<String> nameList = Arrays.asList(names);
-        for (ServerSocket socket : sockets.values()) {
+        for (ServerSocket socket : sockets) {
             if (socket.tags().containsAll(nameList)) {
                 action.on(socket);
             }
@@ -304,16 +273,6 @@ public class DefaultServer implements Server {
     }
 
     /**
-     * A set of transports to allow connections. The default is <code>ws</code>,
-     * <code>sse</code>, <code>streamxhr</code>, <code>streamxdr</code>,
-     * <code>streamiframe</code>, <code>longpollajax</code>,
-     * <code>longpollxdr</code> and <code>longpolljsonp</code>.
-     */
-    public void setTransports(String... transports) {
-        this.transports = transports;
-    }
-
-    /**
      * A heartbeat interval in milliseconds to maintain a connection alive and
      * prevent server from holding idle connections. The default is
      * <code>20</code>s and should be larger than <code>5</code>s.
@@ -329,7 +288,7 @@ public class DefaultServer implements Server {
         this._heartbeat = _heartbeat;
     }
 
-    private static Map<String, String> parseURI(String uri) {
+    private static Map<String, String> parseQuery(String uri) {
         Map<String, String> map = new LinkedHashMap<>();
         String query = URI.create(uri).getQuery();
         if (query == null || query.equals("")) {
@@ -341,7 +300,7 @@ public class DefaultServer implements Server {
             try {
                 String[] pair = param.split("=", 2);
                 String name = URLDecoder.decode(pair[0], "UTF-8");
-                if (name == "") {
+                if (name.equals("")) {
                     continue;
                 }
 
@@ -354,28 +313,40 @@ public class DefaultServer implements Server {
         return Collections.unmodifiableMap(map);
     }
 
+    private static String stringifyQuery(Map<String, String> params) {
+        StringBuilder query = new StringBuilder();
+        for (Entry<String, String> entry : params.entrySet()) {
+            try {
+                query.append(URLEncoder.encode(entry.getKey(), "UTF-8"))
+                .append("=").append(URLEncoder.encode(entry.getValue(), "UTF-8"))
+                .append("&");
+            } catch (UnsupportedEncodingException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return query.deleteCharAt(query.length() - 1).toString();
+    }
+
     private abstract static class Transport implements Wrapper {
-        final Map<String, String> params;
         Actions<String> messageActions = new ConcurrentActions<>();
         Actions<Throwable> errorActions = new ConcurrentActions<>();
         Actions<Void> closeActions = new ConcurrentActions<>(new Actions.Options().once(true).memory(true));
-
-        Transport(Map<String, String> params) {
-            this.params = params;
-        }
 
         abstract String uri();
 
         abstract void send(String data);
 
         abstract void close();
+        
+        synchronized void handshake(Map<String, String> map) {
+            send("?" + stringifyQuery(map));
+        }
     }
 
     private static class WebSocketTransport extends Transport {
         final ServerWebSocket ws;
 
-        WebSocketTransport(Map<String, String> params, ServerWebSocket ws) {
-            super(params);
+        WebSocketTransport(ServerWebSocket ws) {
             this.ws = ws;
             ws.errorAction(new Action<Throwable>() {
                 @Override
@@ -419,10 +390,12 @@ public class DefaultServer implements Server {
     }
 
     private abstract static class HttpTransport extends Transport {
+        final String id = UUID.randomUUID().toString();
         final ServerHttpExchange http;
+        final Map<String, String> params;
 
-        HttpTransport(Map<String, String> params, ServerHttpExchange http) {
-            super(params);
+        HttpTransport(ServerHttpExchange http) {
+            this.params = parseQuery(http.uri());
             this.http = http;
             http.errorAction(new Action<Throwable>() {
                 @Override
@@ -438,16 +411,23 @@ public class DefaultServer implements Server {
         }
 
         @Override
+        synchronized void handshake(Map<String, String> map) {
+            map.put("id", id);
+            super.handshake(map);
+        }
+
+        @Override
         public <T> T unwrap(Class<T> clazz) {
             return http.unwrap(clazz);
         }
     }
 
-    final static String text2KB = CharBuffer.allocate(2048).toString().replace('\0', ' ');
-
+    
     private static class StreamTransport extends HttpTransport {
-        StreamTransport(Map<String, String> params, ServerHttpExchange http) {
-            super(params, http);
+        final static String text2KB = CharBuffer.allocate(2048).toString().replace('\0', ' ');
+        
+        StreamTransport(ServerHttpExchange http) {
+            super(http);
             // Reads the request to make closeAction be fired on http.end
             http.read().closeAction(new VoidAction() {
                 @Override
@@ -456,7 +436,7 @@ public class DefaultServer implements Server {
                 }
             })
             .setHeader("content-type",
-                "text/" + (params.get("transport").equals("sse") ? "event-stream" : "plain") + "; charset=utf-8")
+                "text/" + ("true".equals(params.get("sse")) ? "event-stream" : "plain") + "; charset=utf-8")
             .write(text2KB + "\n");
         }
 
@@ -475,24 +455,25 @@ public class DefaultServer implements Server {
     private static class LongpollTransport extends HttpTransport {
         AtomicReference<ServerHttpExchange> httpRef = new AtomicReference<>();
         AtomicBoolean aborted = new AtomicBoolean();
-        AtomicBoolean closed = new AtomicBoolean();
+        AtomicBoolean completed = new AtomicBoolean();
         AtomicBoolean written = new AtomicBoolean();
-        Set<String> buffer = new CopyOnWriteArraySet<>();
         AtomicReference<Timer> closeTimer = new AtomicReference<>();
+        AtomicInteger msgId = new AtomicInteger();
+        Map<String, String> cache = new ConcurrentHashMap<>();
         ObjectMapper mapper = new ObjectMapper();
 
-        LongpollTransport(Map<String, String> params, ServerHttpExchange http) {
-            super(params, http);
+        LongpollTransport(ServerHttpExchange http) {
+            super(http);
             refresh(http);
         }
 
         void refresh(ServerHttpExchange http) {
-            final Map<String, String> parameters = parseURI(http.uri());
+            final Map<String, String> parameters = parseQuery(http.uri());
             // Reads the request to make closeAction be fired on http.end
             http.read().closeAction(new VoidAction() {
                 @Override
                 public void on() {
-                    closed.set(true);
+                    completed.set(true);
                     if (parameters.get("when").equals("poll") && !written.get()) {
                         closeActions.fire();
                     } else {
@@ -508,13 +489,11 @@ public class DefaultServer implements Server {
                 }
             })
             .setHeader("content-type",
-                "text/" + (params.get("transport").equals("longpolljsonp") ? "javascript" : "plain") + "; charset=utf-8");
+                "text/" + ("true".equals(params.get("jsonp")) ? "javascript" : "plain") + "; charset=utf-8");
 
-            if (parameters.get("when").equals("open")) {
-                http.end();
-            } else {
-                httpRef.set(http);
-                closed.set(false);
+            httpRef.set(http);
+            if (parameters.get("when").equals("poll")) {
+                completed.set(false);
                 written.set(false);
                 Timer timer = closeTimer.getAndSet(null);
                 if (timer != null) {
@@ -524,43 +503,30 @@ public class DefaultServer implements Server {
                     http.end();
                     return;
                 }
-                if (parameters.containsKey("lastEventIds")) {
-                    String[] lastEventIds = parameters.get("lastEventIds").split(",");
-                    for (String eventId : lastEventIds) {
-                        for (String message : buffer) {
-                            if (eventId.equals(findEventId(message))) {
-                                buffer.remove(message);
-                            }
-                        }
-                    }
-                    if (!buffer.isEmpty()) {
-                        Iterator<String> iterator = buffer.iterator();
-                        String string = iterator.next();
-                        while (iterator.hasNext()) {
-                            string += "," + iterator.next();
-                        }
-                        send("[" + string + "]");
-                    }
+                cache.remove(parameters.get("lastMsgId"));
+                for (String item : cache.values()) {
+                    send(item, true);
+                    break;
                 }
             }
         }
 
-        private String findEventId(String text) {
-            Matcher matcher = Pattern.compile("\"id\":\"([^\"]+)\"").matcher(text);
-            matcher.find();
-            return matcher.group(1);
-        }
-
         @Override
         synchronized void send(String data) {
-            if (!data.startsWith("[")) {
-                buffer.add(data);
+            send(data, false);
+        }
+        
+        synchronized void send(String data, boolean noCache) {
+            if (!noCache) {
+                String id = "" + msgId.incrementAndGet();
+                data = id + "|" + data;
+                cache.put(id, data);
             }
             ServerHttpExchange http = httpRef.getAndSet(null);
-            if (http != null && !closed.get()) {
+            if (http != null && !completed.get()) {
                 written.set(true);
                 String payload;
-                if (params.get("transport").equals("longpolljsonp")) {
+                if ("true".equals(params.get("jsonp"))) {
                     try {
                         payload = params.get("callback") + "(" + mapper.writeValueAsString(data) + ");";
                     } catch (JsonProcessingException e) {
@@ -577,7 +543,7 @@ public class DefaultServer implements Server {
         synchronized void close() {
             aborted.set(true);
             ServerHttpExchange http = httpRef.getAndSet(null);
-            if (http != null && !closed.get()) {
+            if (http != null && !completed.get()) {
                 http.end();
             }
         }
@@ -592,7 +558,7 @@ public class DefaultServer implements Server {
         ConcurrentMap<String, Map<String, Action<Object>>> callbacksMap = new ConcurrentHashMap<>();
         AtomicReference<Timer> heartbeatTimer = new AtomicReference<>();
 
-        DefaultServerSocket(final Transport transport) {
+        DefaultServerSocket(final Transport transport, Map<String, String> map) {
             this.transport = transport;
             actionsMap.put("error", new ConcurrentActions<>());
             transport.errorActions.add(new Action<Throwable>() {
@@ -615,6 +581,7 @@ public class DefaultServer implements Server {
                     Actions<Object> actions = actionsMap.get(event.get("type"));
                     if (actions != null) {
                         if ((Boolean) event.get("reply")) {
+                            final AtomicBoolean sent = new AtomicBoolean();
                             actions.fire(new Reply<Object>() {
                                 @Override
                                 public Object data() {
@@ -641,8 +608,6 @@ public class DefaultServer implements Server {
                                     sendReply(value, true);
                                 }
 
-                                AtomicBoolean sent = new AtomicBoolean();
-
                                 private void sendReply(Object value, boolean exception) {
                                     if (sent.compareAndSet(false, true)) {
                                         Map<String, Object> result = new LinkedHashMap<String, Object>();
@@ -667,11 +632,7 @@ public class DefaultServer implements Server {
                     action.on(info.get("data"));
                 }
             });
-        }
-
-        @Override
-        public String id() {
-            return transport.params.get("id");
+            transport.handshake(map);
         }
 
         @Override
@@ -739,7 +700,6 @@ public class DefaultServer implements Server {
         public <T, U> ServerSocket send(String type, Object data, Action<T> resolved, Action<U> rejected) {
             String id = "" + eventId.incrementAndGet();
             Map<String, Object> event = new LinkedHashMap<String, Object>();
-
             event.put("id", id);
             event.put("type", type);
             event.put("data", data);
@@ -822,31 +782,6 @@ public class DefaultServer implements Server {
                 }
             }, heartbeat);
             return timer;
-        }
-
-        @Override
-        public int hashCode() {
-            final int prime = 31;
-            int result = 1;
-            result = prime * result + ((id() == null) ? 0 : id().hashCode());
-            return result;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj)
-                return true;
-            if (obj == null)
-                return false;
-            if (getClass() != obj.getClass())
-                return false;
-            DefaultServerSocket other = (DefaultServerSocket) obj;
-            if (id() == null) {
-                if (other.id() != null)
-                    return false;
-            } else if (!id().equals(other.id()))
-                return false;
-            return true;
         }
     }
 
