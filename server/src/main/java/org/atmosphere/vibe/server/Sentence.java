@@ -48,9 +48,8 @@ public class Sentence implements AbstractServerSocket<Sentence> {
     }
 
     @Override
-    public Sentence close() {
+    public void close() {
         execute(new CloseAction());
-        return this;
     }
 
     @Override

@@ -719,9 +719,8 @@ public class DefaultServer implements Server {
         }
 
         @Override
-        public ServerSocket close() {
+        public void close() {
             transport.close();
-            return this;
         }
 
         @Override

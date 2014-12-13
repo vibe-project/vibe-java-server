@@ -36,7 +36,7 @@ public interface AbstractServerSocket<T> {
     /**
      * Closes the socket.
      */
-    T close();
+    void close();
 
     /**
      * Attaches given tags to the socket.
