@@ -58,7 +58,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * <p>
  * This implementation consumes {@link ServerHttpExchange} and
  * {@link ServerWebSocket} and provides {@link ServerSocket} following the Vibe
- * protocol
+ * protocol.
  * <p>
  * The following options are configurable.
  * <ul>
@@ -294,7 +294,6 @@ public class DefaultServer implements Server {
         if (query == null || query.equals("")) {
             return Collections.unmodifiableMap(map);
         }
-
         String[] params = query.split("&");
         for (String param : params) {
             try {
@@ -309,7 +308,6 @@ public class DefaultServer implements Server {
                 throw new RuntimeException(e);
             }
         }
-
         return Collections.unmodifiableMap(map);
     }
 
@@ -442,7 +440,11 @@ public class DefaultServer implements Server {
 
         @Override
         synchronized void send(String data) {
-            String payload = "data: " + data + "\n\n";
+            String payload = "";
+            for (String datum : data.split("\r\n|\r|\n")) {
+                payload += "data: " + datum + "\n";
+            }
+            payload += "\n";
             http.write(payload);
         }
 
