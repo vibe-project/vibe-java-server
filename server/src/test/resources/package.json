@@ -1,7 +1,7 @@
 {
   "private": "true",
   "devDependencies": {
-    "vibe-protocol": "vibe-project/vibe-protocol#9917673",
+    "vibe-protocol": "vibe-project/vibe-protocol#34123e3",
     "mocha": "2.0.1",
     "chai": "1.10.0",
     "minimist": "1.1.0"
