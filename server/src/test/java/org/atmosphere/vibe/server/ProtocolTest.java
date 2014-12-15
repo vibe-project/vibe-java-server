@@ -17,7 +17,6 @@ package org.atmosphere.vibe.server;
 
 import java.io.IOException;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
@@ -45,7 +44,6 @@ public class ProtocolTest {
 
     @Test
     public void protocol() throws Exception {
-        final Map<String, ServerSocket> sockets = new ConcurrentHashMap<>();
         final DefaultServer server = new DefaultServer();
         server.socketAction(new Action<ServerSocket>() {
             @Override
@@ -54,12 +52,6 @@ public class ProtocolTest {
                     @Override
                     public void on() {
                         socket.close();
-                    }
-                })
-                .on("name", new Action<String>() {
-                    @Override
-                    public void on(String name) {
-                        sockets.put(name, socket);
                     }
                 })
                 .on("echo", new Action<Object>() {
@@ -132,14 +124,6 @@ public class ProtocolTest {
                     }
                 });
                 regSetup.addMapping("/setup");
-                // /alive
-                ServletRegistration regAlive = context.addServlet("/alive", new HttpServlet() {
-                    @Override
-                    protected void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
-                        res.getWriter().print(sockets.remove(req.getParameter("name")) != null);
-                    }
-                });
-                regAlive.addMapping("/alive");
                 // /vibe
                 ServletRegistration.Dynamic reg = context.addServlet(VibeAtmosphereServlet.class.getName(), new VibeAtmosphereServlet() {
                     @Override
