@@ -312,7 +312,7 @@ public class DefaultServer implements Server {
     }
 
     private static String stringifyQuery(Map<String, String> params) {
-        StringBuilder query = new StringBuilder();
+        StringBuilder query = new StringBuilder("?");
         for (Entry<String, String> entry : params.entrySet()) {
             try {
                 query.append(URLEncoder.encode(entry.getKey(), "UTF-8"))
@@ -335,10 +335,6 @@ public class DefaultServer implements Server {
         abstract void send(String data);
 
         abstract void close();
-        
-        synchronized void handshake(Map<String, String> map) {
-            send("?" + stringifyQuery(map));
-        }
     }
 
     private static class WebSocketTransport extends Transport {
@@ -409,12 +405,6 @@ public class DefaultServer implements Server {
         }
 
         @Override
-        synchronized void handshake(Map<String, String> map) {
-            map.put("id", id);
-            super.handshake(map);
-        }
-
-        @Override
         public <T> T unwrap(Class<T> clazz) {
             return http.unwrap(clazz);
         }
@@ -434,8 +424,10 @@ public class DefaultServer implements Server {
                 }
             })
             .setHeader("content-type",
-                "text/" + ("true".equals(params.get("sse")) ? "event-stream" : "plain") + "; charset=utf-8")
-            .write(text2KB + "\n");
+                "text/" + ("true".equals(params.get("sse")) ? "event-stream" : "plain") + "; charset=utf-8");
+            Map<String, String> query = new LinkedHashMap<String, String>();
+            query.put("id", id);
+            http.write(text2KB + "data: " + stringifyQuery(query) + "\n\n");
         }
 
         @Override
@@ -467,6 +459,21 @@ public class DefaultServer implements Server {
         LongpollTransport(ServerHttpExchange http) {
             super(http);
             refresh(http);
+            Map<String, String> query = new LinkedHashMap<String, String>();
+            query.put("id", id);
+            String data = stringifyQuery(query);
+            String payload;
+            if ("true".equals(params.get("jsonp"))) {
+                try {
+                    payload = params.get("callback") + "(" + mapper.writeValueAsString(data) + ");";
+                } catch (JsonProcessingException e) {
+                    throw new RuntimeException(e);
+                }
+            } else {
+                payload = data;
+            }
+            http.end(payload);
+            httpRef.getAndSet(null).end();
         }
 
         void refresh(ServerHttpExchange http) {
@@ -560,7 +567,7 @@ public class DefaultServer implements Server {
         ConcurrentMap<String, Map<String, Action<Object>>> callbacksMap = new ConcurrentHashMap<>();
         AtomicReference<Timer> heartbeatTimer = new AtomicReference<>();
 
-        DefaultServerSocket(final Transport transport, Map<String, String> map) {
+        DefaultServerSocket(final Transport transport, Map<String, String> query) {
             this.transport = transport;
             actionsMap.put("error", new ConcurrentActions<>());
             transport.errorActions.add(new Action<Throwable>() {
@@ -634,7 +641,7 @@ public class DefaultServer implements Server {
                     action.on(info.get("data"));
                 }
             });
-            transport.handshake(map);
+            transport.send(stringifyQuery(query));
         }
 
         @Override
