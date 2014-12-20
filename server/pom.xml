@@ -65,7 +65,7 @@
                         </goals>
                         <phase>generate-test-resources</phase>
                         <configuration>
-                            <nodeVersion>v0.10.33</nodeVersion>
+                            <nodeVersion>v0.10.34</nodeVersion>
                             <npmVersion>1.4.12</npmVersion>
                         </configuration>
                     </execution>
