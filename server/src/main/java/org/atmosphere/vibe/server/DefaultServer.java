@@ -427,7 +427,7 @@ public class DefaultServer implements Server {
                 "text/" + ("true".equals(params.get("sse")) ? "event-stream" : "plain") + "; charset=utf-8");
             Map<String, String> query = new LinkedHashMap<String, String>();
             query.put("id", id);
-            http.write(text2KB + "data: " + stringifyQuery(query) + "\n\n");
+            http.write(text2KB + "\ndata: " + stringifyQuery(query) + "\n\n");
         }
 
         @Override
