@@ -8,8 +8,8 @@
     <groupId>org.atmosphere</groupId>
     <artifactId>vibe-server-parent</artifactId>
     <packaging>pom</packaging>
-    <version>3.0.0-Alpha8-SNAPSHOT</version>
-    <name>Vibe Java Server Parent</name>
+    <version>3.0.0-Alpha8</version>
+    <name>Vibe Server</name>
     <url>http://vibe-project.github.io/projects/vibe-java-server/</url>
     <inceptionYear>2014</inceptionYear>
     <modules>

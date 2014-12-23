@@ -3,10 +3,10 @@
     <parent>
         <groupId>org.atmosphere</groupId>
         <artifactId>vibe-server-parent</artifactId>
-        <version>3.0.0-Alpha8-SNAPSHOT</version>
+        <version>3.0.0-Alpha8</version>
     </parent>
     <artifactId>vibe-server</artifactId>
-    <name>Vibe Java Server</name>
+    <name>Vibe Server/Server</name>
     <dependencies>
         <dependency>
             <groupId>org.atmosphere</groupId>
