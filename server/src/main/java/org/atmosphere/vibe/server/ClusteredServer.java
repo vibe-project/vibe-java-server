@@ -20,9 +20,9 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.atmosphere.vibe.platform.Action;
-import org.atmosphere.vibe.platform.Actions;
-import org.atmosphere.vibe.platform.ConcurrentActions;
+import org.atmosphere.vibe.platform.action.Action;
+import org.atmosphere.vibe.platform.action.Actions;
+import org.atmosphere.vibe.platform.action.ConcurrentActions;
 
 /**
  * {@link Server} implementation for clustering.

@@ -17,7 +17,7 @@ package org.atmosphere.vibe.server;
 
 import java.io.Serializable;
 
-import org.atmosphere.vibe.platform.Action;
+import org.atmosphere.vibe.platform.action.Action;
 
 /**
  * {@code Sentence} is a series of predicates that a group of socket have to

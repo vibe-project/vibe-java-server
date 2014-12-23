@@ -38,14 +38,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.atmosphere.vibe.platform.Action;
-import org.atmosphere.vibe.platform.Actions;
-import org.atmosphere.vibe.platform.ConcurrentActions;
-import org.atmosphere.vibe.platform.HttpStatus;
-import org.atmosphere.vibe.platform.VoidAction;
-import org.atmosphere.vibe.platform.Wrapper;
-import org.atmosphere.vibe.platform.server.ServerHttpExchange;
-import org.atmosphere.vibe.platform.server.ServerWebSocket;
+import org.atmosphere.vibe.platform.action.Action;
+import org.atmosphere.vibe.platform.action.Actions;
+import org.atmosphere.vibe.platform.action.ConcurrentActions;
+import org.atmosphere.vibe.platform.action.VoidAction;
+import org.atmosphere.vibe.platform.http.HttpStatus;
+import org.atmosphere.vibe.platform.http.ServerHttpExchange;
+import org.atmosphere.vibe.platform.ws.ServerWebSocket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -325,7 +324,7 @@ public class DefaultServer implements Server {
         return query.deleteCharAt(query.length() - 1).toString();
     }
 
-    private abstract static class Transport implements Wrapper {
+    private abstract static class Transport {
         Actions<String> messageActions = new ConcurrentActions<>();
         Actions<Throwable> errorActions = new ConcurrentActions<>();
         Actions<Void> closeActions = new ConcurrentActions<>(new Actions.Options().once(true).memory(true));
@@ -335,6 +334,8 @@ public class DefaultServer implements Server {
         abstract void send(String data);
 
         abstract void close();
+
+        abstract <T> T unwrap(Class<T> clazz);
     }
 
     private static class WebSocketTransport extends Transport {

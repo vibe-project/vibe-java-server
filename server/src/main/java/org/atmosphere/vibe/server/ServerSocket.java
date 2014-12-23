@@ -20,8 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.atmosphere.vibe.platform.Action;
-import org.atmosphere.vibe.platform.Wrapper;
+import org.atmosphere.vibe.platform.action.Action;
 
 /**
  * Interface used to interact with the remote socket.
@@ -37,7 +36,7 @@ import org.atmosphere.vibe.platform.Wrapper;
  * 
  * @author Donghwan Kim
  */
-public interface ServerSocket extends AbstractServerSocket<ServerSocket>, Wrapper {
+public interface ServerSocket extends AbstractServerSocket<ServerSocket> {
 
     /**
      * A URI used to connect. To work with URI parts, use {@link URI} or
@@ -127,6 +126,11 @@ public interface ServerSocket extends AbstractServerSocket<ServerSocket>, Wrappe
      * {@link ServerSocket#on(String, Action)}.
      */
     <T, U> ServerSocket send(String event, Object data, Action<T> resolved, Action<U> rejected);
+
+    /**
+     * Returns the provider-specific component.
+     */
+    <T> T unwrap(Class<T> clazz);
 
     /**
      * Interface to deal with reply.

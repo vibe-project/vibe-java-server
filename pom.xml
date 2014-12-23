@@ -48,7 +48,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.7</maven.compiler.source>
         <maven.compiler.target>1.7</maven.compiler.target>
-        <vibe.platform.version>3.0.0-Alpha6</vibe.platform.version>
+        <vibe.platform.version>3.0.0-Alpha7</vibe.platform.version>
         <slf4j.version>1.7.9</slf4j.version>
         <logback.version>1.1.2</logback.version>
     </properties>
@@ -61,7 +61,12 @@
             </dependency>
             <dependency>
                 <groupId>org.atmosphere</groupId>
-                <artifactId>vibe-platform-server</artifactId>
+                <artifactId>vibe-platform-http</artifactId>
+                <version>${vibe.platform.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.atmosphere</groupId>
+                <artifactId>vibe-platform-ws</artifactId>
                 <version>${vibe.platform.version}</version>
             </dependency>
             <dependency>
@@ -76,7 +81,7 @@
             </dependency>
             <dependency>
                 <groupId>org.atmosphere</groupId>
-                <artifactId>vibe-platform-server-atmosphere2</artifactId>
+                <artifactId>vibe-platform-bridge-atmosphere2</artifactId>
                 <version>${vibe.platform.version}</version>
                 <scope>test</scope>
             </dependency>
