@@ -101,7 +101,8 @@ public interface ServerSocket extends AbstractServerSocket<ServerSocket> {
 
     /**
      * Executed if there was any error on the socket. You don't need to close it
-     * explicitly. Equivalent to <code>socket.on("error", action)</code>
+     * explicitly on <code>error</code> event. Equivalent to
+     * <code>socket.on("error", action)</code>
      */
     ServerSocket errorAction(Action<Throwable> action);
 

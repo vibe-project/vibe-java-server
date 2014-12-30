@@ -16,21 +16,13 @@
 package org.atmosphere.vibe.server;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URI;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
-import java.nio.CharBuffer;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -45,6 +37,11 @@ import org.atmosphere.vibe.platform.action.VoidAction;
 import org.atmosphere.vibe.platform.http.HttpStatus;
 import org.atmosphere.vibe.platform.http.ServerHttpExchange;
 import org.atmosphere.vibe.platform.ws.ServerWebSocket;
+import org.atmosphere.vibe.transport.ServerTransport;
+import org.atmosphere.vibe.transport.http.BaseHttpServerTransport;
+import org.atmosphere.vibe.transport.http.HttpLongpollServerTransport;
+import org.atmosphere.vibe.transport.http.HttpStreamServerTransport;
+import org.atmosphere.vibe.transport.ws.WebSocketServerTransport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -88,22 +85,23 @@ public class DefaultServer implements Server {
             socket.setHeartbeat(heartbeat);
         }
     });
-    // Transport
-    private Action<Transport> transportAction = new Action<Transport>() {
+    // TODO expose as a link between server implementation layer and transport layer
+    private Action<ServerTransport> transportAction = new Action<ServerTransport>() {
         @Override
-        public void on(Transport transport) {
+        public void on(ServerTransport transport) {
             Map<String, String> map = new LinkedHashMap<>();
             map.put("heartbeat", "" + heartbeat);
             map.put("_heartbeat", "" + _heartbeat);
             socketActions.fire(new DefaultServerSocket(transport, map));
         }
     };
-    // HTTP transport
-    private Map<String, HttpTransport> httpTransports = new ConcurrentHashMap<>();
+    // TODO move to transport package
     private Action<ServerHttpExchange> httpAction = new Action<ServerHttpExchange>() {
+        Map<String, BaseHttpServerTransport> transports = new ConcurrentHashMap<>();
+        
         @Override
         public void on(final ServerHttpExchange http) {
-            final Map<String, String> params = parseQuery(http.uri());
+            final Map<String, String> params = BaseHttpServerTransport.parseQuery(http.uri());
             switch (http.method()) {
             case "GET":
                 setNocache(http);
@@ -111,13 +109,13 @@ public class DefaultServer implements Server {
                 switch (params.get("when")) {
                 case "open": {
                     String transportName = params.get("transport");
-                    final HttpTransport transport = createTransport(transportName, http);
+                    final BaseHttpServerTransport transport = createTransport(transportName, http);
                     if (transport != null) {
-                        httpTransports.put(transport.id, transport);
-                        transport.closeActions.add(new VoidAction() {
+                        transports.put(transport.id(), transport);
+                        transport.closeAction(new VoidAction() {
                             @Override
                             public void on() {
-                                httpTransports.remove(transport.id);
+                                transports.remove(transport.id());
                             }
                         });
                         transportAction.on(transport);
@@ -129,9 +127,9 @@ public class DefaultServer implements Server {
                 }
                 case "poll": {
                     String id = params.get("id");
-                    HttpTransport transport = httpTransports.get(id);
-                    if (transport != null && transport instanceof LongpollTransport) {
-                        ((LongpollTransport) transport).refresh(http);
+                    BaseHttpServerTransport transport = transports.get(id);
+                    if (transport != null && transport instanceof HttpLongpollServerTransport) {
+                        ((HttpLongpollServerTransport) transport).refresh(http);
                     } else {
                         log.error("Long polling transport#{} is not found", id);
                         http.setStatus(HttpStatus.INTERNAL_SERVER_ERROR).end();
@@ -140,7 +138,7 @@ public class DefaultServer implements Server {
                 }
                 case "abort": {
                     String id = params.get("id");
-                    HttpTransport transport = httpTransports.get(id);
+                    BaseHttpServerTransport transport = transports.get(id);
                     if (transport != null) {
                         transport.close();
                     }
@@ -161,9 +159,9 @@ public class DefaultServer implements Server {
                     public void on(String body) {
                         String data = body.substring("data=".length());
                         String id = params.get("id");
-                        HttpTransport transport = httpTransports.get(id);
+                        BaseHttpServerTransport transport = transports.get(id);
                         if (transport != null) {
-                            transport.messageActions.fire(data);
+                            transport.handleText(data);
                         } else {
                             log.error("A POST message arrived but no transport#{} is found", id);
                             http.setStatus(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -192,22 +190,22 @@ public class DefaultServer implements Server {
             .setHeader("access-control-allow-credentials", "true");
         }
         
-        private HttpTransport createTransport(String transportName, ServerHttpExchange http) {
+        private BaseHttpServerTransport createTransport(String transportName, ServerHttpExchange http) {
             switch (transportName) {
             case "stream":
-                return new StreamTransport(http);
+                return new HttpStreamServerTransport(http);
             case "longpoll":
-                return new LongpollTransport(http);
+                return new HttpLongpollServerTransport(http);
             default:
                 return null;
             }
         }
     };
-    // WebSocket transport
+    // TODO move to transport package
     private Action<ServerWebSocket> wsAction = new Action<ServerWebSocket>() {
         @Override
         public void on(ServerWebSocket ws) {
-            transportAction.on(new WebSocketTransport(ws));
+            transportAction.on(new WebSocketServerTransport(ws));
         }
     };
 
@@ -287,280 +285,8 @@ public class DefaultServer implements Server {
         this._heartbeat = _heartbeat;
     }
 
-    private static Map<String, String> parseQuery(String uri) {
-        Map<String, String> map = new LinkedHashMap<>();
-        String query = URI.create(uri).getQuery();
-        if (query == null || query.equals("")) {
-            return Collections.unmodifiableMap(map);
-        }
-        String[] params = query.split("&");
-        for (String param : params) {
-            try {
-                String[] pair = param.split("=", 2);
-                String name = URLDecoder.decode(pair[0], "UTF-8");
-                if (name.equals("")) {
-                    continue;
-                }
-
-                map.put(name, pair.length > 1 ? URLDecoder.decode(pair[1], "UTF-8") : "");
-            } catch (UnsupportedEncodingException e) {
-                throw new RuntimeException(e);
-            }
-        }
-        return Collections.unmodifiableMap(map);
-    }
-
-    private static String stringifyQuery(Map<String, String> params) {
-        StringBuilder query = new StringBuilder("?");
-        for (Entry<String, String> entry : params.entrySet()) {
-            try {
-                query.append(URLEncoder.encode(entry.getKey(), "UTF-8"))
-                .append("=").append(URLEncoder.encode(entry.getValue(), "UTF-8"))
-                .append("&");
-            } catch (UnsupportedEncodingException e) {
-                throw new RuntimeException(e);
-            }
-        }
-        return query.deleteCharAt(query.length() - 1).toString();
-    }
-
-    private abstract static class Transport {
-        Actions<String> messageActions = new ConcurrentActions<>();
-        Actions<Throwable> errorActions = new ConcurrentActions<>();
-        Actions<Void> closeActions = new ConcurrentActions<>(new Actions.Options().once(true).memory(true));
-
-        abstract String uri();
-
-        abstract void send(String data);
-
-        abstract void close();
-
-        abstract <T> T unwrap(Class<T> clazz);
-    }
-
-    private static class WebSocketTransport extends Transport {
-        final ServerWebSocket ws;
-
-        WebSocketTransport(ServerWebSocket ws) {
-            this.ws = ws;
-            ws.errorAction(new Action<Throwable>() {
-                @Override
-                public void on(Throwable throwable) {
-                    errorActions.fire(throwable);
-                }
-            })
-            .closeAction(new VoidAction() {
-                @Override
-                public void on() {
-                    closeActions.fire();
-                }
-            })
-            .textAction(new Action<String>() {
-                @Override
-                public void on(String data) {
-                    messageActions.fire(data);
-                }
-            });
-        }
-
-        @Override
-        String uri() {
-            return ws.uri();
-        }
-
-        @Override
-        synchronized void send(String data) {
-            ws.send(data);
-        }
-
-        @Override
-        synchronized void close() {
-            ws.close();
-        }
-
-        @Override
-        public <T> T unwrap(Class<T> clazz) {
-            return ws.unwrap(clazz);
-        }
-    }
-
-    private abstract static class HttpTransport extends Transport {
-        final String id = UUID.randomUUID().toString();
-        final ServerHttpExchange http;
-        final Map<String, String> params;
-
-        HttpTransport(ServerHttpExchange http) {
-            this.params = parseQuery(http.uri());
-            this.http = http;
-            http.errorAction(new Action<Throwable>() {
-                @Override
-                public void on(Throwable throwable) {
-                    errorActions.fire(throwable);
-                }
-            });
-        }
-
-        @Override
-        String uri() {
-            return http.uri();
-        }
-
-        @Override
-        public <T> T unwrap(Class<T> clazz) {
-            return http.unwrap(clazz);
-        }
-    }
-
-    
-    private static class StreamTransport extends HttpTransport {
-        final static String text2KB = CharBuffer.allocate(2048).toString().replace('\0', ' ');
-        
-        StreamTransport(ServerHttpExchange http) {
-            super(http);
-            // Reads the request to make closeAction be fired on http.end
-            http.read().closeAction(new VoidAction() {
-                @Override
-                public void on() {
-                    closeActions.fire();
-                }
-            })
-            .setHeader("content-type",
-                "text/" + ("true".equals(params.get("sse")) ? "event-stream" : "plain") + "; charset=utf-8");
-            Map<String, String> query = new LinkedHashMap<String, String>();
-            query.put("id", id);
-            http.write(text2KB + "\ndata: " + stringifyQuery(query) + "\n\n");
-        }
-
-        @Override
-        synchronized void send(String data) {
-            String payload = "";
-            for (String datum : data.split("\r\n|\r|\n")) {
-                payload += "data: " + datum + "\n";
-            }
-            payload += "\n";
-            http.write(payload);
-        }
-
-        @Override
-        synchronized void close() {
-            http.end();
-        }
-    }
-
-    private static class LongpollTransport extends HttpTransport {
-        AtomicReference<ServerHttpExchange> httpRef = new AtomicReference<>();
-        AtomicBoolean aborted = new AtomicBoolean();
-        AtomicBoolean completed = new AtomicBoolean();
-        AtomicBoolean written = new AtomicBoolean();
-        AtomicReference<Timer> closeTimer = new AtomicReference<>();
-        AtomicInteger msgId = new AtomicInteger();
-        Map<String, String> cache = new ConcurrentHashMap<>();
-        ObjectMapper mapper = new ObjectMapper();
-
-        LongpollTransport(ServerHttpExchange http) {
-            super(http);
-            refresh(http);
-            Map<String, String> query = new LinkedHashMap<String, String>();
-            query.put("id", id);
-            String data = stringifyQuery(query);
-            String payload;
-            if ("true".equals(params.get("jsonp"))) {
-                try {
-                    payload = params.get("callback") + "(" + mapper.writeValueAsString(data) + ");";
-                } catch (JsonProcessingException e) {
-                    throw new RuntimeException(e);
-                }
-            } else {
-                payload = data;
-            }
-            http.end(payload);
-            httpRef.getAndSet(null).end();
-        }
-
-        void refresh(ServerHttpExchange http) {
-            final Map<String, String> parameters = parseQuery(http.uri());
-            // Reads the request to make closeAction be fired on http.end
-            http.read().closeAction(new VoidAction() {
-                @Override
-                public void on() {
-                    completed.set(true);
-                    if (parameters.get("when").equals("poll") && !written.get()) {
-                        closeActions.fire();
-                    } else {
-                        Timer timer = new Timer(true);
-                        timer.schedule(new TimerTask() {
-                            @Override
-                            public void run() {
-                                closeActions.fire();
-                            }
-                        }, 2000);
-                        closeTimer.set(timer);
-                    }
-                }
-            })
-            .setHeader("content-type",
-                "text/" + ("true".equals(params.get("jsonp")) ? "javascript" : "plain") + "; charset=utf-8");
-
-            httpRef.set(http);
-            if (parameters.get("when").equals("poll")) {
-                completed.set(false);
-                written.set(false);
-                Timer timer = closeTimer.getAndSet(null);
-                if (timer != null) {
-                    timer.cancel();
-                }
-                if (aborted.get()) {
-                    http.end();
-                    return;
-                }
-                cache.remove(parameters.get("lastMsgId"));
-                for (String item : cache.values()) {
-                    send(item, true);
-                    break;
-                }
-            }
-        }
-
-        @Override
-        synchronized void send(String data) {
-            send(data, false);
-        }
-        
-        synchronized void send(String data, boolean noCache) {
-            if (!noCache) {
-                String id = "" + msgId.incrementAndGet();
-                data = id + "|" + data;
-                cache.put(id, data);
-            }
-            ServerHttpExchange http = httpRef.getAndSet(null);
-            if (http != null && !completed.get()) {
-                written.set(true);
-                String payload;
-                if ("true".equals(params.get("jsonp"))) {
-                    try {
-                        payload = params.get("callback") + "(" + mapper.writeValueAsString(data) + ");";
-                    } catch (JsonProcessingException e) {
-                        throw new RuntimeException(e);
-                    }
-                } else {
-                    payload = data;
-                }
-                http.end(payload);
-            }
-        }
-
-        @Override
-        synchronized void close() {
-            aborted.set(true);
-            ServerHttpExchange http = httpRef.getAndSet(null);
-            if (http != null && !completed.get()) {
-                http.end();
-            }
-        }
-    }
-
     private static class DefaultServerSocket implements ServerSocket {
-        final Transport transport;
+        final ServerTransport transport;
         ObjectMapper mapper = new ObjectMapper();
         AtomicInteger eventId = new AtomicInteger();
         Set<String> tags = new CopyOnWriteArraySet<>();
@@ -568,23 +294,23 @@ public class DefaultServer implements Server {
         ConcurrentMap<String, Map<String, Action<Object>>> callbacksMap = new ConcurrentHashMap<>();
         AtomicReference<Timer> heartbeatTimer = new AtomicReference<>();
 
-        DefaultServerSocket(final Transport transport, Map<String, String> query) {
+        DefaultServerSocket(final ServerTransport transport, Map<String, String> query) {
             this.transport = transport;
             actionsMap.put("error", new ConcurrentActions<>());
-            transport.errorActions.add(new Action<Throwable>() {
+            transport.errorAction(new Action<Throwable>() {
                 @Override
                 public void on(Throwable throwable) {
                     actionsMap.get("error").fire(throwable);
                 }
             });
             actionsMap.put("close", new ConcurrentActions<>(new Actions.Options().once(true).memory(true)));
-            transport.closeActions.add(new VoidAction() {
+            transport.closeAction(new VoidAction() {
                 @Override
                 public void on() {
                     actionsMap.get("close").fire();
                 }
             });
-            transport.messageActions.add(new Action<String>() {
+            transport.textAction(new Action<String>() {
                 @Override
                 public void on(String text) {
                     final Map<String, Object> event = parseEvent(text);
@@ -637,12 +363,12 @@ public class DefaultServer implements Server {
             on("reply", new Action<Map<String, Object>>() {
                 @Override
                 public void on(Map<String, Object> info) {
-                    Map<String, Action<Object>> cbs = callbacksMap.remove(info.get("id"));
-                    Action<Object> action = (Boolean) info.get("exception") ? cbs.get("rejected") : cbs.get("resolved");
+                    Map<String, Action<Object>> callbacks = callbacksMap.remove(info.get("id"));
+                    Action<Object> action = (Boolean) info.get("exception") ? callbacks.get("rejected") : callbacks.get("resolved");
                     action.on(info.get("data"));
                 }
             });
-            transport.send(stringifyQuery(query));
+            transport.send("?" + BaseHttpServerTransport.formatQuery(query));
         }
 
         @Override
