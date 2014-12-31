@@ -41,8 +41,8 @@ public abstract class BaseServerTransport implements ServerTransport {
     protected Actions<Void> closeActions = new ConcurrentActions<Void>(new Actions.Options().once(true).memory(true))
     .add(new Action<Void>() {
         @Override
-        public void on(Void reason) {
-            logger.trace("{} has been closed due to the reason {}", BaseServerTransport.this, reason);
+        public void on(Void _) {
+            logger.trace("{} has been closed", BaseServerTransport.this);
             stateRef.set(State.CLOSED);
             textActions.disable();
             errorActions.disable();

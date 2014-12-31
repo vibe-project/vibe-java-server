@@ -13,39 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.atmosphere.vibe.server;
+package org.atmosphere.vibe;
 
 /**
- * {@code AbstractSocket} consists of a set of common functionality of
- * {@link Sentence} and {@link ServerSocket}.
+ * An exception to be thrown when heartbeat operations fails.
  * 
  * @author Donghwan Kim
  */
-public interface AbstractServerSocket<T> {
-
-    /**
-     * Sends a given event without data.
-     */
-    T send(String event);
-
-    /**
-     * Sends a given event with data.
-     */
-    T send(String event, Object data);
-
-    /**
-     * Closes the socket.
-     */
-    void close();
-
-    /**
-     * Attaches given tags to the socket.
-     */
-    T tag(String... names);
-
-    /**
-     * Detaches given tags from the socket.
-     */
-    T untag(String... names);
-
-}
+@SuppressWarnings("serial")
+public class HeartbeatFailedException extends RuntimeException {}

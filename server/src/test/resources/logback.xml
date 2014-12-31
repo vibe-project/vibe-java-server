@@ -4,9 +4,10 @@
             <pattern>%d{HH:mm:ss.SSS} %level [%thread] %logger{10} [%file:%line] %msg%n</pattern>
         </encoder>
     </appender>
-    <logger name="org.atmosphere.vibe.server" level="TRACE" />
-    <logger name="org.atmosphere.vibe.platform.server" level="INFO" />
-    <logger name="org.atmosphere.cpr" level="WARN" />
+    <logger name="org.atmosphere.vibe" level="TRACE" />
+    <logger name="org.atmosphere.vibe.transport" level="INFO" />
+    <logger name="org.atmosphere.vibe.platform" level="INFO" />
+    <logger name="org.atmosphere.cpr" level="INFO" />
     <logger name="org.eclipse.jetty" level="INFO"/>
     <root>
         <level value="DEBUG" />

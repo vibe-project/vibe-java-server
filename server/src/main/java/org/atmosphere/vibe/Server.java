@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.atmosphere.vibe.server;
+package org.atmosphere.vibe;
 
 import org.atmosphere.vibe.platform.action.Action;
 import org.atmosphere.vibe.platform.http.ServerHttpExchange;
