@@ -36,8 +36,12 @@ public class HttpStreamServerTransport extends BaseHttpServerTransport {
         super(http);
         Map<String, String> query = new LinkedHashMap<String, String>();
         query.put("id", id);
-        // Reads the request to make closeAction be fired on http.end for convenience
-        http.read()
+        http.finishAction(new VoidAction() {
+            @Override
+            public void on() {
+                closeActions.fire();
+            }
+        })
         .errorAction(new Action<Throwable>() {
             @Override
             public void on(Throwable throwable) {

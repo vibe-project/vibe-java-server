@@ -61,15 +61,7 @@ public class HttpLongpollServerTransport extends BaseHttpServerTransport {
 
     public void refresh(ServerHttpExchange http) {
         final Map<String, String> parameters = parseQuery(http.uri());
-        // Reads the request to make closeAction be fired on http.end for convenience
-        http.read()
-        .errorAction(new Action<Throwable>() {
-            @Override
-            public void on(Throwable throwable) {
-                errorActions.fire(throwable);
-            }
-        })
-        .closeAction(new VoidAction() {
+        http.finishAction(new VoidAction() {
             @Override
             public void on() {
                 completed.set(true);
@@ -85,6 +77,18 @@ public class HttpLongpollServerTransport extends BaseHttpServerTransport {
                     }, 2000);
                     closeTimer.set(timer);
                 }
+            }
+        })
+        .errorAction(new Action<Throwable>() {
+            @Override
+            public void on(Throwable throwable) {
+                errorActions.fire(throwable);
+            }
+        })
+        .closeAction(new VoidAction() {
+            @Override
+            public void on() {
+                closeActions.fire();
             }
         })
         .setHeader("content-type", "text/" + (jsonpCallback != null ? "javascript" : "plain") + "; charset=utf-8");
