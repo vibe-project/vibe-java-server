@@ -23,7 +23,7 @@ import org.atmosphere.vibe.transport.BaseServerTransport;
 /**
  * Represents a server-side WebSocket transport.
  * <p>
- * Because WebSocket protocol itself meets Transport's requirements,
+ * Because WebSocket protocol itself meets transport's requirements,
  * {@link WebSocketServerTransport} is actually a thread-safe version of
  * {@link ServerWebSocket}.
  * 
@@ -70,9 +70,12 @@ public class WebSocketServerTransport extends BaseServerTransport {
         ws.close();
     }
 
+    /**
+     * {@link ServerWebSocket} is available.
+     */
     @Override
     public <T> T unwrap(Class<T> clazz) {
-        return ws.unwrap(clazz);
+        return ServerWebSocket.class.isAssignableFrom(clazz) ? clazz.cast(ws) : null;
     }
 
 }

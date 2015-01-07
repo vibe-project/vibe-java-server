@@ -65,7 +65,7 @@ public interface ServerTransport {
     void close();
 
     /**
-     * Returns the provider-specific component.
+     * Returns the underlying component.
      */
     <T> T unwrap(Class<T> clazz);
 

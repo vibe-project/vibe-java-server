@@ -57,9 +57,12 @@ public abstract class BaseHttpServerTransport extends BaseServerTransport {
         textActions.fire(text);
     }
 
+    /**
+     * {@link ServerHttpExchange} is available.
+     */
     @Override
     public <T> T unwrap(Class<T> clazz) {
-        return http.unwrap(clazz);
+        return ServerHttpExchange.class.isAssignableFrom(clazz) ? clazz.cast(http) : null;
     }
 
     /**

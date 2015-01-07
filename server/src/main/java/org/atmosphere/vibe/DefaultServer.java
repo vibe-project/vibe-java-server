@@ -471,7 +471,7 @@ public class DefaultServer implements Server {
 
         @Override
         public <T> T unwrap(Class<T> clazz) {
-            return transport.unwrap(clazz);
+            return ServerTransport.class.isAssignableFrom(clazz) ? clazz.cast(transport) : null;
         }
         
         Map<String, Object> parseEvent(String text) {

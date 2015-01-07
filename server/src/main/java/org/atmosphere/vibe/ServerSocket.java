@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.atmosphere.vibe.platform.action.Action;
+import org.atmosphere.vibe.transport.ServerTransport;
 
 /**
  * Interface used to interact with the remote socket.
@@ -129,7 +130,7 @@ public interface ServerSocket extends AbstractServerSocket<ServerSocket> {
     <T, U> ServerSocket send(String event, Object data, Action<T> resolved, Action<U> rejected);
 
     /**
-     * Returns the provider-specific component.
+     * Returns the underlying component. {@link ServerTransport} is available.
      */
     <T> T unwrap(Class<T> clazz);
 
