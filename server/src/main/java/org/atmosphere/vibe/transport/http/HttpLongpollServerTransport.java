@@ -17,11 +17,11 @@ package org.atmosphere.vibe.transport.http;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.atmosphere.vibe.platform.action.Action;
@@ -40,11 +40,9 @@ public class HttpLongpollServerTransport extends BaseHttpServerTransport {
 
     private AtomicReference<ServerHttpExchange> httpRef = new AtomicReference<>();
     private AtomicBoolean aborted = new AtomicBoolean();
-    private AtomicBoolean completed = new AtomicBoolean();
     private AtomicBoolean written = new AtomicBoolean();
     private AtomicReference<Timer> closeTimer = new AtomicReference<>();
-    private AtomicInteger msgId = new AtomicInteger();
-    private Map<String, String> cache = new ConcurrentHashMap<>();
+    private Queue<String> cache = new ConcurrentLinkedQueue<>();
     private ObjectMapper mapper = new ObjectMapper();
     private String jsonpCallback;
 
@@ -64,7 +62,6 @@ public class HttpLongpollServerTransport extends BaseHttpServerTransport {
         http.finishAction(new VoidAction() {
             @Override
             public void on() {
-                completed.set(true);
                 if (parameters.get("when").equals("poll") && !written.get()) {
                     closeActions.fire();
                 } else {
@@ -74,7 +71,7 @@ public class HttpLongpollServerTransport extends BaseHttpServerTransport {
                         public void run() {
                             closeActions.fire();
                         }
-                    }, 2000);
+                    }, 3000);
                     closeTimer.set(timer);
                 }
             }
@@ -94,7 +91,6 @@ public class HttpLongpollServerTransport extends BaseHttpServerTransport {
         .setHeader("content-type", "text/" + (jsonpCallback != null ? "javascript" : "plain") + "; charset=utf-8");
         httpRef.set(http);
         if (parameters.get("when").equals("poll")) {
-            completed.set(false);
             written.set(false);
             Timer timer = closeTimer.getAndSet(null);
             if (timer != null) {
@@ -104,10 +100,9 @@ public class HttpLongpollServerTransport extends BaseHttpServerTransport {
                 http.end();
                 return;
             }
-            cache.remove(parameters.get("lastMsgId"));
-            for (String item : cache.values()) {
-                send(item, true);
-                break;
+            String cached = cache.poll();
+            if (cached != null) {
+                send(cached, true);
             }
         }
     }
@@ -118,15 +113,14 @@ public class HttpLongpollServerTransport extends BaseHttpServerTransport {
     }
     
     private void send(String data, boolean noCache) {
-        if (!noCache) {
-            String id = "" + msgId.incrementAndGet();
-            data = id + "|" + data;
-            cache.put(id, data);
-        }
         ServerHttpExchange http = httpRef.getAndSet(null);
-        if (http != null && !completed.get()) {
+        if (http != null) {
             written.set(true);
             http.end(formatMessage(data));
+        } else {
+            if (!noCache) {
+                cache.offer(data);
+            }
         }
     }
     
@@ -144,10 +138,11 @@ public class HttpLongpollServerTransport extends BaseHttpServerTransport {
 
     @Override
     public void doClose() {
-        aborted.set(true);
         ServerHttpExchange http = httpRef.getAndSet(null);
-        if (http != null && !completed.get()) {
+        if (http != null) {
             http.end();
+        } else {
+            aborted.set(true);
         }
     }
 
