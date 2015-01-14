@@ -24,11 +24,11 @@ import org.atmosphere.vibe.platform.ws.ServerWebSocket;
  * <p>
  * {@code Server} consumes {@link ServerHttpExchange} and
  * {@link ServerWebSocket}, produces {@link ServerSocket} following the Vibe
- * protocol and manages their life cycles. {@code Server} API is used to receive
- * {@link ServerHttpExchange} and {@link ServerWebSocket} from the platform and
- * accept, find and handle {@link ServerSocket}.
+ * protocol. {@code Server} API is used to receive {@link ServerHttpExchange}
+ * and {@link ServerWebSocket} from the platform and accept, find and handle
+ * {@link ServerSocket}.
  * <p>
- * Server may be accessed by multiple threads.
+ * Instances may be accessed by multiple threads.
  * 
  * @author Donghwan Kim
  */

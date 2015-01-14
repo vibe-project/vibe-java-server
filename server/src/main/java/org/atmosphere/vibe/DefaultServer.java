@@ -34,14 +34,11 @@ import org.atmosphere.vibe.platform.action.Action;
 import org.atmosphere.vibe.platform.action.Actions;
 import org.atmosphere.vibe.platform.action.ConcurrentActions;
 import org.atmosphere.vibe.platform.action.VoidAction;
-import org.atmosphere.vibe.platform.http.HttpStatus;
 import org.atmosphere.vibe.platform.http.ServerHttpExchange;
 import org.atmosphere.vibe.platform.ws.ServerWebSocket;
 import org.atmosphere.vibe.transport.ServerTransport;
-import org.atmosphere.vibe.transport.http.BaseHttpServerTransport;
-import org.atmosphere.vibe.transport.http.HttpLongpollServerTransport;
-import org.atmosphere.vibe.transport.http.HttpStreamServerTransport;
-import org.atmosphere.vibe.transport.ws.WebSocketServerTransport;
+import org.atmosphere.vibe.transport.http.HttpTransportServer;
+import org.atmosphere.vibe.transport.ws.WebSocketTransportServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,16 +66,17 @@ public class DefaultServer implements Server {
     private Set<ServerSocket> sockets = new CopyOnWriteArraySet<>();
     private int heartbeat = 20000;
     private int _heartbeat = 5000;
-    // Socket
     private Actions<ServerSocket> socketActions = new ConcurrentActions<ServerSocket>()
     .add(new Action<ServerSocket>() {
         @Override
         public void on(ServerSocket s) {
             final DefaultServerSocket socket = (DefaultServerSocket) s;
+            log.trace("{}'s request has opened", socket);
             sockets.add(socket);
-            socket.on("close", new VoidAction() {
+            socket.closeAction(new VoidAction() {
                 @Override
                 public void on() {
+                    log.trace("{}'s request has been closed", socket);
                     sockets.remove(socket);
                 }
             });
@@ -95,119 +93,8 @@ public class DefaultServer implements Server {
             socketActions.fire(new DefaultServerSocket(transport, map));
         }
     };
-    // TODO move to transport package
-    private Action<ServerHttpExchange> httpAction = new Action<ServerHttpExchange>() {
-        Map<String, BaseHttpServerTransport> transports = new ConcurrentHashMap<>();
-        
-        @Override
-        public void on(final ServerHttpExchange http) {
-            final Map<String, String> params = BaseHttpServerTransport.parseQuery(http.uri());
-            switch (http.method()) {
-            case "GET":
-                setNocache(http);
-                setCors(http);
-                switch (params.get("when")) {
-                case "open": {
-                    String transportName = params.get("transport");
-                    final BaseHttpServerTransport transport = createTransport(transportName, http);
-                    if (transport != null) {
-                        transports.put(transport.id(), transport);
-                        transport.closeAction(new VoidAction() {
-                            @Override
-                            public void on() {
-                                transports.remove(transport.id());
-                            }
-                        });
-                        transportAction.on(transport);
-                    } else {
-                        log.error("Transport, {}, is not implemented", transportName);
-                        http.setStatus(HttpStatus.NOT_IMPLEMENTED).end();
-                    }
-                    break;
-                }
-                case "poll": {
-                    String id = params.get("id");
-                    BaseHttpServerTransport transport = transports.get(id);
-                    if (transport != null && transport instanceof HttpLongpollServerTransport) {
-                        ((HttpLongpollServerTransport) transport).refresh(http);
-                    } else {
-                        log.error("Long polling transport#{} is not found", id);
-                        http.setStatus(HttpStatus.INTERNAL_SERVER_ERROR).end();
-                    }
-                    break;
-                }
-                case "abort": {
-                    String id = params.get("id");
-                    BaseHttpServerTransport transport = transports.get(id);
-                    if (transport != null) {
-                        transport.close();
-                    }
-                    http.setHeader("content-type", "text/javascript; charset=utf-8").end();
-                    break;
-                }
-                default:
-                    log.error("when, {}, is not supported", params.get("when"));
-                    http.setStatus(HttpStatus.NOT_IMPLEMENTED).end();
-                    break;
-                }
-                break;
-            case "POST":
-                setNocache(http);
-                setCors(http);
-                http.bodyAction(new Action<String>() {
-                    @Override
-                    public void on(String body) {
-                        String data = body.substring("data=".length());
-                        String id = params.get("id");
-                        BaseHttpServerTransport transport = transports.get(id);
-                        if (transport != null) {
-                            transport.handleText(data);
-                        } else {
-                            log.error("A POST message arrived but no transport#{} is found", id);
-                            http.setStatus(HttpStatus.INTERNAL_SERVER_ERROR);
-                        }
-                        http.end();
-                    };
-                })
-                .read();
-                break;
-            default:
-                log.error("HTTP method, {}, is not supported", http.method());
-                http.setStatus(HttpStatus.METHOD_NOT_ALLOWED).end();
-                break;
-            }
-        }
-
-        private void setNocache(ServerHttpExchange http) {
-            http.setHeader("cache-control", "no-cache, no-store, must-revalidate")
-            .setHeader("pragma", "no-cache")
-            .setHeader("expires", "0");
-        }
-
-        private void setCors(ServerHttpExchange http) {
-            String origin = http.header("origin");
-            http.setHeader("access-control-allow-origin", origin != null ? origin : "*")
-            .setHeader("access-control-allow-credentials", "true");
-        }
-        
-        private BaseHttpServerTransport createTransport(String transportName, ServerHttpExchange http) {
-            switch (transportName) {
-            case "stream":
-                return new HttpStreamServerTransport(http);
-            case "longpoll":
-                return new HttpLongpollServerTransport(http);
-            default:
-                return null;
-            }
-        }
-    };
-    // TODO move to transport package
-    private Action<ServerWebSocket> wsAction = new Action<ServerWebSocket>() {
-        @Override
-        public void on(ServerWebSocket ws) {
-            transportAction.on(new WebSocketServerTransport(ws));
-        }
-    };
+    private HttpTransportServer httpTransportServer = new HttpTransportServer().transportAction(transportAction);
+    private WebSocketTransportServer wsTransportServer = new WebSocketTransportServer().transportAction(transportAction);
 
     @Override
     public Sentence all() {
@@ -261,12 +148,12 @@ public class DefaultServer implements Server {
 
     @Override
     public Action<ServerHttpExchange> httpAction() {
-        return httpAction;
+        return httpTransportServer;
     }
 
     @Override
     public Action<ServerWebSocket> wsAction() {
-        return wsAction;
+        return wsTransportServer;
     }
 
     /**
@@ -368,7 +255,7 @@ public class DefaultServer implements Server {
                     action.on(info.get("data"));
                 }
             });
-            transport.send("?" + BaseHttpServerTransport.formatQuery(query));
+            transport.send("?" + HttpTransportServer.formatQuery(query));
         }
 
         @Override

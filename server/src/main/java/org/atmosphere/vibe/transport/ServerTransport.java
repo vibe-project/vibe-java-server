@@ -33,7 +33,6 @@ public interface ServerTransport {
      * A URI used to connect. To work with URI parts, use {@link URI} or
      * something like that.
      */
-    // TODO should we recover original URI?
     String uri();
 
     /**
