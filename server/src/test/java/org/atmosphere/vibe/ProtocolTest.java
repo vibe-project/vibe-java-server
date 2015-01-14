@@ -30,14 +30,14 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.atmosphere.cpr.ApplicationConfig;
-import org.atmosphere.vibe.DefaultServer;
-import org.atmosphere.vibe.ServerSocket;
 import org.atmosphere.vibe.ServerSocket.Reply;
 import org.atmosphere.vibe.platform.action.Action;
 import org.atmosphere.vibe.platform.action.VoidAction;
 import org.atmosphere.vibe.platform.bridge.atmosphere2.VibeAtmosphereServlet;
 import org.atmosphere.vibe.platform.http.ServerHttpExchange;
 import org.atmosphere.vibe.platform.ws.ServerWebSocket;
+import org.atmosphere.vibe.transport.http.HttpTransportServer;
+import org.atmosphere.vibe.transport.ws.WebSocketTransportServer;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.junit.Test;
@@ -101,6 +101,8 @@ public class ProtocolTest {
                 });
             }
         });
+        final HttpTransportServer httpTransportServer = new HttpTransportServer().transportAction(server);
+        final WebSocketTransportServer wsTransportServer = new WebSocketTransportServer().transportAction(server);
 
         org.eclipse.jetty.server.Server jetty = new org.eclipse.jetty.server.Server();
         ServerConnector connector = new ServerConnector(jetty);
@@ -130,12 +132,12 @@ public class ProtocolTest {
                 ServletRegistration.Dynamic reg = context.addServlet(VibeAtmosphereServlet.class.getName(), new VibeAtmosphereServlet() {
                     @Override
                     protected Action<ServerHttpExchange> httpAction() {
-                        return server.httpAction();
+                        return httpTransportServer;
                     }
                     
                     @Override
                     protected Action<ServerWebSocket> wsAction() {
-                        return server.wsAction();
+                        return wsTransportServer;
                     }
                 });
                 reg.setAsyncSupported(true);

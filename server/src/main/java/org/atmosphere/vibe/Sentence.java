@@ -68,13 +68,12 @@ public class Sentence implements AbstractServerSocket<Sentence> {
         serverAction.on(action);
     }
 
-    static interface SerializableAction<T> extends Action<T>, Serializable {
-    }
+    private static interface SerializableAction<T> extends Action<T>, Serializable {}
 
-    static class SendAction implements SerializableAction<ServerSocket> {
+    private static class SendAction implements SerializableAction<ServerSocket> {
         private static final long serialVersionUID = 2178442626501531717L;
-        final String event;
-        final Object data;
+        private final String event;
+        private final Object data;
 
         SendAction(String event, Object data) {
             this.event = event;
@@ -87,7 +86,7 @@ public class Sentence implements AbstractServerSocket<Sentence> {
         }
     }
 
-    static class CloseAction implements SerializableAction<ServerSocket> {
+    private static class CloseAction implements SerializableAction<ServerSocket> {
         private static final long serialVersionUID = 8154281469036373698L;
 
         @Override
@@ -96,9 +95,9 @@ public class Sentence implements AbstractServerSocket<Sentence> {
         }
     }
 
-    static class TagAction implements SerializableAction<ServerSocket> {
+    private static class TagAction implements SerializableAction<ServerSocket> {
         private static final long serialVersionUID = -7789207688974771161L;
-        final String[] names;
+        private final String[] names;
 
         public TagAction(String[] names) {
             this.names = names;
@@ -110,9 +109,9 @@ public class Sentence implements AbstractServerSocket<Sentence> {
         }
     }
 
-    static class UntagAction implements SerializableAction<ServerSocket> {
+    private static class UntagAction implements SerializableAction<ServerSocket> {
         private static final long serialVersionUID = -4173842573981245930L;
-        final String[] names;
+        private final String[] names;
 
         public UntagAction(String[] names) {
             this.names = names;

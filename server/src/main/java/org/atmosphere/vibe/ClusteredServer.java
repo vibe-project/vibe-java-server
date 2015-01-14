@@ -35,10 +35,10 @@ import org.atmosphere.vibe.platform.action.ConcurrentActions;
  * invocation to be executed by every server in the cluster. The following
  * methods create such messages.
  * <ul>
- * <li>{@link Server#all())}</li>
+ * <li>{@link Server#all()}</li>
  * <li>{@link Server#all(Action)}</li>
- * <li>{@link Server#byTag(String...))}</li>
- * <li>{@link Server#byTag(String, Action)))}</li>
+ * <li>{@link Server#byTag(String...)}</li>
+ * <li>{@link Server#byTag(String, Action)}</li>
  * <li>{@link Server#byTag(String[], Action)}</li>
  * </ul>
  * A message created by this server is passed to

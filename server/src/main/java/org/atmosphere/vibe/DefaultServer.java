@@ -34,11 +34,8 @@ import org.atmosphere.vibe.platform.action.Action;
 import org.atmosphere.vibe.platform.action.Actions;
 import org.atmosphere.vibe.platform.action.ConcurrentActions;
 import org.atmosphere.vibe.platform.action.VoidAction;
-import org.atmosphere.vibe.platform.http.ServerHttpExchange;
-import org.atmosphere.vibe.platform.ws.ServerWebSocket;
 import org.atmosphere.vibe.transport.ServerTransport;
 import org.atmosphere.vibe.transport.http.HttpTransportServer;
-import org.atmosphere.vibe.transport.ws.WebSocketTransportServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,9 +46,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 /**
  * Default implementation of {@link Server}.
  * <p>
- * This implementation consumes {@link ServerHttpExchange} and
- * {@link ServerWebSocket} and provides {@link ServerSocket} following the Vibe
- * protocol.
+ * This implementation consumes {@link ServerTransport} and produces
+ * {@link ServerSocket} following the Vibe protocol.
  * <p>
  * The following options are configurable.
  * <ul>
@@ -69,8 +65,7 @@ public class DefaultServer implements Server {
     private Actions<ServerSocket> socketActions = new ConcurrentActions<ServerSocket>()
     .add(new Action<ServerSocket>() {
         @Override
-        public void on(ServerSocket s) {
-            final DefaultServerSocket socket = (DefaultServerSocket) s;
+        public void on(final ServerSocket socket) {
             log.trace("{}'s request has opened", socket);
             sockets.add(socket);
             socket.closeAction(new VoidAction() {
@@ -80,21 +75,16 @@ public class DefaultServer implements Server {
                     sockets.remove(socket);
                 }
             });
-            socket.setHeartbeat(heartbeat);
         }
     });
-    // TODO expose as a link between server implementation layer and transport layer
-    private Action<ServerTransport> transportAction = new Action<ServerTransport>() {
-        @Override
-        public void on(ServerTransport transport) {
-            Map<String, String> map = new LinkedHashMap<>();
-            map.put("heartbeat", "" + heartbeat);
-            map.put("_heartbeat", "" + _heartbeat);
-            socketActions.fire(new DefaultServerSocket(transport, map));
-        }
-    };
-    private HttpTransportServer httpTransportServer = new HttpTransportServer().transportAction(transportAction);
-    private WebSocketTransportServer wsTransportServer = new WebSocketTransportServer().transportAction(transportAction);
+
+    @Override
+    public void on(ServerTransport transport) {
+        Map<String, String> map = new LinkedHashMap<>();
+        map.put("heartbeat", "" + heartbeat);
+        map.put("_heartbeat", "" + _heartbeat);
+        socketActions.fire(new DefaultServerSocket(transport, map));
+    }
 
     @Override
     public Sentence all() {
@@ -146,16 +136,6 @@ public class DefaultServer implements Server {
         return this;
     }
 
-    @Override
-    public Action<ServerHttpExchange> httpAction() {
-        return httpTransportServer;
-    }
-
-    @Override
-    public Action<ServerWebSocket> wsAction() {
-        return wsTransportServer;
-    }
-
     /**
      * A heartbeat interval in milliseconds to maintain a connection alive and
      * prevent server from holding idle connections. The default is
@@ -173,15 +153,15 @@ public class DefaultServer implements Server {
     }
 
     private static class DefaultServerSocket implements ServerSocket {
-        final ServerTransport transport;
-        ObjectMapper mapper = new ObjectMapper();
-        AtomicInteger eventId = new AtomicInteger();
-        Set<String> tags = new CopyOnWriteArraySet<>();
-        ConcurrentMap<String, Actions<Object>> actionsMap = new ConcurrentHashMap<>();
-        ConcurrentMap<String, Map<String, Action<Object>>> callbacksMap = new ConcurrentHashMap<>();
-        AtomicReference<Timer> heartbeatTimer = new AtomicReference<>();
+        private final ServerTransport transport;
+        private ObjectMapper mapper = new ObjectMapper();
+        private AtomicInteger eventId = new AtomicInteger();
+        private Set<String> tags = new CopyOnWriteArraySet<>();
+        private ConcurrentMap<String, Actions<Object>> actionsMap = new ConcurrentHashMap<>();
+        private ConcurrentMap<String, Map<String, Action<Object>>> callbacksMap = new ConcurrentHashMap<>();
+        private AtomicReference<Timer> heartbeatTimer = new AtomicReference<>();
 
-        DefaultServerSocket(final ServerTransport transport, Map<String, String> query) {
+        public DefaultServerSocket(final ServerTransport transport, Map<String, String> query) {
             this.transport = transport;
             actionsMap.put("error", new ConcurrentActions<>());
             transport.errorAction(new Action<Throwable>() {
@@ -253,6 +233,21 @@ public class DefaultServer implements Server {
                     Map<String, Action<Object>> callbacks = callbacksMap.remove(info.get("id"));
                     Action<Object> action = (Boolean) info.get("exception") ? callbacks.get("rejected") : callbacks.get("resolved");
                     action.on(info.get("data"));
+                }
+            });
+            final int heartbeat = Integer.parseInt(query.get("heartbeat"));
+            heartbeatTimer.set(createCloseTimer(heartbeat));
+            on("heartbeat", new VoidAction() {
+                @Override
+                public void on() {
+                    heartbeatTimer.getAndSet(createCloseTimer(heartbeat)).cancel();
+                    send("heartbeat");
+                }
+            });
+            on("close", new VoidAction() {
+                @Override
+                public void on() {
+                    heartbeatTimer.get().cancel();
                 }
             });
             transport.send("?" + HttpTransportServer.formatQuery(query));
@@ -361,7 +356,7 @@ public class DefaultServer implements Server {
             return ServerTransport.class.isAssignableFrom(clazz) ? clazz.cast(transport) : null;
         }
         
-        Map<String, Object> parseEvent(String text) {
+        private Map<String, Object> parseEvent(String text) {
             try {
                 return mapper.readValue(text, new TypeReference<Map<String, Object>>() {});
             } catch (IOException e) {
@@ -369,7 +364,7 @@ public class DefaultServer implements Server {
             }
         }
         
-        String stringifyEvent(Map<String, Object> event) {
+        private String stringifyEvent(Map<String, Object> event) {
             try {
                 return mapper.writeValueAsString(event);
             } catch (JsonProcessingException e) {
@@ -377,24 +372,7 @@ public class DefaultServer implements Server {
             }
         }
 
-        void setHeartbeat(final int heartbeat) {
-            heartbeatTimer.set(createCloseTimer(heartbeat));
-            on("heartbeat", new VoidAction() {
-                @Override
-                public void on() {
-                    heartbeatTimer.getAndSet(createCloseTimer(heartbeat)).cancel();
-                    send("heartbeat");
-                }
-            });
-            on("close", new VoidAction() {
-                @Override
-                public void on() {
-                    heartbeatTimer.get().cancel();
-                }
-            });
-        }
-
-        Timer createCloseTimer(int heartbeat) {
+        private Timer createCloseTimer(int heartbeat) {
             Timer timer = new Timer(true);
             timer.schedule(new TimerTask() {
                 @Override

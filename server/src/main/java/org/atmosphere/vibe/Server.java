@@ -16,23 +16,19 @@
 package org.atmosphere.vibe;
 
 import org.atmosphere.vibe.platform.action.Action;
-import org.atmosphere.vibe.platform.http.ServerHttpExchange;
-import org.atmosphere.vibe.platform.ws.ServerWebSocket;
+import org.atmosphere.vibe.transport.ServerTransport;
 
 /**
  * Interface used to interact with sockets.
  * <p>
- * {@code Server} consumes {@link ServerHttpExchange} and
- * {@link ServerWebSocket}, produces {@link ServerSocket} following the Vibe
- * protocol. {@code Server} API is used to receive {@link ServerHttpExchange}
- * and {@link ServerWebSocket} from the platform and accept, find and handle
- * {@link ServerSocket}.
+ * {@code Server} consumes {@link ServerTransport} and produces
+ * {@link ServerSocket} following the Vibe protocol.
  * <p>
  * Instances may be accessed by multiple threads.
  * 
  * @author Donghwan Kim
  */
-public interface Server {
+public interface Server extends Action<ServerTransport> {
 
     /**
      * Returns a sentence that every socket in this server have to follow.
@@ -70,15 +66,5 @@ public interface Server {
      * need to centralize all your code to one class.
      */
     Server socketAction(Action<ServerSocket> action);
-
-    /**
-     * An action to consume {@link ServerHttpExchange}. 
-     */
-    Action<ServerHttpExchange> httpAction();
-
-    /**
-     * An action to consume {@link ServerWebSocket}. 
-     */
-    Action<ServerWebSocket> wsAction();
 
 }
