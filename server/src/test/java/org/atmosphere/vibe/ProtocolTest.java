@@ -154,9 +154,7 @@ public class ProtocolTest {
         CommandLine cmdLine = CommandLine.parse("./src/test/resources/node/node")
         .addArgument("./src/test/resources/runner")
         .addArgument("--vibe.transports")
-        .addArgument("ws,stream,longpoll")
-        .addArgument("--vibe.extension")
-        .addArgument("reply");
+        .addArgument("ws,stream,longpoll");
         DefaultExecutor executor = new DefaultExecutor();
         // The exit value of mocha is the number of failed tests.
         executor.execute(cmdLine);
