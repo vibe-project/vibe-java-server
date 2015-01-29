@@ -16,6 +16,7 @@
 package org.atmosphere.vibe.transport;
 
 import java.net.URI;
+import java.nio.ByteBuffer;
 
 import org.atmosphere.vibe.platform.action.Action;
 
@@ -47,9 +48,19 @@ public interface ServerTransport {
     ServerTransport textAction(Action<String> action);
 
     /**
+     * Attaches an action for the binary message.
+     */
+    ServerTransport binaryAction(Action<ByteBuffer> action);
+
+    /**
      * Sends a text message through the connection.
      */
     ServerTransport send(String data);
+
+    /**
+     * Sends a binary message through the connection.
+     */
+    ServerTransport send(ByteBuffer data);
 
     /**
      * Attaches an action for the close event. After this event, the instance

@@ -19,6 +19,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -289,13 +290,18 @@ public class HttpTransportServer implements TransportServer<ServerHttpExchange> 
         }
 
         @Override
-        public synchronized void doSend(String data) {
+        protected synchronized void doSend(String data) {
             String payload = "";
             for (String line : data.split("\r\n|\r|\n")) {
                 payload += "data: " + line + "\n";
             }
             payload += "\n";
             http.write(payload);
+        }
+
+        @Override
+        protected synchronized void doSend(ByteBuffer data) {
+            throw new UnsupportedOperationException("Not implemented yet");
         }
 
         @Override
@@ -382,10 +388,15 @@ public class HttpTransportServer implements TransportServer<ServerHttpExchange> 
         }
 
         @Override
-        public void doSend(String data) {
+        protected void doSend(String data) {
             send(data, false);
         }
-        
+
+        @Override
+        protected void doSend(ByteBuffer data) {
+            throw new UnsupportedOperationException("Not implemented yet");
+        }
+
         private void send(String data, boolean noCache) {
             ServerHttpExchange http = httpRef.getAndSet(null);
             if (http != null) {

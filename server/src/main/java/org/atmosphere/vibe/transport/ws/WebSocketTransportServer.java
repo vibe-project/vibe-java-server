@@ -15,6 +15,8 @@
  */
 package org.atmosphere.vibe.transport.ws;
 
+import java.nio.ByteBuffer;
+
 import org.atmosphere.vibe.platform.action.Action;
 import org.atmosphere.vibe.platform.action.Actions;
 import org.atmosphere.vibe.platform.action.ConcurrentActions;
@@ -31,7 +33,7 @@ import org.slf4j.LoggerFactory;
  * <p>
  * It processes transport whose URI whose protocol is either {@code ws} or
  * {@code wss} like {@code ws://localhost:8080/vibe}. Because WebSocket protocol
- * itself meets transport's requirements, produced transport is actually a
+ * itself meets transport's requirements, a produced transport is actually a
  * thread-safe version of {@link ServerWebSocket}.
  * 
  * @author Donghwan Kim
@@ -92,6 +94,12 @@ public class WebSocketTransportServer implements TransportServer<ServerWebSocket
                 public void on(String data) {
                     textActions.fire(data);
                 }
+            })
+            .binaryAction(new Action<ByteBuffer>() {
+                @Override
+                public void on(ByteBuffer data) {
+                    binaryActions.fire(data);
+                }
             });
         }
 
@@ -101,7 +109,12 @@ public class WebSocketTransportServer implements TransportServer<ServerWebSocket
         }
 
         @Override
-        public synchronized void doSend(String data) {
+        protected synchronized void doSend(String data) {
+            ws.send(data);
+        }
+
+        @Override
+        protected synchronized void doSend(ByteBuffer data) {
             ws.send(data);
         }
 

@@ -15,6 +15,7 @@
  */
 package org.atmosphere.vibe.transport;
 
+import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.atmosphere.vibe.platform.action.Action;
@@ -31,6 +32,7 @@ import org.slf4j.LoggerFactory;
 public abstract class BaseServerTransport implements ServerTransport {
 
     protected Actions<String> textActions = new ConcurrentActions<>();
+    protected Actions<ByteBuffer> binaryActions = new ConcurrentActions<>();
     protected Actions<Throwable> errorActions = new ConcurrentActions<Throwable>()
     .add(new Action<Throwable>() {
         @Override
@@ -58,13 +60,28 @@ public abstract class BaseServerTransport implements ServerTransport {
     }
 
     @Override
+    public ServerTransport binaryAction(Action<ByteBuffer> action) {
+        binaryActions.add(action);
+        return this;
+    }
+
+    @Override
     public BaseServerTransport send(String data) {
         logger.trace("{} sends a text message {}", this, data);
         doSend(data);
         return this;
     }
 
+    @Override
+    public ServerTransport send(ByteBuffer data) {
+        logger.trace("{} sends a binary message {}", this, data);
+        doSend(data);
+        return this;
+    }
+
     protected abstract void doSend(String data);
+
+    protected abstract void doSend(ByteBuffer data);
 
     @Override
     public ServerTransport errorAction(Action<Throwable> action) {
