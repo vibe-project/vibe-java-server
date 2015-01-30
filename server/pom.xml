@@ -3,7 +3,7 @@
     <parent>
         <groupId>org.atmosphere</groupId>
         <artifactId>vibe-server-parent</artifactId>
-        <version>3.0.0-Alpha13</version>
+        <version>3.0.0-Alpha14-SNAPSHOT</version>
     </parent>
     <artifactId>vibe-server</artifactId>
     <name>Vibe Server/Server</name>
