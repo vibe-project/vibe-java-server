@@ -82,10 +82,18 @@ public class HttpTransportServer implements TransportServer<ServerHttpExchange> 
     @Override
     public void on(final ServerHttpExchange http) {
         final Map<String, String> params = parseQuery(http.uri());
+        http.setHeader("cache-control", "no-cache, no-store, must-revalidate")
+        .setHeader("pragma", "no-cache")
+        .setHeader("expires", "0")
+        .setHeader("access-control-allow-origin", http.header("origin") != null ? http.header("origin") : "*")
+        .setHeader("access-control-allow-headers", "content-type")
+        .setHeader("access-control-allow-credentials", "true");
         switch (http.method()) {
-        case "GET":
-            setNocache(http);
-            setCors(http);
+        case "OPTIONS": {
+            http.end();
+            break;
+        }
+        case "GET": {
             switch (params.get("when")) {
             case "open": {
                 String transportName = params.get("transport");
@@ -129,43 +137,62 @@ public class HttpTransportServer implements TransportServer<ServerHttpExchange> 
                 break;
             }
             break;
-        case "POST":
-            setNocache(http);
-            setCors(http);
-            http.bodyAction(new Action<String>() {
-                @Override
-                public void on(String body) {
-                    String data = body.substring("data=".length());
-                    String id = params.get("id");
-                    BaseTransport transport = transports.get(id);
-                    if (transport != null) {
-                        transport.handleText(data);
-                    } else {
-                        log.error("A POST message arrived but no transport#{} is found", id);
-                        http.setStatus(HttpStatus.INTERNAL_SERVER_ERROR);
-                    }
-                    http.end();
-                };
-            })
-            .read();
+        }
+        case "POST": {
+            final String id = params.get("id");
+            switch (http.header("content-type") == null ? "" : http.header("content-type").toLowerCase()) {
+            case "text/plain; charset=utf-8":
+            case "text/plain; charset=utf8":
+            case "text/plain;charset=utf-8":
+            case "text/plain;charset=utf8":
+                http.bodyAction(new Action<String>() {
+                    @Override
+                    public void on(String body) {
+                        BaseTransport transport = transports.get(id);
+                        if (transport != null) {
+                            transport.handleText(body.substring("data=".length()));
+                        } else {
+                            log.error("A POST message arrived but no transport#{} is found", id);
+                            http.setStatus(HttpStatus.INTERNAL_SERVER_ERROR);
+                        }
+                        http.end();
+                    };
+                })
+                .readAsText();
+                break;
+            case "application/octet-stream":
+                http.bodyAction(new Action<ByteBuffer>() {
+                    @Override
+                    public void on(ByteBuffer body) {
+                        BaseTransport transport = transports.get(id);
+                        if (transport != null) {
+                            transport.handleBinary(body);
+                        } else {
+                            log.error("A POST message arrived but no transport#{} is found", id);
+                            http.setStatus(HttpStatus.INTERNAL_SERVER_ERROR);
+                        }
+                        http.end();
+                    };
+                })
+                .readAsBinary();
+                break;
+            default:
+                BaseTransport transport = transports.get(id);
+                if (transport != null) {
+                    // TODO improve
+                    transport.handleError(new RuntimeException("protocol"));
+                    transport.close();
+                }
+                http.setStatus(HttpStatus.INTERNAL_SERVER_ERROR).end();
+                break;
+            }
             break;
+        }
         default:
             log.error("HTTP method, {}, is not supported", http.method());
             http.setStatus(HttpStatus.METHOD_NOT_ALLOWED).end();
             break;
         }
-    }
-
-    private void setNocache(ServerHttpExchange http) {
-        http.setHeader("cache-control", "no-cache, no-store, must-revalidate")
-        .setHeader("pragma", "no-cache")
-        .setHeader("expires", "0");
-    }
-
-    private void setCors(ServerHttpExchange http) {
-        String origin = http.header("origin");
-        http.setHeader("access-control-allow-origin", origin != null ? origin : "*")
-        .setHeader("access-control-allow-credentials", "true");
     }
     
     @Override
@@ -242,6 +269,14 @@ public class HttpTransportServer implements TransportServer<ServerHttpExchange> 
 
         public void handleText(String text) {
             textActions.fire(text);
+        }
+
+        public void handleBinary(ByteBuffer binary) {
+            binaryActions.fire(binary);
+        }
+
+        public void handleError(Throwable error) {
+            errorActions.fire(error);
         }
 
         /**
@@ -322,19 +357,18 @@ public class HttpTransportServer implements TransportServer<ServerHttpExchange> 
         private AtomicBoolean aborted = new AtomicBoolean();
         private AtomicBoolean written = new AtomicBoolean();
         private AtomicReference<Timer> closeTimer = new AtomicReference<>();
-        private Queue<String> cache = new ConcurrentLinkedQueue<>();
+        private Queue<Object> cache = new ConcurrentLinkedQueue<>();
         private ObjectMapper mapper = new ObjectMapper();
-        private String jsonpCallback;
 
         public LongpollTransport(ServerHttpExchange http) {
             super(http);
             refresh(http);
-            if ("true".equals(params.get("jsonp"))) {
-                jsonpCallback = params.get("callback");
-            }
             Map<String, String> query = new LinkedHashMap<String, String>();
             query.put("id", id);
-            httpRef.getAndSet(null).end(formatMessage("?" + formatQuery(query)));
+            String uri = "?" + formatQuery(query);
+            httpRef.getAndSet(null)
+            .setHeader("content-type", "text/" + ("true".equals(params.get("jsonp")) ? "javascript" : "plain") + "; charset=utf-8")
+            .end("true".equals(params.get("jsonp")) ? formatJsonp(params.get("callback"), uri) : uri);
         }
 
         public void refresh(ServerHttpExchange http) {
@@ -367,8 +401,7 @@ public class HttpTransportServer implements TransportServer<ServerHttpExchange> 
                 public void on() {
                     closeActions.fire();
                 }
-            })
-            .setHeader("content-type", "text/" + (jsonpCallback != null ? "javascript" : "plain") + "; charset=utf-8");
+            });
             httpRef.set(http);
             if (parameters.get("when").equals("poll")) {
                 written.set(false);
@@ -380,9 +413,14 @@ public class HttpTransportServer implements TransportServer<ServerHttpExchange> 
                     http.end();
                     return;
                 }
-                String cached = cache.poll();
+                Object cached = cache.poll();
                 if (cached != null) {
-                    send(cached, true);
+                    // As cached is either String or ByteBuffer
+                    if (cached instanceof String) {
+                        send((String) cached, true);
+                    } else {
+                        send((ByteBuffer) cached, true);
+                    }
                 }
             }
         }
@@ -394,30 +432,39 @@ public class HttpTransportServer implements TransportServer<ServerHttpExchange> 
 
         @Override
         protected void doSend(ByteBuffer data) {
-            throw new UnsupportedOperationException("Not implemented yet");
+            send(data, false);
         }
 
         private void send(String data, boolean noCache) {
             ServerHttpExchange http = httpRef.getAndSet(null);
             if (http != null) {
                 written.set(true);
-                http.end(formatMessage(data));
+                http.setHeader("content-type", "text/" + ("true".equals(params.get("jsonp")) ? "javascript" : "plain") + "; charset=utf-8")
+                .end("true".equals(params.get("jsonp")) ? formatJsonp(params.get("callback"), data) : data);
             } else {
                 if (!noCache) {
                     cache.offer(data);
                 }
             }
         }
-        
-        private String formatMessage(String data) {
-            if (jsonpCallback != null) {
-                try {
-                    return jsonpCallback + "(" + mapper.writeValueAsString(data) + ");";
-                } catch (JsonProcessingException e) {
-                    throw new RuntimeException(e);
-                }
+
+        private void send(ByteBuffer data, boolean noCache) {
+            ServerHttpExchange http = httpRef.getAndSet(null);
+            if (http != null) {
+                written.set(true);
+                http.setHeader("content-type", "application/octet-stream").end(data);
             } else {
-                return data;
+                if (!noCache) {
+                    cache.offer(data);
+                }
+            }
+        }
+
+        private String formatJsonp(String callback, String data) {
+            try {
+                return callback + "(" + mapper.writeValueAsString(data) + ");";
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
             }
         }
 
