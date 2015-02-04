@@ -249,7 +249,9 @@ public class HttpTransportServer implements TransportServer<ServerHttpExchange> 
      */
     private static abstract class BaseTransport extends BaseServerTransport {
 
-        protected final String id = UUID.randomUUID().toString();
+        protected String id = UUID.randomUUID().toString();
+        // For JSON processing in long polling and Base64 processing in streaming
+        protected ObjectMapper mapper = new ObjectMapper();
         protected final ServerHttpExchange http;
         protected final Map<String, String> params;
 
@@ -325,18 +327,22 @@ public class HttpTransportServer implements TransportServer<ServerHttpExchange> 
         }
 
         @Override
-        protected synchronized void doSend(String data) {
+        protected void doSend(String data) {
+            sendEventStreamMessage("1" + data);
+        }
+
+        @Override
+        protected void doSend(ByteBuffer data) {
+            sendEventStreamMessage("2" + mapper.convertValue(data, String.class));
+        }
+
+        private synchronized void sendEventStreamMessage(String data) {
             String payload = "";
             for (String line : data.split("\r\n|\r|\n")) {
                 payload += "data: " + line + "\n";
             }
             payload += "\n";
             http.write(payload);
-        }
-
-        @Override
-        protected synchronized void doSend(ByteBuffer data) {
-            throw new UnsupportedOperationException("Not implemented yet");
         }
 
         @Override
@@ -358,7 +364,6 @@ public class HttpTransportServer implements TransportServer<ServerHttpExchange> 
         private AtomicBoolean written = new AtomicBoolean();
         private AtomicReference<Timer> closeTimer = new AtomicReference<>();
         private Queue<Object> cache = new ConcurrentLinkedQueue<>();
-        private ObjectMapper mapper = new ObjectMapper();
 
         public LongpollTransport(ServerHttpExchange http) {
             super(http);
