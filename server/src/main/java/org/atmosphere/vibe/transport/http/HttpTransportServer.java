@@ -370,10 +370,7 @@ public class HttpTransportServer implements TransportServer<ServerHttpExchange> 
             refresh(http);
             Map<String, String> query = new LinkedHashMap<String, String>();
             query.put("id", id);
-            String uri = "?" + formatQuery(query);
-            httpRef.getAndSet(null)
-            .setHeader("content-type", "text/" + ("true".equals(params.get("jsonp")) ? "javascript" : "plain") + "; charset=utf-8")
-            .end("true".equals(params.get("jsonp")) ? formatJsonp(params.get("callback"), uri) : uri);
+            sendIfPossible("?" + formatQuery(query));
         }
 
         public void refresh(ServerHttpExchange http) {
@@ -422,9 +419,9 @@ public class HttpTransportServer implements TransportServer<ServerHttpExchange> 
                 if (cached != null) {
                     // As cached is either String or ByteBuffer
                     if (cached instanceof String) {
-                        send((String) cached, true);
+                        sendIfPossible((String) cached);
                     } else {
-                        send((ByteBuffer) cached, true);
+                        sendIfPossible((ByteBuffer) cached);
                     }
                 }
             }
@@ -432,45 +429,44 @@ public class HttpTransportServer implements TransportServer<ServerHttpExchange> 
 
         @Override
         protected void doSend(String data) {
-            send(data, false);
+            if (!sendIfPossible(data)) {
+                cache.offer(data);
+            }
         }
 
         @Override
         protected void doSend(ByteBuffer data) {
-            send(data, false);
-        }
-
-        private void send(String data, boolean noCache) {
-            ServerHttpExchange http = httpRef.getAndSet(null);
-            if (http != null) {
-                written.set(true);
-                http.setHeader("content-type", "text/" + ("true".equals(params.get("jsonp")) ? "javascript" : "plain") + "; charset=utf-8")
-                .end("true".equals(params.get("jsonp")) ? formatJsonp(params.get("callback"), data) : data);
-            } else {
-                if (!noCache) {
-                    cache.offer(data);
-                }
+            if (!sendIfPossible(data)) {
+                cache.offer(data);
             }
         }
 
-        private void send(ByteBuffer data, boolean noCache) {
+        private boolean sendIfPossible(String data) {
+            ServerHttpExchange http = httpRef.getAndSet(null);
+            if (http != null) {
+                boolean jsonp = "true".equals(params.get("jsonp"));
+                if (jsonp) {
+                    try {
+                        data = params.get("callback") + "(" + mapper.writeValueAsString(data) + ");";
+                    } catch (JsonProcessingException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+                written.set(true);
+                http.setHeader("content-type", "text/" + (jsonp ? "javascript" : "plain") + "; charset=utf-8").end(data);
+                return true;
+            }
+            return false;
+        }
+
+        private boolean sendIfPossible(ByteBuffer data) {
             ServerHttpExchange http = httpRef.getAndSet(null);
             if (http != null) {
                 written.set(true);
                 http.setHeader("content-type", "application/octet-stream").end(data);
-            } else {
-                if (!noCache) {
-                    cache.offer(data);
-                }
+                return true;
             }
-        }
-
-        private String formatJsonp(String callback, String data) {
-            try {
-                return callback + "(" + mapper.writeValueAsString(data) + ");";
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
-            }
+            return false;
         }
 
         @Override
