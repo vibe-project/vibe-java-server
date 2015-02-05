@@ -361,16 +361,14 @@ public class HttpTransportServer implements TransportServer<ServerHttpExchange> 
 
         private AtomicReference<ServerHttpExchange> httpRef = new AtomicReference<>();
         private AtomicBoolean aborted = new AtomicBoolean();
-        private AtomicBoolean written = new AtomicBoolean();
+        // Regard it as http.endedWithMessage
+        private AtomicBoolean endedWithMessage = new AtomicBoolean();
         private AtomicReference<Timer> closeTimer = new AtomicReference<>();
         private Queue<Object> cache = new ConcurrentLinkedQueue<>();
 
         public LongpollTransport(ServerHttpExchange http) {
             super(http);
             refresh(http);
-            Map<String, String> query = new LinkedHashMap<String, String>();
-            query.put("id", id);
-            sendIfPossible("?" + formatQuery(query));
         }
 
         public void refresh(ServerHttpExchange http) {
@@ -378,7 +376,7 @@ public class HttpTransportServer implements TransportServer<ServerHttpExchange> 
             http.finishAction(new VoidAction() {
                 @Override
                 public void on() {
-                    if (parameters.get("when").equals("poll") && !written.get()) {
+                    if (parameters.get("when").equals("poll") && !endedWithMessage.get()) {
                         closeActions.fire();
                     } else {
                         Timer timer = new Timer(true);
@@ -404,69 +402,81 @@ public class HttpTransportServer implements TransportServer<ServerHttpExchange> 
                     closeActions.fire();
                 }
             });
-            httpRef.set(http);
-            if (parameters.get("when").equals("poll")) {
-                written.set(false);
+            String when = parameters.get("when");
+            switch (when) {
+            case "open":
+                Map<String, String> query = new LinkedHashMap<String, String>();
+                query.put("id", id);
+                endWithMessage(http, "?" + formatQuery(query));
+                break;
+            case "poll":
+                endedWithMessage.set(false);
                 Timer timer = closeTimer.getAndSet(null);
                 if (timer != null) {
                     timer.cancel();
                 }
                 if (aborted.get()) {
                     http.end();
-                    return;
-                }
-                Object cached = cache.poll();
-                if (cached != null) {
-                    // As cached is either String or ByteBuffer
-                    if (cached instanceof String) {
-                        sendIfPossible((String) cached);
+                } else {
+                    Object cached = cache.poll();
+                    if (cached != null) {
+                        // As cached is either String or ByteBuffer
+                        if (cached instanceof String) {
+                            endWithMessage(http, (String) cached);
+                        } else {
+                            endWithMessage(http, (ByteBuffer) cached);
+                        }
                     } else {
-                        sendIfPossible((ByteBuffer) cached);
+                        httpRef.set(http);
                     }
                 }
+                break;
+            default:
+                // TODO improve
+                errorActions.fire(new RuntimeException("protocol"));
+                close();
+                break;
             }
         }
 
         @Override
         protected void doSend(String data) {
-            if (!sendIfPossible(data)) {
+            ServerHttpExchange http = httpRef.getAndSet(null);
+            if (http != null) {
+                endWithMessage(http, data);
+            } else {
                 cache.offer(data);
             }
+        }
+
+        // Regard it as http.endWithMessage
+        private void endWithMessage(ServerHttpExchange http, String data) {
+            endedWithMessage.set(true);
+            boolean jsonp = "true".equals(params.get("jsonp"));
+            if (jsonp) {
+                try {
+                    data = params.get("callback") + "(" + mapper.writeValueAsString(data) + ");";
+                } catch (JsonProcessingException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            http.setHeader("content-type", "text/" + (jsonp ? "javascript" : "plain") + "; charset=utf-8").end(data);
         }
 
         @Override
         protected void doSend(ByteBuffer data) {
-            if (!sendIfPossible(data)) {
+            ServerHttpExchange http = httpRef.getAndSet(null);
+            if (http != null) {
+                endWithMessage(http, data);
+            } else {
                 cache.offer(data);
             }
         }
 
-        private boolean sendIfPossible(String data) {
-            ServerHttpExchange http = httpRef.getAndSet(null);
-            if (http != null) {
-                boolean jsonp = "true".equals(params.get("jsonp"));
-                if (jsonp) {
-                    try {
-                        data = params.get("callback") + "(" + mapper.writeValueAsString(data) + ");";
-                    } catch (JsonProcessingException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-                written.set(true);
-                http.setHeader("content-type", "text/" + (jsonp ? "javascript" : "plain") + "; charset=utf-8").end(data);
-                return true;
-            }
-            return false;
-        }
-
-        private boolean sendIfPossible(ByteBuffer data) {
-            ServerHttpExchange http = httpRef.getAndSet(null);
-            if (http != null) {
-                written.set(true);
-                http.setHeader("content-type", "application/octet-stream").end(data);
-                return true;
-            }
-            return false;
+        // Regard it as http.endWithMessage
+        private void endWithMessage(ServerHttpExchange http, ByteBuffer data) {
+            endedWithMessage.set(true);
+            http.setHeader("content-type", "application/octet-stream").end(data);
         }
 
         @Override
