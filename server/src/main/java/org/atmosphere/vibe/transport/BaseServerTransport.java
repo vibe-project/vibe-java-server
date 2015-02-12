@@ -68,14 +68,22 @@ public abstract class BaseServerTransport implements ServerTransport {
     @Override
     public BaseServerTransport send(String data) {
         logger.trace("{} sends a text message {}", this, data);
-        doSend(data);
+        if (stateRef.get() == State.OPEN) {
+            doSend(data);
+        } else {
+            errorActions.fire(new RuntimeException("notopened"));
+        }
         return this;
     }
 
     @Override
     public ServerTransport send(ByteBuffer data) {
         logger.trace("{} sends a binary message {}", this, data);
-        doSend(data);
+        if (stateRef.get() == State.OPEN) {
+            doSend(data);
+        } else {
+            errorActions.fire(new RuntimeException("notopened"));
+        }
         return this;
     }
 
