@@ -35,6 +35,6 @@ public interface TransportServer<T> extends Action<T> {
     /**
      * Registers an action to be called when the transport has been opened.
      */
-    TransportServer<T> transportAction(Action<ServerTransport> action);
+    TransportServer<T> ontransport(Action<ServerTransport> action);
 
 }

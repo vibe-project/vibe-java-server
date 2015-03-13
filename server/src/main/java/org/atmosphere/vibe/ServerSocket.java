@@ -31,7 +31,7 @@ import org.atmosphere.vibe.transport.ServerTransport;
  * {@code ServerSocket} is to create a socket action and pass it to
  * {@link Server}. If you are going to hold a reference on {@code ServerSocket},
  * you should do something when it is closed through
- * {@link ServerSocket#closeAction(Action)}.
+ * {@link ServerSocket#onclose(Action)}.
  * <p>
  * Sockets may be accessed by multiple threads.
  * 
@@ -98,14 +98,14 @@ public interface ServerSocket extends AbstractServerSocket<ServerSocket> {
      * Executed if the socket is closed for any reason. Equivalent to
      * <code>socket.on("close", action)</code>
      */
-    ServerSocket closeAction(Action<Void> action);
+    ServerSocket onclose(Action<Void> action);
 
     /**
      * Executed if there was any error on the socket. You don't need to close it
      * explicitly on <code>error</code> event. Equivalent to
      * <code>socket.on("error", action)</code>
      */
-    ServerSocket errorAction(Action<Throwable> action);
+    ServerSocket onerror(Action<Throwable> action);
 
     /**
      * Removes a given event handler for a given event.

@@ -42,11 +42,11 @@ import org.atmosphere.vibe.platform.action.ConcurrentActions;
  * <li>{@link Server#byTag(String[], Action)}</li>
  * </ul>
  * A message created by this server is passed to
- * {@link ClusteredServer#publishAction(Action)} and a message created by other
+ * {@link ClusteredServer#onpublish(Action)} and a message created by other
  * servers is expected to be passed to {@link ClusteredServer#messageAction()}.
  * Therefore, what you need to do is to publish a message given through
- * {@link ClusteredServer#publishAction(Action)} to every server in the cluster
- * and to subscribe a published message by other servers to delegate it to
+ * {@link ClusteredServer#onpublish(Action)} to every server in the cluster and
+ * to subscribe a published message by other servers to delegate it to
  * {@link ClusteredServer#messageAction()}.
  * <p>
  * Accordingly, such message must be able to be serialized and you have to pass
@@ -106,7 +106,7 @@ public class ClusteredServer extends DefaultServer {
      * Adds an action to be called with a message to be published to every node
      * in the cluster.
      */
-    public Server publishAction(Action<Map<String, Object>> action) {
+    public Server onpublish(Action<Map<String, Object>> action) {
         publishActions.add(action);
         return this;
     }

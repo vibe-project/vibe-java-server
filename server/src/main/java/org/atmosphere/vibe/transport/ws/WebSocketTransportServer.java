@@ -46,7 +46,7 @@ public class WebSocketTransportServer implements TransportServer<ServerWebSocket
         @Override
         public void on(final ServerTransport transport) {
             log.trace("{}'s request has opened", transport);
-            transport.closeAction(new VoidAction() {
+            transport.onclose(new VoidAction() {
                 @Override
                 public void on() {
                     log.trace("{}'s request has been closed", transport);
@@ -61,7 +61,7 @@ public class WebSocketTransportServer implements TransportServer<ServerWebSocket
     }
 
     @Override
-    public WebSocketTransportServer transportAction(Action<ServerTransport> action) {
+    public WebSocketTransportServer ontransport(Action<ServerTransport> action) {
         transportActions.add(action);
         return this;
     }

@@ -46,7 +46,7 @@ public class ProtocolTest {
     @Test
     public void protocol() throws Exception {
         final DefaultServer server = new DefaultServer();
-        server.socketAction(new Action<ServerSocket>() {
+        server.onsocket(new Action<ServerSocket>() {
             @Override
             public void on(final ServerSocket socket) {
                 socket.on("abort", new VoidAction() {
@@ -100,8 +100,8 @@ public class ProtocolTest {
                 });
             }
         });
-        final HttpTransportServer httpTransportServer = new HttpTransportServer().transportAction(server);
-        final WebSocketTransportServer wsTransportServer = new WebSocketTransportServer().transportAction(server);
+        final HttpTransportServer httpTransportServer = new HttpTransportServer().ontransport(server);
+        final WebSocketTransportServer wsTransportServer = new WebSocketTransportServer().ontransport(server);
 
         org.eclipse.jetty.server.Server jetty = new org.eclipse.jetty.server.Server();
         ServerConnector connector = new ServerConnector(jetty);

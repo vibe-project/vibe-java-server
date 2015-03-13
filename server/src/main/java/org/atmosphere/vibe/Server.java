@@ -65,6 +65,6 @@ public interface Server extends Action<ServerTransport> {
      * server. It's allowed to add several actions at any time, so you don't
      * need to centralize all your code to one class.
      */
-    Server socketAction(Action<ServerSocket> action);
+    Server onsocket(Action<ServerSocket> action);
 
 }

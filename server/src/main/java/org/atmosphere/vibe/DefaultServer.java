@@ -68,7 +68,7 @@ public class DefaultServer implements Server {
         public void on(final ServerSocket socket) {
             log.trace("{}'s request has opened", socket);
             sockets.add(socket);
-            socket.closeAction(new VoidAction() {
+            socket.onclose(new VoidAction() {
                 @Override
                 public void on() {
                     log.trace("{}'s request has been closed", socket);
@@ -131,7 +131,7 @@ public class DefaultServer implements Server {
     }
 
     @Override
-    public Server socketAction(Action<ServerSocket> action) {
+    public Server onsocket(Action<ServerSocket> action) {
         socketActions.add(action);
         return this;
     }
@@ -164,20 +164,20 @@ public class DefaultServer implements Server {
         public DefaultServerSocket(final ServerTransport transport, Map<String, String> query) {
             this.transport = transport;
             actionsMap.put("error", new ConcurrentActions<>());
-            transport.errorAction(new Action<Throwable>() {
+            transport.onerror(new Action<Throwable>() {
                 @Override
                 public void on(Throwable throwable) {
                     actionsMap.get("error").fire(throwable);
                 }
             });
             actionsMap.put("close", new ConcurrentActions<>(new Actions.Options().once(true).memory(true)));
-            transport.closeAction(new VoidAction() {
+            transport.onclose(new VoidAction() {
                 @Override
                 public void on() {
                     actionsMap.get("close").fire();
                 }
             });
-            transport.textAction(new Action<String>() {
+            transport.ontext(new Action<String>() {
                 @Override
                 public void on(String text) {
                     final Map<String, Object> event = parseEvent(text);
@@ -279,12 +279,12 @@ public class DefaultServer implements Server {
         }
 
         @Override
-        public ServerSocket closeAction(Action<Void> action) {
+        public ServerSocket onclose(Action<Void> action) {
             return on("close", action);
         }
 
         @Override
-        public ServerSocket errorAction(Action<Throwable> action) {
+        public ServerSocket onerror(Action<Throwable> action) {
             return on("error", action);
         }
 

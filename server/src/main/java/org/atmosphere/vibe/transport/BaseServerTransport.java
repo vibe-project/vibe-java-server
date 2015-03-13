@@ -54,13 +54,13 @@ public abstract class BaseServerTransport implements ServerTransport {
     private AtomicReference<State> stateRef = new AtomicReference<BaseServerTransport.State>(State.OPEN);
 
     @Override
-    public ServerTransport textAction(Action<String> action) {
+    public ServerTransport ontext(Action<String> action) {
         textActions.add(action);
         return this;
     }
 
     @Override
-    public ServerTransport binaryAction(Action<ByteBuffer> action) {
+    public ServerTransport onbinary(Action<ByteBuffer> action) {
         binaryActions.add(action);
         return this;
     }
@@ -92,13 +92,13 @@ public abstract class BaseServerTransport implements ServerTransport {
     protected abstract void doSend(ByteBuffer data);
 
     @Override
-    public ServerTransport errorAction(Action<Throwable> action) {
+    public ServerTransport onerror(Action<Throwable> action) {
         errorActions.add(action);
         return this;
     }
 
     @Override
-    public ServerTransport closeAction(Action<Void> action) {
+    public ServerTransport onclose(Action<Void> action) {
         closeActions.add(action);
         return this;
     }

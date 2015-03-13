@@ -40,17 +40,17 @@ public interface ServerTransport {
      * Executed if there was any error on the connection. You don't need to
      * close it explicitly.
      */
-    ServerTransport errorAction(Action<Throwable> action);
+    ServerTransport onerror(Action<Throwable> action);
 
     /**
      * Attaches an action for the text message.
      */
-    ServerTransport textAction(Action<String> action);
+    ServerTransport ontext(Action<String> action);
 
     /**
      * Attaches an action for the binary message.
      */
-    ServerTransport binaryAction(Action<ByteBuffer> action);
+    ServerTransport onbinary(Action<ByteBuffer> action);
 
     /**
      * Sends a text message through the connection.
@@ -66,7 +66,7 @@ public interface ServerTransport {
      * Attaches an action for the close event. After this event, the instance
      * shouldn't be used and all the other events will be disabled.
      */
-    ServerTransport closeAction(Action<Void> action);
+    ServerTransport onclose(Action<Void> action);
 
     /**
      * Closes the connection. This method has no side effect if called more than

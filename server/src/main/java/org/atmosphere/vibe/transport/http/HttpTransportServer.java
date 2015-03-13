@@ -68,7 +68,7 @@ public class HttpTransportServer implements TransportServer<ServerHttpExchange> 
             final BaseTransport transport = (BaseTransport) t;
             log.trace("{}'s request has opened", transport);
             transports.put(transport.id(), transport);
-            transport.closeAction(new VoidAction() {
+            transport.onclose(new VoidAction() {
                 @Override
                 public void on() {
                     log.trace("{}'s request has been closed", transport);
@@ -196,7 +196,7 @@ public class HttpTransportServer implements TransportServer<ServerHttpExchange> 
     }
     
     @Override
-    public HttpTransportServer transportAction(Action<ServerTransport> action) {
+    public HttpTransportServer ontransport(Action<ServerTransport> action) {
         transportActions.add(action);
         return this;
     }
