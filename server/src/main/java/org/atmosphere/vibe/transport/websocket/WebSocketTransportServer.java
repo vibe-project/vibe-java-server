@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.atmosphere.vibe.transport.ws;
+package org.atmosphere.vibe.transport.websocket;
 
 import java.nio.ByteBuffer;
 
@@ -21,7 +21,7 @@ import org.atmosphere.vibe.platform.action.Action;
 import org.atmosphere.vibe.platform.action.Actions;
 import org.atmosphere.vibe.platform.action.ConcurrentActions;
 import org.atmosphere.vibe.platform.action.VoidAction;
-import org.atmosphere.vibe.platform.ws.ServerWebSocket;
+import org.atmosphere.vibe.platform.websocket.ServerWebSocket;
 import org.atmosphere.vibe.transport.BaseServerTransport;
 import org.atmosphere.vibe.transport.ServerTransport;
 import org.atmosphere.vibe.transport.TransportServer;
@@ -77,25 +77,25 @@ public class WebSocketTransportServer implements TransportServer<ServerWebSocket
 
         public DefaultTransport(ServerWebSocket ws) {
             this.ws = ws;
-            ws.errorAction(new Action<Throwable>() {
+            ws.onerror(new Action<Throwable>() {
                 @Override
                 public void on(Throwable throwable) {
                     errorActions.fire(throwable);
                 }
             })
-            .closeAction(new VoidAction() {
+            .onclose(new VoidAction() {
                 @Override
                 public void on() {
                     closeActions.fire();
                 }
             })
-            .textAction(new Action<String>() {
+            .ontext(new Action<String>() {
                 @Override
                 public void on(String data) {
                     textActions.fire(data);
                 }
             })
-            .binaryAction(new Action<ByteBuffer>() {
+            .onbinary(new Action<ByteBuffer>() {
                 @Override
                 public void on(ByteBuffer data) {
                     binaryActions.fire(data);

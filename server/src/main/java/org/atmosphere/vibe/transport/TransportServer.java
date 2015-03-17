@@ -17,7 +17,7 @@ package org.atmosphere.vibe.transport;
 
 import org.atmosphere.vibe.platform.action.Action;
 import org.atmosphere.vibe.platform.http.ServerHttpExchange;
-import org.atmosphere.vibe.platform.ws.ServerWebSocket;
+import org.atmosphere.vibe.platform.websocket.ServerWebSocket;
 
 /**
  * Interface used to interact with transports.

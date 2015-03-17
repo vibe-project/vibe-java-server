@@ -145,7 +145,7 @@ public class HttpTransportServer implements TransportServer<ServerHttpExchange> 
             case "text/plain; charset=utf8":
             case "text/plain;charset=utf-8":
             case "text/plain;charset=utf8":
-                http.bodyAction(new Action<String>() {
+                http.onbody(new Action<String>() {
                     @Override
                     public void on(String body) {
                         BaseTransport transport = transports.get(id);
@@ -161,7 +161,7 @@ public class HttpTransportServer implements TransportServer<ServerHttpExchange> 
                 .readAsText();
                 break;
             case "application/octet-stream":
-                http.bodyAction(new Action<ByteBuffer>() {
+                http.onbody(new Action<ByteBuffer>() {
                     @Override
                     public void on(ByteBuffer body) {
                         BaseTransport transport = transports.get(id);
@@ -304,19 +304,19 @@ public class HttpTransportServer implements TransportServer<ServerHttpExchange> 
             super(http);
             Map<String, String> query = new LinkedHashMap<String, String>();
             query.put("id", id);
-            http.finishAction(new VoidAction() {
+            http.onfinish(new VoidAction() {
                 @Override
                 public void on() {
                     closeActions.fire();
                 }
             })
-            .errorAction(new Action<Throwable>() {
+            .onerror(new Action<Throwable>() {
                 @Override
                 public void on(Throwable throwable) {
                     errorActions.fire(throwable);
                 }
             })
-            .closeAction(new VoidAction() {
+            .onclose(new VoidAction() {
                 @Override
                 public void on() {
                     closeActions.fire();
@@ -373,7 +373,7 @@ public class HttpTransportServer implements TransportServer<ServerHttpExchange> 
 
         public void refresh(ServerHttpExchange http) {
             final Map<String, String> parameters = parseQuery(http.uri());
-            http.finishAction(new VoidAction() {
+            http.onfinish(new VoidAction() {
                 @Override
                 public void on() {
                     if (parameters.get("when").equals("poll") && !endedWithMessage.get()) {
@@ -390,13 +390,13 @@ public class HttpTransportServer implements TransportServer<ServerHttpExchange> 
                     }
                 }
             })
-            .errorAction(new Action<Throwable>() {
+            .onerror(new Action<Throwable>() {
                 @Override
                 public void on(Throwable throwable) {
                     errorActions.fire(throwable);
                 }
             })
-            .closeAction(new VoidAction() {
+            .onclose(new VoidAction() {
                 @Override
                 public void on() {
                     closeActions.fire();

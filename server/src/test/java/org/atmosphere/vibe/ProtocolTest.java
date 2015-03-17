@@ -36,7 +36,7 @@ import org.atmosphere.vibe.platform.action.Action;
 import org.atmosphere.vibe.platform.action.VoidAction;
 import org.atmosphere.vibe.platform.bridge.atmosphere2.VibeAtmosphereServlet;
 import org.atmosphere.vibe.transport.http.HttpTransportServer;
-import org.atmosphere.vibe.transport.ws.WebSocketTransportServer;
+import org.atmosphere.vibe.transport.websocket.WebSocketTransportServer;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.junit.Test;
@@ -128,7 +128,7 @@ public class ProtocolTest {
                 });
                 regSetup.addMapping("/setup");
                 // /vibe
-                Servlet servlet = new VibeAtmosphereServlet().httpAction(httpTransportServer).wsAction(wsTransportServer);
+                Servlet servlet = new VibeAtmosphereServlet().onhttp(httpTransportServer).onwebsocket(wsTransportServer);
                 ServletRegistration.Dynamic reg = context.addServlet(VibeAtmosphereServlet.class.getName(), servlet);
                 reg.setAsyncSupported(true);
                 reg.setInitParameter(ApplicationConfig.DISABLE_ATMOSPHEREINTERCEPTOR, Boolean.TRUE.toString());
